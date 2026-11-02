@@ -1,7 +1,7 @@
 # kubernetes-mcp-server config used by the team-brain plugin (.mcp.json passes --config).
 # Full access with the engineer's own kubeconfig: read, write, exec, Secrets. The platform team are cluster
 # admins and approve each call in Claude Code's permission prompt — so don't allow-list the write tools.
-toolsets = ["core", "config"]
+toolsets = ["core", "config", "kubevirt"]   # kubevirt: VM tools for OpenShift Virtualization (knowledge/kubevirt/)
 list_output = "table"
 
 # configuration_view prints the whole kubeconfig including user tokens into the conversation and tells Claude

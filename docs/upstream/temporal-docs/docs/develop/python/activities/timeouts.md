@@ -1,0 +1,191 @@
+---
+id: timeouts
+title: Activity Timeouts
+sidebar_label: Timeouts
+description: Set the Schedule-To-Close, Start-To-Close, and Heartbeat Timeouts on a Python Activity, tune its Retry Policy, and override the next retry delay.
+toc_max_heading_level: 4
+tags:
+  - Activities
+  - Workflows
+  - Errors
+  - Failures
+  - Python SDK
+  - Temporal SDKs
+---
+
+## Set Activity timeouts {/* #activity-timeouts */}
+
+Each Activity timeout controls the maximum duration of a different aspect of an Activity Execution.
+
+The following timeouts are available in the Activity Options.
+
+- **[Schedule-To-Close Timeout](/encyclopedia/detecting-activity-failures#schedule-to-close-timeout):** is the maximum amount of time allowed for the overall [Activity Execution](/activity-execution).
+- **[Start-To-Close Timeout](/encyclopedia/detecting-activity-failures#start-to-close-timeout):** is the maximum time allowed for a single [Activity Task Execution](/tasks#activity-task-execution).
+- **[Schedule-To-Start Timeout](/encyclopedia/detecting-activity-failures#schedule-to-start-timeout):** is the maximum amount of time that is allowed from when an [Activity Task](/tasks#activity-task) is scheduled to when a [Worker](/workers#worker) starts that Activity Task. This timeout is non-retryable by design.
+
+An Activity Execution must have either the Start-To-Close or the Schedule-To-Close Timeout set.
+
+Activity options are set as keyword arguments after the Activity arguments.
+
+Available timeouts are:
+
+- `schedule_to_close_timeout`
+- `schedule_to_start_timeout`
+- `start_to_close_timeout`
+
+<!--SNIPSTART python-activity-timeouts-timeout-workflow {"highlightedLines": "12-19"}-->
+[python-sandbox/activities/activity_timeouts/timeout_workflow.py](https://github.com/temporalio/documentation-sdk-code-examples/blob/main/python-sandbox/activities/activity_timeouts/timeout_workflow.py)
+```py {12-19}
+from datetime import timedelta
+
+from temporalio import workflow
+
+with workflow.unsafe.imports_passed_through():
+    from activity_timeouts.activities import your_activity, YourParams
+
+@workflow.defn
+class YourWorkflow:
+    @workflow.run
+    async def run(self, greeting: str) -> str:
+        activity_timeout_result = await workflow.execute_activity(
+            your_activity,
+            YourParams(greeting, "Activity Timeout option"),
+            # Activity Execution Timeout
+            start_to_close_timeout=timedelta(seconds=10),
+            # schedule_to_start_timeout=timedelta(seconds=10),
+            # schedule_to_close_timeout=timedelta(seconds=10),
+        )
+        return activity_timeout_result
+```
+<!--SNIPEND-->
+
+### Set an Activity Retry Policy {/* #activity-retries */}
+
+A Retry Policy works in cooperation with the timeouts to provide fine controls to optimize the execution experience.
+
+Activity Executions are automatically associated with a default [Retry Policy](/encyclopedia/retry-policies) if a custom one is not provided.
+
+To create an Activity Retry Policy in Python, set the [RetryPolicy](https://python.temporal.io/temporalio.common.RetryPolicy.html) class within the [`start_activity()`](https://python.temporal.io/temporalio.workflow.html#start_activity) or [`execute_activity()`](https://python.temporal.io/temporalio.workflow.html#execute_activity) function.
+
+<!--SNIPSTART python-activity-timeouts-retry-workflow {"highlightedLines": "13-25"}-->
+[python-sandbox/activities/activity_timeouts/retry_workflow.py](https://github.com/temporalio/documentation-sdk-code-examples/blob/main/python-sandbox/activities/activity_timeouts/retry_workflow.py)
+```py {13-25}
+from datetime import timedelta
+
+from temporalio import workflow
+from temporalio.common import RetryPolicy
+
+with workflow.unsafe.imports_passed_through():
+    from activity_timeouts.activities import your_activity, YourParams
+
+@workflow.defn
+class YourWorkflow:
+    @workflow.run
+    async def run(self, greeting: str) -> str:
+        activity_result = await workflow.execute_activity(
+            your_activity,
+            YourParams(greeting, "Retry Policy options"),
+            start_to_close_timeout=timedelta(seconds=10),
+            # Retry Policy
+            retry_policy=RetryPolicy(
+                backoff_coefficient=2.0,
+                maximum_attempts=5,
+                initial_interval=timedelta(seconds=1),
+                maximum_interval=timedelta(seconds=2),
+                # non_retryable_error_types=["ValueError"],
+            ),
+        )
+        return activity_result
+```
+<!--SNIPEND-->
+
+### Override the retry interval with `next_retry_delay` {/* #next-retry-delay */}
+
+To override the next retry interval set by the current policy, pass `next_retry_delay` when raising an [ApplicationError](/references/failures#application-failure) in an Activity.
+This value replaces and overrides whatever the retry interval would normally be on the retry policy.
+
+For example, you can set the delay interval based on an Activity's attempt count.
+In the following example, the retry delay starts at 3 seconds after the first attempt.
+It increases to 6 seconds for the second attempt, 9 seconds for the third attempt, and so forth.
+This creates a steadily increasing backoff, versus the exponential approach used by [backoff coefficients](/encyclopedia/retry-policies#backoff-coefficient):
+
+<!--SNIPSTART python-activity-timeouts-next-retry-delay-->
+[python-sandbox/activities/activity_timeouts/next_retry_delay.py](https://github.com/temporalio/documentation-sdk-code-examples/blob/main/python-sandbox/activities/activity_timeouts/next_retry_delay.py)
+```py
+from temporalio.exceptions import ApplicationError
+from datetime import timedelta
+
+@activity.defn
+async def my_activity(input: MyActivityInput) -> str:
+    try:
+        # Your activity logic goes here
+        return await call_remote_service(input)
+    except Exception as e:
+        attempt = activity.info().attempt
+        raise ApplicationError(
+            f"Error encountered on attempt {attempt}",
+            next_retry_delay=timedelta(seconds=3 * attempt),
+        ) from e
+```
+<!--SNIPEND-->
+
+## Heartbeat an Activity {/* #activity-heartbeats */}
+
+An [Activity Heartbeat](/encyclopedia/detecting-activity-failures#activity-heartbeat) is a ping from the [Worker Process](/workers#worker-process) that is executing the Activity to the [Temporal Service](/temporal-service).
+Each Heartbeat informs the Temporal Service that the [Activity Execution](/activity-execution) is making progress and the Worker has not crashed.
+If the Temporal Service does not receive a Heartbeat within a [Heartbeat Timeout](/encyclopedia/detecting-activity-failures#heartbeat-timeout) time period, the Activity will be considered failed and another [Activity Task Execution](/tasks#activity-task-execution) may be scheduled according to the Retry Policy.
+
+Heartbeats may not always be sent to the Temporal Service—they may be [throttled](/encyclopedia/detecting-activity-failures#throttling) by the Worker.
+
+Activity Cancellations are delivered to Activities from the Temporal Service when they Heartbeat. Activities that don't Heartbeat can't receive a Cancellation.
+Heartbeat throttling may lead to Cancellation getting delivered later than expected.
+
+Heartbeats can contain a `details` field describing the Activity's current progress.
+If an Activity gets retried, the Activity can access the `details` from the last Heartbeat that was sent to the Temporal Service.
+
+To Heartbeat an Activity Execution in Python, use the [`heartbeat()`](https://python.temporal.io/temporalio.activity.html#heartbeat) API.
+
+<!--SNIPSTART python-activity-timeouts-heartbeat-->
+[python-sandbox/activities/activity_timeouts/heartbeat_activities.py](https://github.com/temporalio/documentation-sdk-code-examples/blob/main/python-sandbox/activities/activity_timeouts/heartbeat_activities.py)
+```py
+@activity.defn
+async def your_activity_definition() -> str:
+    activity.heartbeat("heartbeat details!")
+```
+<!--SNIPEND-->
+
+In addition to obtaining cancellation information, Heartbeats also support detail data that persists on the server for retrieval during Activity retry.
+If an Activity calls `heartbeat(123, 456)` and then fails and is retried, `heartbeat_details` returns an iterable containing `123` and `456` on the next Run.
+
+### Set a Heartbeat Timeout {/* #heartbeat-timeout */}
+
+A [Heartbeat Timeout](/encyclopedia/detecting-activity-failures#heartbeat-timeout) works in conjunction with [Activity Heartbeats](/encyclopedia/detecting-activity-failures#activity-heartbeat).
+
+[`heartbeat_timeout`](https://python.temporal.io/temporalio.worker.StartActivityInput.html#heartbeat_timeout) is a class variable for the [`start_activity()`](https://python.temporal.io/temporalio.workflow.html#start_activity) function used to set the maximum time between Activity Heartbeats.
+
+<!--SNIPSTART python-activity-timeouts-start-activity-heartbeat-timeout-->
+[python-sandbox/activities/activity_timeouts/heartbeat_workflow.py](https://github.com/temporalio/documentation-sdk-code-examples/blob/main/python-sandbox/activities/activity_timeouts/heartbeat_workflow.py)
+```py
+handle = workflow.start_activity(
+    activity="your-activity",
+    schedule_to_close_timeout=timedelta(seconds=5),
+    heartbeat_timeout=timedelta(seconds=1),
+)
+```
+<!--SNIPEND-->
+
+`execute_activity()` is a shortcut for [`start_activity()`](https://python.temporal.io/temporalio.workflow.html#start_activity) that waits on its result.
+
+To get just the handle to wait and cancel separately, use `start_activity()`. `execute_activity()` should be used in most cases unless advanced task capabilities are needed.
+
+<!--SNIPSTART python-activity-timeouts-execute-activity-heartbeat-timeout-->
+[python-sandbox/activities/activity_timeouts/heartbeat_workflow.py](https://github.com/temporalio/documentation-sdk-code-examples/blob/main/python-sandbox/activities/activity_timeouts/heartbeat_workflow.py)
+```py
+executed_result = await workflow.execute_activity(
+    activity="your-activity",
+    arg=name,
+    schedule_to_close_timeout=timedelta(seconds=5),
+    heartbeat_timeout=timedelta(seconds=1),
+)
+```
+<!--SNIPEND-->

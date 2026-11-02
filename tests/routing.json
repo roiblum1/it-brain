@@ -1,0 +1,107 @@
+{
+  "comment": "Cross-team routing tests (CI check `route`): each question must route to at least the listed areas, and to the listed interface page when given. Add one whenever a cross-team problem was routed badly.",
+  "cases": [
+    {
+      "question": "PVC stuck Pending on OpenShift with PowerFlex, csi-vxflexos mount fails on new nodes",
+      "areas": [
+        "dell-powerflex",
+        "storage",
+        "openshift"
+      ],
+      "teams": [
+        "ocp",
+        "storage"
+      ],
+      "interface": "interfaces/ocp-storage-dell-csm.md"
+    },
+    {
+      "question": "Trident backend offline after ONTAP upgrade",
+      "areas": [
+        "trident",
+        "netapp-ontap"
+      ],
+      "interface": "interfaces/ocp-storage-netapp-trident.md"
+    },
+    {
+      "question": "new cluster pods cannot reach mirror registry through the firewall",
+      "areas": [
+        "palo-alto",
+        "registry-mirroring"
+      ],
+      "teams": [
+        "network",
+        "ocp"
+      ],
+      "interface": "interfaces/ocp-network-palo-alto-flows.md"
+    },
+    {
+      "question": "API VIP unreachable after node reboot, ACI endpoint did not move",
+      "areas": [
+        "cisco-aci"
+      ],
+      "interface": "interfaces/ocp-network-aci-fabric.md"
+    },
+    {
+      "question": "OADP backup to Ceph RGW bucket fails with x509",
+      "areas": [
+        "oadp",
+        "ceph"
+      ],
+      "interface": "interfaces/ocp-storage-object-s3.md"
+    },
+    {
+      "question": "iSCSI multipath half the paths failed, jumbo frames MTU on the storage VLAN",
+      "areas": [
+        "storage"
+      ],
+      "interface": "interfaces/storage-network-data-paths.md"
+    },
+    {
+      "question": "install-server workflow cannot find servers, server-scan shows UNKNOWN health",
+      "areas": [
+        "temporal",
+        "server-scan"
+      ]
+    },
+    {
+      "question": "PowerMax Unisphere unreachable from the CSI controller",
+      "areas": [
+        "dell-powermax"
+      ],
+      "interface": "interfaces/ocp-storage-dell-csm.md"
+    },
+    {
+      "question": "KubeVirt VM live migration fails with DataVolume on Trident",
+      "areas": [
+        "kubevirt",
+        "trident"
+      ],
+      "teams": [
+        "storage",
+        "virtualization"
+      ]
+    },
+    {
+      "question": "PowerCLI Connect-VIServer fails against vCenter",
+      "areas": [
+        "powercli",
+        "vmware"
+      ]
+    },
+    {
+      "question": "pydantic ValidationError in a Temporal activity",
+      "areas": [
+        "python",
+        "temporal"
+      ]
+    },
+    {
+      "question": "Commvault job fails after OpenShift upgrade",
+      "areas": [
+        "commvault",
+        "openshift"
+      ],
+      "interface": "interfaces/ocp-storage-backup.md"
+    }
+  ]
+}

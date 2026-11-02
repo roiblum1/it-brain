@@ -1,0 +1,192 @@
+---
+sidebar: sidebar
+permalink: trident-install/kubernetes-deploy-tridentctl.html
+keywords: deploy, Trident, methods, tridentctl, windows
+summary: You can install Trident using `tridentctl`. This process applies to installations where the container images required by Trident are stored either in a private registry or not.
+---
+
+= Install Trident using tridentctl
+:hardbreaks:
+:icons: font
+:imagesdir: ../media/
+
+[.lead]
+You can install Trident using `tridentctl`. This process applies to installations where the container images required by Trident are stored either in a private registry or not. To customize your `tridentctl` deployment, refer to  link:kubernetes-customize-deploy-tridentctl.html[Customize tridentctl deployment].
+
+== Critical information about Trident 26.10
+*You must read the following critical information about Trident.*
+
+// Start snippet: collapsible block (open on page load)
+.*Critical information about Trident*
+[%collapsible%open]
+====
+* Kubernetes 1.37 is supported with Trident 26.10. Upgrade Trident before upgrading Kubernetes.
+* Trident strictly enforces the use of multipathing configuration in SAN environments, with a recommended value of `find_multipaths: no` in multipath.conf file. 
++
+Use of non-multipathing configuration or use of `find_multipaths: yes` or `find_multipaths: smart` value in multipath.conf file will result in mount failures. Trident has recommended the use of `find_multipaths: no` since the 21.07 release.
+====
+// End snippet
+
+== Install Trident using `tridentctl`
+
+Review link:kubernetes-deploy.html[the installation overview] to ensure you've met installation prerequisites and selected the correct installation option for your environment.
+
+.Before you begin 
+
+Before you begin installation, log in to the Linux host and verify it is managing a working, link:../trident-get-started/requirements.html[supported Kubernetes cluster^] and that you have the necessary privileges.
+
+NOTE: With OpenShift, use `oc` instead of `kubectl` in all of the examples that follow, and log in as *system:admin* first by running `oc login -u system:admin` or `oc login -u kube-admin`.
+
+[%collapsible%open]
+====
+. Verify your Kubernetes version:
++
+----
+kubectl version
+----
+
+. Verify cluster administrator privileges:
++
+----
+kubectl auth can-i '*' '*' --all-namespaces
+----
+
+. Verify you can launch a pod that uses an image from Docker Hub and reach your storage system over the pod network:
++
+----
+kubectl run -i --tty ping --image=busybox --restart=Never --rm -- \
+  ping <management IP>
+----
+====
+
+== Step 1: Download the Trident installer package 
+
+The Trident installer package creates a Trident pod, configures the CRD objects that are used to maintain its state, and initializes the CSI sidecars to perform actions such as provisioning and attaching volumes to the cluster hosts. Download and extract the latest version of the Trident installer from link:https://github.com/NetApp/trident/releases/latest[the _Assets_ section on GitHub^]. Update _<trident-installer-XX.XX.X.tar.gz>_ in the example with your selected Trident version. 
+
+----
+wget https://github.com/NetApp/trident/releases/download/v26.10.0/trident-installer-26.10.0.tar.gz
+tar -xf trident-installer-26.10.0.tar.gz
+cd trident-installer
+----
+
+== Step 2: Install Trident
+
+Install Trident in the desired namespace by executing the `tridentctl install` command. You can add additional arguments to specify image registry location. 
+
+[role="tabbed-block"]
+====
+
+.Standard mode 
+--
+----
+./tridentctl install -n trident
+----
+--
+
+.Images in one registry
+--
+----
+./tridentctl install -n trident --image-registry <your-registry> --autosupport-image <your-registry>/trident-autosupport:26.10 --trident-image <your-registry>/trident:26.10.0
+----
+--
+
+.Images in different registries
+--
+----
+./tridentctl install -n trident --image-registry <csi-registry> --autosupport-image <autosupport-registry>/trident-autosupport:26.10 --trident-image <trident-registry>/trident:26.10.0
+----
+--
+
+====
+
+Your installation status should look something like this. 
+----
+....
+INFO Starting Trident installation.                namespace=trident
+INFO Created service account.
+INFO Created cluster role.
+INFO Created cluster role binding.
+INFO Added finalizers to custom resource definitions.
+INFO Created Trident service.
+INFO Created Trident secret.
+INFO Created Trident deployment.
+INFO Created Trident daemonset.
+INFO Waiting for Trident pod to start.
+INFO Trident pod started.                          namespace=trident pod=trident-controller-679648bd45-cv2mx
+INFO Waiting for Trident REST interface.
+INFO Trident REST interface is up.                 version=26.10.0
+INFO Trident installation succeeded.
+....
+----
+
+== Verify the installation
+
+You can verify your installation using pod creation status or `tridentctl`. 
+
+=== Using pod creation status
+
+You can confirm if the Trident installation completed by reviewing the status of the created pods:
+
+----
+kubectl get pods -n trident
+
+NAME                                  READY   STATUS    RESTARTS   AGE
+trident-controller-679648bd45-cv2mx   6/6     Running   0          5m29s
+trident-node-linux-vgc8n              2/2     Running   0          5m29s
+----
+
+NOTE: If the installer does not complete successfully or `trident-controller-<generated id>` (`trident-csi-<generated id>` in versions prior to 23.01) does not have a *Running* status, the platform was not installed. Use `-d` to  link:../troubleshooting.html#unsuccessful-trident-deployment-using-tridentctl[turn on debug mode] and troubleshoot the issue. 
+
+=== Using `tridentctl`
+
+You can use `tridentctl` to check the version of Trident installed.
+
+----
+./tridentctl -n trident version
+
++----------------+----------------+
+| SERVER VERSION | CLIENT VERSION |
++----------------+----------------+
+| 26.10.0        | 26.10.0        |
++----------------+----------------+
+----
+
+== Sample configurations
+The following examples provide sample configurations for installing Trident using `tridentctl`.
+
+.Windows nodes
+[%collapsible%closed]
+====
+To enable Trident to run on Windows nodes:
+----
+tridentctl install --windows -n trident
+----
+====
+
+.Force detach
+[%collapsible%closed]
+====
+For information, see link:../trident-reco/force-detach.html[Automating the failover of stateful applications with Trident].
+----
+tridentctl install --enable-force-detach=true -n trident
+----
+====
+
+.Enable concurrent Trident controller operations
+[%collapsible%closed]
+====
+To enable concurrent Trident controller operations for improved throughput, add the `--enable-concurrency` option during the installation as shown in this example. For more information on supported drivers, see the link: https://docs.netapp.com/us-en/trident/trident-use/controller-scalability.html#controller-scalability[Controller Scalability documentation].
+
+----
+tridentctl install --enable-concurrency -n trident
+----
+====
+
+.Refresh NVMe data LIFs
+[%collapsible%closed]
+====
+To refresh NVMe data LIFs for published volumes when the LIF configuration changes, install Trident with `--enable-datalif-refresh`. For supported drivers and configuration details, see link:../trident-use/refresh-nvme-data-lifs.html[Refresh NVMe data LIFs].
+
+----
+tridentctl install --enable-datalif-refresh -n trident
+----

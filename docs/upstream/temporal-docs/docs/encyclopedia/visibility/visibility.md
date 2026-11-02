@@ -1,0 +1,99 @@
+---
+id: visibility
+title: Temporal Visibility
+sidebar_label: Visibility
+description: Temporal Visibility enables operators to view, filter, and search Workflow Executions using List Filters and Search Attributes. Learn about supported databases, Dual Visibility, and custom Search Attributes.
+slug: /visibility
+toc_max_heading_level: 4
+tags:
+  - Concepts
+  - Visibility
+  - Search Attributes
+---
+
+This page provides an overview of Temporal Visibility.
+
+The term [Visibility](/visibility), within the Temporal Platform, refers to the subsystems and APIs that enable an operator to view, filter, and search for Workflow Executions that currently exist within a Temporal Service.
+
+The [Visibility store](/self-hosted-guide/visibility) in your Temporal Service stores persisted Workflow Execution Event History data and is set up as a part of your [Persistence store](/temporal-service/persistence) to enable listing and filtering details about Workflow Executions that exist on your Temporal Service.
+
+- [How to set up a Visibility store](/self-hosted-guide/visibility)
+
+With Temporal Server v1.21, you can set up [Dual Visibility](/dual-visibility) to migrate your Visibility store from one database to another.
+
+## Visibility features {/* #advanced-visibility */}
+
+Visibility enables the listing, filtering, and sorting of [Workflow Executions](/workflow-execution) through a custom SQL-like [List Filter](/list-filter).
+
+Visibility supports [custom Search Attributes](/search-attribute#custom-search-attribute) for user-defined filtering beyond the default system attributes.
+
+- On SQL databases (MySQL v8.0.17+, PostgreSQL v12+), Visibility is available with Temporal Server v1.20 and later.
+- On Elasticsearch (v7+ with Temporal Server v1.7+, v8 with Temporal Server v1.18+) and OpenSearch (2+ with Temporal Server v1.30.1+).
+- On Temporal Cloud, Visibility is enabled by default for [all users](/cloud/manage-access/users#invite-users).
+
+For self-hosted setup and version compatibility details, see [Visibility store setup](/self-hosted-guide/visibility).
+
+### Count Workflow by ExecutionStatus
+
+The Count API feature lets you count the number of Workflows that match a given query. For example, the command `temporal workflow count -q "WorkflowType='foo'"` returns the number of Workflows that match `WorkflowType='foo'`.
+
+You can send queries to the Count API to group by a given search attribute. For example, `-q "WorkflowType='foo' GROUP BY ExecutionStatus` returns the number of Workflows that match `WorkflowType='foo'` grouped by `ExecutionStatus`.
+
+The `GROUP BY` clause is only supported in the Count API and currently only grouping by `ExecutionStatus` is supported.
+
+:::note
+
+The Count API returns approximate counts.
+
+:::
+
+## Operations that use Visibility
+
+Visibility has uses beyond the workflow search APIs. Any operation that lists, searches, or counts across executions reads the Visibility index, some of which relate to other features:
+
+- Workflow [search](/develop/typescript/platform/observability#search-attributes) and count: `ListWorkflowExecutions`, `ScanWorkflowExecutions`, `CountWorkflowExecutions`
+- [Schedule list](/troubleshooting/schedule-missed-actions#investigate-which-schedule-missed-an-action) and count: `ListSchedules` and `CountSchedules`
+- Batch operations: `ListBatchOperations`
+- [Worker task-queue reachability](/develop/worker-performance/task-queues#cli-task-queue-info): `GetWorkerTaskReachability`, and `DescribeTaskQueue` when reachability is requested
+
+These operations share the Visibility rate limit and the eventual-consistency behavior described below. Other read APIs, such as worker deployment listing, are also subject to the [Visibility API rate limit](/evaluate/cloud/limits#visibility-api-rate-limit), where you'll find the full list.
+
+Operations that look up a single entity by ID, such as `DescribeWorkflowExecution` and `DescribeSchedule`, do not use Visibility.
+
+## How current is Visibility data
+
+Visibility is a search index that Temporal updates asynchronously. After a change is recorded, it takes some time to propagate to the index, so a List or Count query can briefly return stale results. This propagation delay is variable. It is usually fast, but it can be several seconds or longer, and Temporal Cloud does not publish an [SLA](https://temporal.io/sla) for how quickly changes become visible. Treat Visibility as eventually consistent and avoid depending on a fixed or guaranteed delay.
+
+Visibility is built for finding and filtering across many executions, not for reading the current state of one execution. When you need the authoritative, up-to-date state of a specific Workflow Execution, use `DescribeWorkflowExecution` instead of a Visibility query.
+
+## Visibility availability in Temporal Cloud {/* #availability */}
+
+Temporal Cloud targets 99.5% availability for Visibility read requests, measured over a rolling 30-day window. This covers List and Count operations against Workflow Executions, Activity Executions, Nexus Operations, Schedules, and Batch Operations.
+
+This is a service level objective rather than a contractual commitment. Visibility API requests are not covered by the Temporal Cloud availability [SLA](https://temporal.io/sla), and no service credits are associated with this objective. The target is deliberately lower than the availability guaranteed for core Workflow Service APIs, because Visibility is a search index intended for operational discovery rather than a critical path for application logic.
+
+The objective measures whether a Visibility read request returns a valid response. Requests that fail for reasons within your control are not counted against it, including requests that exceed your Namespace's rate limits and requests rejected as malformed or unsupported.
+
+It says nothing about how current your results are. As described above, Visibility is eventually consistent, and an empty result is a valid response. It also does not cover query latency, which varies with the complexity of your query and the size of your result set.
+
+For self-hosted deployments, Visibility availability depends on the database you operate.
+
+## When to use Visibility
+
+Visibility is intended for operational discovery and search: finding, filtering, and counting executions for monitoring, tooling, dashboards, and investigation. Use it when you want to search or filter executions by Search Attribute in the UI, CLI, or an operational tool, or when you want to count or sample executions for reporting.
+
+For a few common tasks, another approach works better:
+
+- To check whether a specific workflow exists, start it and handle the already-started result, or look it up by ID with [`DescribeWorkflowExecution`](/references/operation-list).
+- To react to a workflow's progress or completion, follow its [Event History](/workflow-execution/event) or model the dependent work as [child workflows](/child-workflows) instead of polling Visibility.
+- To coordinate between workflows, use signals, updates, or child workflows rather than reading Visibility from inside your workflow or activity code.
+
+Keeping per-workflow work on these paths gives you strongly consistent reads and keeps the shared Visibility index healthy under load.
+
+## Legacy: Standard Visibility {/* #standard-visibility */}
+
+Prior to Temporal Server v1.20, Temporal had two Visibility modes: "standard" and "advanced." Standard Visibility supported only predefined filters such as Workflow Type, Workflow Id, Run Id, and Execution Status, without custom Search Attributes. Advanced Visibility required Elasticsearch.
+
+Starting with Temporal Server v1.20, advanced Visibility became available on SQL databases. Standard Visibility was deprecated in v1.21 and removed in v1.24. All current deployments use what was formerly called advanced Visibility, now simply called Visibility.
+
+If you are running a Temporal Server version older than v1.24, see the [legacy standard Visibility section](/self-hosted-guide/visibility/legacy-standard) in the self-hosted guide.

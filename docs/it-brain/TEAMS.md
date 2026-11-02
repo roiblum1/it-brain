@@ -16,6 +16,10 @@ Registry: `teams.json` (`python3 scripts/brain.py teams` prints it). Architectur
 
 ## Every team
 
+**Cross-team problems** (a PowerFlex volume on OpenShift, a VM disk on Trident, cluster egress through the
+firewall): Claude calls `route` first, reads the interface page it names and uses the `it-triage` skill, so the
+answer uses every team's pages and says which side the evidence points to (`docs/it-brain/ARCHITECTURE.md` §1.1).
+
 - **Search before you write**, across everything — the answer to a storage question is often on an OCP page.
 - **Write in your areas**; for anything that spans teams, write or update the `interfaces/` page instead of
   copying the same facts into two areas.
@@ -25,7 +29,7 @@ Registry: `teams.json` (`python3 scripts/brain.py teams` prints it). Architectur
 - **Curate your share** monthly: `python3 scripts/brain.py stale --team <team> --days 180` and the `inbox/` items in your areas.
 - Same rules for everyone: frontmatter, `confidence`, `applies_to`, no secrets, no real names (`CLAUDE.md`).
 
-Set `export IT_BRAIN_TEAM=<ocp|storage|network>` in your shell profile so Claude starts with your team's areas.
+Set `export IT_BRAIN_TEAM=<ocp|storage|network|virtualization>` in your shell profile so Claude starts with your team's areas.
 To browse instead of search: `python3 scripts/brain_graph.py obsidian --out ~/it-brain-vault` and open it in
 Obsidian (`docs/it-brain/GRAPH.md`) — your team's hub note lists your areas and interfaces.
 
@@ -33,7 +37,7 @@ Obsidian (`docs/it-brain/GRAPH.md`) — your team's hub note lists your areas an
 
 | | |
 |---|---|
-| Owns | openshift, kubernetes, hypershift, baremetal, vsphere, networking (cluster side), storage (cluster side), gpu, observability, registry-mirroring, gitops, security, oadp†, vmware†, nutanix†; our platform tools **server-scan** and **temporal** (Redbull Workflows); prefect†, airflow†, spark†, elastic†, solr†, mongodb† (on Kubernetes and VMs) |
+| Owns | openshift, kubernetes, hypershift, baremetal, vsphere, networking (cluster side), storage (cluster side), gpu, observability, registry-mirroring, gitops, security, oadp†; our platform tools **server-scan** and **temporal** (Redbull Workflows); prefect†, airflow†, spark†, elastic†, solr†, mongodb† (on Kubernetes and VMs); python (Pydantic) |
 | Consulted on | trident, dell-*, odf, smb-cifs, commvault, cisco-aci, palo-alto |
 | Sources | everything team-brain has today, plus RHOKP for ODF / OADP |
 | Live tools | Kubernetes MCP, Grafana MCP (exist) |
@@ -53,6 +57,16 @@ Also maintains the brain's tooling (scripts, plugin, CI, shared deployment) unti
 
 First pages that would pay off: SVM / export-policy convention for clusters, the array ↔ CSI driver ↔ OCP support
 rows in `knowledge/meta/fleet-versions.md`, S3 endpoint and CA conventions.
+
+## virtualization
+
+| | |
+|---|---|
+| Owns | **kubevirt** (OpenShift Virtualization — deep dive), vmware, nutanix, **powercli** (PowerShell / PowerCLI deep dive) |
+| Consulted on | vsphere (OpenShift on vSphere) |
+| Sources | `kubevirt-user-guide`, `kubevirt-docs`, `cdi-docs`, `hco-docs`, `forklift-docs` (MTV), `powershell-docs`, `powercli-examples` (snapshots, in the repo); RHOKP for OpenShift Virtualization |
+| Live tools | the Kubernetes MCP's `kubevirt` toolset (`vm_troubleshoot`, `vm_guest_info`, `vm_lifecycle` …); Nutanix MCP evaluated |
+| Interfaces | `virtualization-storage-kubevirt-vm-disks`, `virtualization-network-kubevirt-vm-networks`, `ocp-virtualization-kubevirt-platform` |
 
 ## network
 

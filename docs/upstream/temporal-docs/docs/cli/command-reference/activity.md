@@ -1,0 +1,618 @@
+---
+id: activity
+title: Temporal CLI activity command reference
+sidebar_label: activity
+description: Learn how to use Temporal Activity commands to perform operations on Activity Executions.
+toc_max_heading_level: 4
+tags:
+  - Activities
+  - Temporal CLI
+---
+
+{/* NOTE: This is an auto-generated file. Any edit to this file will be overwritten.
+This file is generated from the CLI command definitions via cmd/gen-docs. */}
+
+This page provides a reference for the `temporal` CLI `activity` command. The flags applicable to each subcommand are presented in a table within the heading for the subcommand. Refer to [Global Flags](#global-flags) for flags that you can use with every subcommand.
+
+## cancel
+
+Request cancellation of a Standalone Activity.
+
+```
+temporal activity cancel \
+    --activity-id YourActivityId
+```
+
+Requesting cancellation transitions the Activity's run state
+to CancelRequested. If the Activity is heartbeating, a
+cancellation error will be raised when the next heartbeat
+response is received; if the Activity allows this error to
+propagate, the Activity transitions to canceled status.
+
+A visibility Query lets you send bulk cancellations to Standalone Activity
+Executions matching the results:
+
+```
+temporal activity cancel \
+    --query YourQuery \
+    --reason YourReason
+```
+
+Visit https://docs.temporal.io/visibility to read more about Search Attributes
+and Query creation. See `temporal batch --help` for a quick reference.
+
+Use the following options to change the behavior of this command. You can also use any of the [global flags](#global-flags) that apply to all subcommands.
+
+| Flag | Required | Description |
+|------|----------|-------------|
+| `--activity-id`, `-a` | No | **string** Activity ID. You must set either --activity-id or --query. |
+| `--query`, `-q` | No | **string** EXPERIMENTAL: Starts a batch Activity operation using an SQL-like `QUERY` List Filter. This behavior may change in the future. You must set either --activity-id or --query. |
+| `--reason` | No | **string** Reason for cancellation. Also used as reason for batch operation with --query, which defaults to a message with the current user's name. |
+| `--rps` | No | **float** Limit batch's requests per second. Only allowed when --query is present. |
+| `--run-id`, `-r` | No | **string** Activity Run ID. If not set, targets the latest run. Only use with --activity-id. Cannot use with --query. |
+| `--yes`, `-y` | No | **bool** Don't prompt to confirm. Only allowed when --query is present. |
+
+## complete
+
+Complete an Activity, marking it as successfully finished. Specify the
+Activity ID and include a JSON result for the returned value:
+
+```
+temporal activity complete \
+    --activity-id YourActivityId \
+    --workflow-id YourWorkflowId \
+    --result '{"YourResultKey": "YourResultVal"}'
+```
+
+Omit `--workflow-id` to target a Standalone Activity by Activity ID
+and optional Run ID.
+
+Use the following options to change the behavior of this command. You can also use any of the [global flags](#global-flags) that apply to all subcommands.
+
+| Flag | Required | Description |
+|------|----------|-------------|
+| `--activity-id`, `-a` | Yes | **string** Activity ID. This may be the ID of an Activity invoked by a Workflow, or of a Standalone Activity. |
+| `--result` | Yes | **string** Result `JSON` to return. |
+| `--run-id`, `-r` | No | **string** Run ID. For workflow Activities (when --workflow-id is provided), this is the Workflow Run ID. For Standalone Activities, this is the Activity Run ID. |
+| `--workflow-id`, `-w` | No | **string** Workflow ID. Required for workflow Activities. Omit for Standalone Activities. |
+
+## count
+
+Return a count of Standalone Activities. Use `--query` to filter
+the activities to be counted.
+
+```
+temporal activity count \
+    --query 'ActivityType="YourActivity"'
+```
+
+Visit https://docs.temporal.io/visibility to read more about
+Search Attributes and queries.
+
+Use the following options to change the behavior of this command. You can also use any of the [global flags](#global-flags) that apply to all subcommands.
+
+| Flag | Required | Description |
+|------|----------|-------------|
+| `--query`, `-q` | No | **string** Query to filter Activity Executions to count. |
+
+## delete
+
+Delete a Standalone Activity Execution and its Event History.
+
+```
+temporal activity delete \
+    --activity-id YourActivityId
+```
+
+The removal executes asynchronously. If the Execution is Running, the Service
+terminates it before deletion.
+
+A visibility Query lets you send bulk delete to Standalone Activity
+Executions matching the results:
+
+```
+temporal activity delete \
+    --query YourQuery
+```
+
+Visit https://docs.temporal.io/visibility to read more about Search Attributes
+and Query creation. See `temporal batch --help` for a quick reference.
+
+Use the following options to change the behavior of this command. You can also use any of the [global flags](#global-flags) that apply to all subcommands.
+
+| Flag | Required | Description |
+|------|----------|-------------|
+| `--activity-id`, `-a` | No | **string** Activity ID. You must set either --activity-id or --query. |
+| `--query`, `-q` | No | **string** EXPERIMENTAL: Starts a batch Activity operation using an SQL-like `QUERY` List Filter. This behavior may change in the future. You must set either --activity-id or --query. |
+| `--reason` | No | **string** Reason for batch operation. Only use with --query. Defaults to a message with the current user's name. |
+| `--rps` | No | **float** Limit batch's requests per second. Only allowed when --query is present. |
+| `--run-id`, `-r` | No | **string** Activity Run ID. If not set, targets the latest run. Only use with --activity-id. Cannot use with --query. |
+| `--yes`, `-y` | No | **bool** Don't prompt to confirm. |
+
+## describe
+
+Display information about a Standalone Activity.
+
+```
+temporal activity describe \
+    --activity-id YourActivityId
+```
+
+If `--run-id` is omitted, the latest Activity run is described.
+
+Use the following options to change the behavior of this command. You can also use any of the [global flags](#global-flags) that apply to all subcommands.
+
+| Flag | Required | Description |
+|------|----------|-------------|
+| `--activity-id`, `-a` | Yes | **string** Activity ID. |
+| `--raw` | No | **bool** Print properties without changing their format. |
+| `--run-id`, `-r` | No | **string** Activity Run ID. If not set, targets the latest run. |
+
+## execute
+
+Start a new Standalone Activity and block until it completes.
+The result is output to stdout.
+
+```
+temporal activity execute \
+    --activity-id YourActivityId \
+    --type YourActivity \
+    --task-queue YourTaskQueue \
+    --start-to-close-timeout 30s \
+    --input '{"some-key": "some-value"}'
+```
+
+The command exits after the Activity completes.
+
+Use the following options to change the behavior of this command. You can also use any of the [global flags](#global-flags) that apply to all subcommands.
+
+| Flag | Required | Description |
+|------|----------|-------------|
+| `--activity-id`, `-a` | Yes | **string** Activity ID. |
+| `--fairness-key` | No | **string** Fairness key (max 64 bytes) for proportional task dispatch. |
+| `--fairness-weight` | No | **float** Weight [0.001-1000] for this fairness key. |
+| `--headers` | No | **string[]** Temporal activity headers in 'KEY=VALUE' format. Keys must be identifiers, and values must be JSON values. May be passed multiple times. |
+| `--heartbeat-timeout` | No | **duration** Maximum time between successful Worker heartbeats. On expiry the current activity attempt fails. |
+| `--id-conflict-policy` | No | **string-enum** Policy for handling activity start when an Activity with the same ID is currently running. Accepted values: Fail, UseExisting. |
+| `--id-reuse-policy` | No | **string-enum** Policy for handling activity start when an Activity with the same ID exists and has completed. Accepted values: AllowDuplicate, AllowDuplicateFailedOnly, RejectDuplicate. |
+| `--input`, `-i` | No | **string[]** Input value. Use JSON content or set --input-meta to override. Can't be combined with --input-file. Can be passed multiple times to pass multiple arguments. |
+| `--input-base64` | No | **bool** Assume inputs are base64-encoded and attempt to decode them. |
+| `--input-file` | No | **string[]** A path or paths for input file(s). Use JSON content or set --input-meta to override. Can't be combined with --input. Can be passed multiple times to pass multiple arguments. |
+| `--input-meta` | No | **string[]** Input payload metadata as a `KEY=VALUE` pair. When the KEY is "encoding", this overrides the default ("json/plain"). Can be passed multiple times. Repeated metadata keys are applied to the corresponding inputs in the provided order. |
+| `--priority-key` | No | **int** Priority key (1-5, lower = higher priority). Default is 3 when not specified. |
+| `--retry-backoff-coefficient` | No | **float** Coefficient for calculating the next retry interval. Must be 1 or larger. |
+| `--retry-initial-interval` | No | **duration** Interval of the first retry. If "retry-backoff-coefficient" is 1.0, it is used for all retries. |
+| `--retry-maximum-attempts` | No | **int** Maximum number of attempts. Setting to 1 disables retries. Setting to 0 means unlimited attempts. |
+| `--retry-maximum-interval` | No | **duration** Maximum interval between retries. |
+| `--schedule-to-close-timeout` | No | **duration** Maximum time for the Activity Execution, including all retries. Either this or "start-to-close-timeout" is required. |
+| `--schedule-to-start-timeout` | No | **duration** Maximum time an Activity task can stay in a task queue before a Worker picks it up. On expiry it results in a non-retryable failure and no further attempts are scheduled. |
+| `--search-attribute` | No | **string[]** Search Attribute in `KEY=VALUE` format. Keys must be identifiers, and values must be JSON values. Can be passed multiple times. See https://docs.temporal.io/visibility. |
+| `--start-delay` | No | **duration** Delay before dispatching the first Activity task. This delay is not applied to retry attempts. |
+| `--start-to-close-timeout` | No | **duration** Maximum time for a single Activity attempt. On expiry a new attempt may be scheduled if permitted by the retry policy and schedule-to-close timeout. Either this or "schedule-to-close-timeout" is required. |
+| `--static-details` | No | **string** Static Activity details for human consumption in UIs. Uses standard Markdown formatting excluding images, HTML, and script tags. _(Experimental)_ |
+| `--static-summary` | No | **string** Static Activity summary for human consumption in UIs. Uses standard Markdown formatting excluding images, HTML, and script tags. _(Experimental)_ |
+| `--task-queue`, `-t` | Yes | **string** Activity task queue. |
+| `--type` | Yes | **string** Activity Type name. |
+
+## fail
+
+Fail an Activity, marking it as having encountered an error:
+
+```
+temporal activity fail \
+    --activity-id YourActivityId \
+    --workflow-id YourWorkflowId
+```
+
+Omit `--workflow-id` to target a Standalone Activity by Activity ID
+and optional Run ID.
+
+Use the following options to change the behavior of this command. You can also use any of the [global flags](#global-flags) that apply to all subcommands.
+
+| Flag | Required | Description |
+|------|----------|-------------|
+| `--activity-id`, `-a` | Yes | **string** Activity ID. This may be the ID of an Activity invoked by a Workflow, or of a Standalone Activity. |
+| `--detail` | No | **string** Failure detail (JSON). Attached as the failure details payload. |
+| `--reason` | No | **string** Failure reason. Attached as the failure message. |
+| `--run-id`, `-r` | No | **string** Run ID. For workflow Activities (when --workflow-id is provided), this is the Workflow Run ID. For Standalone Activities, this is the Activity Run ID. |
+| `--workflow-id`, `-w` | No | **string** Workflow ID. Required for workflow Activities. Omit for Standalone Activities. |
+
+## list
+
+List Standalone Activities. Use `--query` to filter results.
+
+```
+temporal activity list \
+    --query 'ActivityType="YourActivity"'
+```
+
+Visit https://docs.temporal.io/visibility to read more about
+Search Attributes and queries.
+
+Use the following options to change the behavior of this command. You can also use any of the [global flags](#global-flags) that apply to all subcommands.
+
+| Flag | Required | Description |
+|------|----------|-------------|
+| `--limit` | No | **int** Maximum number of Activity Executions to display. |
+| `--page-size` | No | **int** Maximum number of Activity Executions to fetch at a time from the server. |
+| `--query`, `-q` | No | **string** Query to filter the Activity Executions to list. |
+
+## pause
+
+Pause an Activity.
+
+Note: This is an experimental feature and may change in the future.
+
+If the Activity is not currently running (e.g. because it previously
+failed), it will not be run again until it is unpaused.
+
+However, if the Activity is currently running, it will run until the next
+time it fails, completes, or times out, at which point the pause will kick in.
+
+Pause does not stop or extend the Activity's Schedule-To-Close Timeout.
+A paused Activity can still time out. Use `temporal activity update-options`
+to extend timeout settings before a long pause.
+
+If the Activity is on its last retry attempt and fails, the failure will
+be returned to the caller, just as if the Activity had not been paused.
+
+To target a workflow Activity, specify the Activity and Workflow IDs:
+
+```
+temporal activity pause \
+    --activity-id YourActivityId \
+    --workflow-id YourWorkflowId
+```
+
+To target a standalone Activity, specify the Activity and Run IDs:
+
+```
+temporal activity pause \
+    --activity-id YourActivityId \
+    --run-id YourRunId
+```
+
+To later unpause the activity, see [unpause](#unpause). You may also want to
+[reset](#reset) the activity to unpause it while also starting it from the beginning.
+
+Use the following options to change the behavior of this command. You can also use any of the [global flags](#global-flags) that apply to all subcommands.
+
+| Flag | Required | Description |
+|------|----------|-------------|
+| `--activity-id`, `-a` | No | **string** The Activity ID to pause. Required. |
+| `--identity` | No | **string** The identity of the user or client submitting this request. |
+| `--reason` | No | **string** Reason for pausing the Activity. |
+| `--run-id`, `-r` | No | **string** Run ID. With --workflow-id, identifies the workflow run. For a standalone Activity (no --workflow-id), targets a specific run; omit to target the latest run. |
+| `--workflow-id`, `-w` | No | **string** Workflow ID. Set to target a workflow Activity. Omit to target a standalone Activity. |
+
+## reset
+
+Reset an Activity.
+
+Note: This is an experimental feature and may change in the future.
+
+This restarts the Activity as if it were first being scheduled: the
+attempt count returns to one, its per-attempt timeouts are re-armed.
+Use `--clear-heartbeat-details` to also clear its
+[heartbeat details](#clear-heartbeat-details).
+
+If the Activity may be executing (i.e. it has not yet timed out), the
+reset will take effect the next time it fails, heartbeats, or times out.
+If the Activity is waiting for a retry (i.e. has failed or timed out), the reset
+will apply immediately.
+
+If the Activity is already paused, it will be unpaused by default.
+You can specify `--keep-paused` to prevent this.
+
+Either `--activity-id` (with `--workflow-id` for a workflow Activity, or
+alone for a standalone Activity) or `--query` must be specified.
+
+### Resetting activities that heartbeat {/* #clear-heartbeat-details */}
+
+Activities that heartbeat will receive a
+[Canceled failure](/references/failures#cancelled-failure) the next time
+they heartbeat after a reset.
+
+If, in your Activity, you need to do any cleanup when an Activity is
+reset, handle this error and then re-throw it when you've cleaned up.
+
+Use `--clear-heartbeat-details` to clear the heartbeat details as part of
+the reset.
+
+Specify the Activity and Workflow IDs:
+
+```
+temporal activity reset \
+    --activity-id YourActivityId \
+    --workflow-id YourWorkflowId \
+    --keep-paused
+```
+
+Workflow Activities can be reset in bulk with a visibility query list filter:
+
+```
+temporal activity reset \
+    --query 'WorkflowType="YourWorkflow"'
+```
+
+The `--query` flag currently applies only to Workflow Activities.
+
+Omit `--workflow-id` to target a Standalone Activity by Activity ID
+and optional Run ID.
+
+Use the following options to change the behavior of this command. You can also use any of the [global flags](#global-flags) that apply to all subcommands.
+
+| Flag | Required | Description |
+|------|----------|-------------|
+| `--activity-id`, `-a` | No | **string** The Activity ID to reset. Mutually exclusive with --query. Set --workflow-id to target a workflow Activity, or omit it to target a standalone Activity (the latest run unless --run-id is set). |
+| `--clear-heartbeat-details` | No | **bool** Clear the Activity's heartbeat details. |
+| `--headers` | No | **string[]** Temporal workflow headers in 'KEY=VALUE' format. Keys must be identifiers, and values must be JSON values. May be passed multiple times to set multiple Temporal headers. Note: These are workflow headers, not gRPC headers. |
+| `--jitter` | No | **duration** The activity will reset at random a time within the specified duration. Can only be used with --query. |
+| `--keep-paused` | No | **bool** If the activity was paused, it will stay paused. |
+| `--query`, `-q` | No | **string** EXPERIMENTAL: Starts a batch Activity operation using an SQL-like `QUERY` List Filter. This behavior may change in the future. Set either --activity-id (single Activity) or --query (batch). --query cannot be combined with --workflow-id or --run-id. |
+| `--reason` | No | **string** Reason for batch operation. Only use with --query. Defaults to user name. |
+| `--restore-original-options` | No | **bool** Restore the original options of the activity. |
+| `--rps` | No | **float** Limit batch's requests per second. Only allowed when --query is present. |
+| `--run-id`, `-r` | No | **string** Run ID. Only use with --workflow-id or --activity-id. Cannot use with --query. |
+| `--workflow-id`, `-w` | No | **string** Workflow ID. Set to target a Workflow Activity. Omit to target a standalone Activity (by --activity-id). Only for Workflow Activities; cannot be combined with --query. |
+| `--yes`, `-y` | No | **bool** Don't prompt to confirm the batch operation. Only allowed when --query is present. |
+
+## result
+
+Wait for a Standalone Activity to complete and output the
+result.
+
+```
+temporal activity result \
+    --activity-id YourActivityId
+```
+
+If `--run-id` is omitted, the latest Activity run is used.
+
+Use the following options to change the behavior of this command. You can also use any of the [global flags](#global-flags) that apply to all subcommands.
+
+| Flag | Required | Description |
+|------|----------|-------------|
+| `--activity-id`, `-a` | Yes | **string** Activity ID. |
+| `--run-id`, `-r` | No | **string** Activity Run ID. If not set, targets the latest run. |
+
+## start
+
+Start a new Standalone Activity. Outputs the Activity ID and
+Run ID.
+
+```
+temporal activity start \
+    --activity-id YourActivityId \
+    --type YourActivity \
+    --task-queue YourTaskQueue \
+    --start-to-close-timeout 5m \
+    --input '{"some-key": "some-value"}'
+```
+
+The command returns the Activity ID and Run ID.
+
+Use the following options to change the behavior of this command. You can also use any of the [global flags](#global-flags) that apply to all subcommands.
+
+| Flag | Required | Description |
+|------|----------|-------------|
+| `--activity-id`, `-a` | Yes | **string** Activity ID. |
+| `--fairness-key` | No | **string** Fairness key (max 64 bytes) for proportional task dispatch. |
+| `--fairness-weight` | No | **float** Weight [0.001-1000] for this fairness key. |
+| `--headers` | No | **string[]** Temporal activity headers in 'KEY=VALUE' format. Keys must be identifiers, and values must be JSON values. May be passed multiple times. |
+| `--heartbeat-timeout` | No | **duration** Maximum time between successful Worker heartbeats. On expiry the current activity attempt fails. |
+| `--id-conflict-policy` | No | **string-enum** Policy for handling activity start when an Activity with the same ID is currently running. Accepted values: Fail, UseExisting. |
+| `--id-reuse-policy` | No | **string-enum** Policy for handling activity start when an Activity with the same ID exists and has completed. Accepted values: AllowDuplicate, AllowDuplicateFailedOnly, RejectDuplicate. |
+| `--input`, `-i` | No | **string[]** Input value. Use JSON content or set --input-meta to override. Can't be combined with --input-file. Can be passed multiple times to pass multiple arguments. |
+| `--input-base64` | No | **bool** Assume inputs are base64-encoded and attempt to decode them. |
+| `--input-file` | No | **string[]** A path or paths for input file(s). Use JSON content or set --input-meta to override. Can't be combined with --input. Can be passed multiple times to pass multiple arguments. |
+| `--input-meta` | No | **string[]** Input payload metadata as a `KEY=VALUE` pair. When the KEY is "encoding", this overrides the default ("json/plain"). Can be passed multiple times. Repeated metadata keys are applied to the corresponding inputs in the provided order. |
+| `--priority-key` | No | **int** Priority key (1-5, lower = higher priority). Default is 3 when not specified. |
+| `--retry-backoff-coefficient` | No | **float** Coefficient for calculating the next retry interval. Must be 1 or larger. |
+| `--retry-initial-interval` | No | **duration** Interval of the first retry. If "retry-backoff-coefficient" is 1.0, it is used for all retries. |
+| `--retry-maximum-attempts` | No | **int** Maximum number of attempts. Setting to 1 disables retries. Setting to 0 means unlimited attempts. |
+| `--retry-maximum-interval` | No | **duration** Maximum interval between retries. |
+| `--schedule-to-close-timeout` | No | **duration** Maximum time for the Activity Execution, including all retries. Either this or "start-to-close-timeout" is required. |
+| `--schedule-to-start-timeout` | No | **duration** Maximum time an Activity task can stay in a task queue before a Worker picks it up. On expiry it results in a non-retryable failure and no further attempts are scheduled. |
+| `--search-attribute` | No | **string[]** Search Attribute in `KEY=VALUE` format. Keys must be identifiers, and values must be JSON values. Can be passed multiple times. See https://docs.temporal.io/visibility. |
+| `--start-delay` | No | **duration** Delay before dispatching the first Activity task. This delay is not applied to retry attempts. |
+| `--start-to-close-timeout` | No | **duration** Maximum time for a single Activity attempt. On expiry a new attempt may be scheduled if permitted by the retry policy and schedule-to-close timeout. Either this or "schedule-to-close-timeout" is required. |
+| `--static-details` | No | **string** Static Activity details for human consumption in UIs. Uses standard Markdown formatting excluding images, HTML, and script tags. _(Experimental)_ |
+| `--static-summary` | No | **string** Static Activity summary for human consumption in UIs. Uses standard Markdown formatting excluding images, HTML, and script tags. _(Experimental)_ |
+| `--task-queue`, `-t` | Yes | **string** Activity task queue. |
+| `--type` | Yes | **string** Activity Type name. |
+
+## terminate
+
+Terminate a Standalone Activity.
+
+```
+temporal activity terminate \
+    --activity-id YourActivityId \
+    --reason YourReason
+```
+
+Activity code cannot see or respond to terminations.
+
+A visibility Query lets you send bulk terminations to Standalone Activity
+Executions matching the results:
+
+```
+temporal activity terminate \
+    --query YourQuery \
+    --reason YourReason
+```
+
+Visit https://docs.temporal.io/visibility to read more about Search Attributes
+and Query creation. See `temporal batch --help` for a quick reference.
+
+Use the following options to change the behavior of this command. You can also use any of the [global flags](#global-flags) that apply to all subcommands.
+
+| Flag | Required | Description |
+|------|----------|-------------|
+| `--activity-id`, `-a` | No | **string** Activity ID. You must set either --activity-id or --query. |
+| `--query`, `-q` | No | **string** EXPERIMENTAL: Starts a batch Activity operation using an SQL-like `QUERY` List Filter. This behavior may change in the future. You must set either --activity-id or --query. |
+| `--reason` | No | **string** Reason for termination. Defaults to a message with the current user's name. Also used as reason for batch operation with --query. |
+| `--rps` | No | **float** Limit batch's requests per second. Only allowed when --query is present. |
+| `--run-id`, `-r` | No | **string** Activity Run ID. If not set, targets the latest run. Only use with --activity-id. Cannot use with --query. |
+| `--yes`, `-y` | No | **bool** Don't prompt to confirm. Only allowed when --query is present. |
+
+## unpause
+
+Re-schedule a previously-paused Activity for execution.
+
+Note: This is an experimental feature and may change in the future.
+
+If the Activity is not running and is past its retry timeout, it will be
+scheduled immediately. Otherwise, it will be scheduled after its retry
+timeout expires.
+
+Either `--activity-id` (with `--workflow-id` for a workflow Activity, or
+alone for a standalone Activity) or `--query` must be specified.
+
+Specify the Activity and Workflow IDs:
+
+```
+temporal activity unpause \
+    --activity-id YourActivityId \
+    --workflow-id YourWorkflowId
+```
+
+Workflow Activities can be unpaused in bulk via a visibility Query list filter:
+
+```
+temporal activity unpause \
+    --query 'TemporalPauseInfo IS NOT NULL'
+```
+
+The `--query` flag currently applies only to Workflow Activities.
+
+Omit `--workflow-id` to target a Standalone Activity by Activity ID
+and optional Run ID.
+
+Use the following options to change the behavior of this command. You can also use any of the [global flags](#global-flags) that apply to all subcommands.
+
+| Flag | Required | Description |
+|------|----------|-------------|
+| `--activity-id`, `-a` | No | **string** The Activity ID to unpause. Mutually exclusive with --query. Set --workflow-id to target a workflow Activity, or omit it to target a standalone Activity (the latest run unless --run-id is set). |
+| `--headers` | No | **string[]** Temporal workflow headers in 'KEY=VALUE' format. Keys must be identifiers, and values must be JSON values. May be passed multiple times to set multiple Temporal headers. Note: These are workflow headers, not gRPC headers. |
+| `--jitter` | No | **duration** The activity will start at random a time within the specified duration. Can only be used with --query. |
+| `--query`, `-q` | No | **string** EXPERIMENTAL: Starts a batch Activity operation using an SQL-like `QUERY` List Filter. This behavior may change in the future. Set either --activity-id (single Activity) or --query (batch). --query cannot be combined with --workflow-id or --run-id. |
+| `--reason` | No | **string** Reason for batch operation. Only use with --query. Defaults to user name. |
+| `--rps` | No | **float** Limit batch's requests per second. Only allowed when --query is present. |
+| `--run-id`, `-r` | No | **string** Run ID. Only use with --workflow-id or --activity-id. Cannot use with --query. |
+| `--workflow-id`, `-w` | No | **string** Workflow ID. Set to target a Workflow Activity. Omit to target a standalone Activity (by --activity-id). Only for Workflow Activities; cannot be combined with --query. |
+| `--yes`, `-y` | No | **bool** Don't prompt to confirm the batch operation. Only allowed when --query is present. |
+
+## update-options
+
+Update an Activity's options. Updates are incremental, only changing the
+specified options.
+
+Note: This is an experimental feature and may change in the future.
+
+For example:
+
+```
+temporal activity update-options \
+    --activity-id YourActivityId \
+    --workflow-id YourWorkflowId \
+    --task-queue NewTaskQueueName \
+    --schedule-to-close-timeout DURATION \
+    --schedule-to-start-timeout DURATION \
+    --start-to-close-timeout DURATION \
+    --heartbeat-timeout DURATION \
+    --retry-initial-interval DURATION \
+    --retry-maximum-interval DURATION \
+    --retry-backoff-coefficient NewBackoffCoefficient \
+    --retry-maximum-attempts NewMaximumAttempts
+```
+
+You may follow this command with `temporal activity reset`, and the new
+values will apply after the reset.
+
+For a Standalone Activity before its first dispatch, use `--start-delay`
+to change when the first Activity Task becomes available. The duration is
+measured from the Activity's original schedule time, and `0s` makes it
+available immediately. `--start-delay` cannot be changed after the first
+Activity Task has been dispatched and is not supported for workflow
+Activities.
+
+Either `--activity-id` or `--query` must be specified.
+
+Workflow Activity options can be updated in bulk with a visibility query list filter:
+
+```
+temporal activity update-options \
+    --query 'WorkflowType="YourWorkflow"' \
+    --task-queue NewTaskQueueName
+```
+
+The `--query` flag currently applies only to Workflow Activities.
+
+Omit `--workflow-id` to target a Standalone Activity by Activity ID
+and optional Run ID.
+
+Use the following options to change the behavior of this command. You can also use any of the [global flags](#global-flags) that apply to all subcommands.
+
+| Flag | Required | Description |
+|------|----------|-------------|
+| `--activity-id`, `-a` | No | **string** The Activity ID to update options. Mutually exclusive with --query. Set --workflow-id to target a workflow Activity, or omit it to target a standalone Activity (the latest run unless --run-id is set). |
+| `--headers` | No | **string[]** Temporal workflow headers in 'KEY=VALUE' format. Keys must be identifiers, and values must be JSON values. May be passed multiple times to set multiple Temporal headers. Note: These are workflow headers, not gRPC headers. |
+| `--heartbeat-timeout` | No | **duration** Maximum permitted time between successful worker heartbeats. |
+| `--query`, `-q` | No | **string** EXPERIMENTAL: Starts a batch Activity operation using an SQL-like `QUERY` List Filter. This behavior may change in the future. Set either --activity-id (single Activity) or --query (batch). --query cannot be combined with --workflow-id or --run-id. |
+| `--reason` | No | **string** Reason for batch operation. Only use with --query. Defaults to user name. |
+| `--restore-original-options` | No | **bool** Restore the original options of the activity. |
+| `--retry-backoff-coefficient` | No | **float** Coefficient used to calculate the next retry interval. The next retry interval is previous interval multiplied by the backoff coefficient. Must be 1 or larger. |
+| `--retry-initial-interval` | No | **duration** Interval of the first retry. If retryBackoffCoefficient is 1.0 then it is used for all retries. |
+| `--retry-maximum-attempts` | No | **int** Maximum number of attempts. When exceeded the retries stop even if not expired yet. Setting this value to 1 disables retries. Setting this value to 0 means unlimited attempts (up to the timeouts). |
+| `--retry-maximum-interval` | No | **duration** Maximum interval between retries. Exponential backoff leads to interval increase. This value is the cap of the increase. |
+| `--rps` | No | **float** Limit batch's requests per second. Only allowed when --query is present. |
+| `--run-id`, `-r` | No | **string** Run ID. Only use with --workflow-id or --activity-id. Cannot use with --query. |
+| `--schedule-to-close-timeout` | No | **duration** Indicates how long the caller is willing to wait for an activity completion. Limits how long retries will be attempted. |
+| `--schedule-to-start-timeout` | No | **duration** Limits time an activity task can stay in a task queue before a worker picks it up. This timeout is always non retryable, as all a retry would achieve is to put it back into the same queue. Defaults to the schedule-to-close timeout or workflow execution timeout if not specified. |
+| `--start-delay` | No | **duration** For a Standalone Activity before its first Activity Task is dispatched, changes when that task becomes available. The duration is measured from the Activity's original schedule time. Set to `0s` to make the task available immediately. |
+| `--start-to-close-timeout` | No | **duration** Maximum time an activity is allowed to execute after being picked up by a worker. This timeout is always retryable. |
+| `--task-queue` | No | **string** Name of the task queue for the Activity. |
+| `--workflow-id`, `-w` | No | **string** Workflow ID. Set to target a Workflow Activity. Omit to target a standalone Activity (by --activity-id). Only for Workflow Activities; cannot be combined with --query. |
+| `--yes`, `-y` | No | **bool** Don't prompt to confirm the batch operation. Only allowed when --query is present. |
+
+## Global Flags
+
+The following options can be used with any command.
+
+| Flag | Required | Description | Default |
+|------|----------|-------------|--------|
+| `--address` | No | **string** Temporal Service gRPC endpoint. | `localhost:7233` |
+| `--api-key` | No | **string** API key for request. |  |
+| `--client-authority` | No | **string** Temporal gRPC client :authority pseudoheader. |  |
+| `--client-connect-timeout` | No | **duration** Client connection timeout. |  |
+| `--codec-auth` | No | **string** Authorization header for Codec Server requests. |  |
+| `--codec-endpoint` | No | **string** Remote Codec Server endpoint. |  |
+| `--codec-header` | No | **string[]** HTTP headers for codec server (KEY=VALUE, repeatable). |  |
+| `--color` | No | **string-enum** Output coloring. Accepted values: always, never, auto. | `auto` |
+| `--command-timeout` | No | **duration** Command execution timeout. |  |
+| `--config-file` | No | **string** TOML config file path. |  |
+| `--disable-config-env` | No | **bool** Disable loading config from environment variables. |  |
+| `--disable-config-file` | No | **bool** Disable loading config from file. |  |
+| `--env` | No | **string** Active environment name (`ENV`). | `default` |
+| `--env-file` | No | **string** Path to environment settings file. |  |
+| `--grpc-meta` | No | **string[]** HTTP headers for requests (KEY=VALUE, repeatable). |  |
+| `--identity` | No | **string** Identity of the client submitting requests. |  |
+| `--log-format` | No | **string-enum** Log format. Accepted values: text, json. | `text` |
+| `--log-level` | No | **string-enum** Log level. Default is "never" for most commands and "warn" for "server start-dev". Accepted values: debug, info, warn, error, never. | `never` |
+| `--namespace`, `-n` | No | **string** Temporal Service Namespace. | `default` |
+| `--no-json-shorthand-payloads` | No | **bool** Raw payload output, even if the JSON option was used. |  |
+| `--output`, `-o` | No | **string-enum** Non-logging data output format. Accepted values: text, json, jsonl, none. | `text` |
+| `--profile` | No | **string** Configuration profile to use. Overrides the TEMPORAL_PROFILE environment variable and defaults to "default". |  |
+| `--time-format` | No | **string-enum** Time format. Accepted values: relative, iso, raw. | `relative` |
+| `--tls` | No | **bool** Enable base TLS encryption. Auto-enabled when api-key or TLS options are set. |  |
+| `--tls-ca-data` | No | **string** Inline server CA certificate data. |  |
+| `--tls-ca-path` | No | **string** Path to server CA certificate. |  |
+| `--tls-cert-data` | No | **string** Inline x509 certificate data. |  |
+| `--tls-cert-path` | No | **string** Path to x509 certificate. |  |
+| `--tls-disable-host-verification` | No | **bool** Disable TLS host-name verification. |  |
+| `--tls-key-data` | No | **string** Inline x509 private key data. |  |
+| `--tls-key-path` | No | **string** Path to x509 private key. |  |
+| `--tls-server-name` | No | **string** Override target TLS server name. |  |
+

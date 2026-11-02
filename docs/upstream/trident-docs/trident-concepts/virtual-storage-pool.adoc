@@ -1,0 +1,56 @@
+---
+sidebar: sidebar
+permalink: trident-concepts/virtual-storage-pool.html
+keywords: virtual pools, Trident, backends
+summary: Virtual pools provide a layer of abstraction between Trident's storage backends and Kubernetes' StorageClasses. They allow an administrator to define aspects, such as location, performance, and protection for each backend in a common, backend-agnostic way without making a StorageClass specify which physical backend, backend pool, or backend type to use to meet desired criteria.
+---
+
+= Trident virtual storage pool configuration
+:hardbreaks:
+:icons: font
+:imagesdir: ../media/
+
+[.lead]
+Virtual pools provide a layer of abstraction between Trident storage backends and Kubernetes `StorageClasses`. They allow an administrator to define aspects, such as location, performance, and protection for each backend in a common, backend-agnostic way without making a `StorageClass` specify which physical backend, backend pool, or backend type to use to meet desired criteria.
+
+== Learn about virtual pools
+The storage administrator can define virtual pools on any of the Trident backends in a JSON or YAML definition file.
+
+image::virtual_storage_pools.png[Shows the conceptual diagram of virtual pools.]
+
+Any aspect specified outside the virtual pools list is global to the backend and will apply to all the virtual pools, while each virtual pool might specify one or more aspects individually (overriding any backend-global aspects).
+
+[NOTE]
+====
+* When defining virtual pools, do not attempt to rearrange the order of existing virtual pools in a backend definition.
+* We advise against modifying attributes for an existing virtual pool. You should define a new virtual pool to make changes.
+====
+
+Most aspects are specified in backend-specific terms. Crucially, the aspect values are not exposed outside the backend's driver and are not available for matching in `StorageClasses`. Instead, the administrator defines one or more labels for each virtual pool. Each label is a key:value pair, and labels might be common across unique backends. Like aspects, labels can be specified per-pool or global to the backend. Unlike aspects, which have predefined names and values, the administrator has full discretion to define label keys and values as needed. For convenience, storage administrators can define labels per virtual pool and group volumes by label.
+
+The virtual pool labels can be defied using these characters:
+
+* uppercase letters `A-Z`
+* lowercase letters `a-z`
+* numbers `0-9`  
+* underscores `_`
+* hyphens  `-`
+
+
+A `StorageClass` identifies which virtual pool to use by referencing the labels within a selector parameter.  Virtual pool selectors support the following operators:
+
+[width="100%",cols="14%,34%,52%",options="header",]
+|===
+|Operator |Example |A pool's label value must:
+|`=` |performance=premium |Match
+
+|`!=` |performance!=extreme |Not match
+
+|`in` |location in (east, west) |Be in the set of values
+
+|`notin` |performance notin (silver, bronze) |Not be in the set of values
+
+|`<key>` |protection |Exist with any value
+
+|`!<key>` |!protection |Not exist
+|===

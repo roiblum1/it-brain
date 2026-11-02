@@ -1,0 +1,38 @@
+---
+id: nexus-metrics
+slug: /nexus/metrics
+title: Nexus Metrics
+description: Learn about available metrics emitted by Temporal Nexus.
+tags:
+  - Nexus
+---
+
+Nexus provides SDK metrics, Cloud metrics, and self-hosted Temporal Service metrics in addition to integrated [execution debugging](/nexus/execution-debugging).
+
+## SDK Metrics
+
+[SDK metrics](/references/sdk-metrics) are emitted from a Nexus Worker, including:
+
+- [nexus_poll_no_task](/references/sdk-metrics#nexus_poll_no_task)
+- [nexus_task_schedule_to_start_latency](/references/sdk-metrics#nexus_task_schedule_to_start_latency)
+- [nexus_task_execution_failed](/references/sdk-metrics#nexus_task_execution_failed)
+- [nexus_task_execution_latency](/references/sdk-metrics#nexus_task_execution_latency)
+- [nexus_task_endtoend_latency](/references/sdk-metrics#nexus_task_endtoend_latency)
+
+## Cloud Metrics
+
+Temporal Cloud emits [OpenMetrics metrics](/cloud/metrics/openmetrics/metrics-reference#nexus-metrics) for both sides of a Nexus call:
+
+- Caller-side Nexus Operation metrics report completion outcomes and schedule-to-close, schedule-to-start, and start-to-close latency.
+- Handler-side Nexus request metrics report request rates, errors, and latency.
+
+These metrics are in
+[Public Preview](/evaluate/product-release-stages#public-preview).
+
+## Self-hosted metrics
+
+A self-hosted Temporal Service emits [Nexus metrics](/references/service-metrics#nexus-metrics), including:
+
+- History Service metrics
+- Concurrency Limiter metrics
+- Frontend Service metrics

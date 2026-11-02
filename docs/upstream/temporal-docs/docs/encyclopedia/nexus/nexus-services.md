@@ -1,0 +1,25 @@
+---
+id: nexus-services
+title: Nexus services
+sidebar_label: Nexus Services
+description: Nexus Services are named collections of arbitrary-duration Nexus Operations that provide a microservice contract suitable for sharing across team boundaries.
+toc_max_heading_level: 4
+slug: /nexus/services
+tags:
+  - Nexus
+  - Concepts
+
+---
+
+import { CaptionedImage } from '@site/src/components';
+
+[Nexus Services](/glossary#nexus-service) are named collections of [Nexus Operations](/nexus/operations) that provide a contract for sharing across team boundaries.
+A [Nexus Endpoint](/nexus/endpoints) exposes Services for callers to use.
+
+Services are registered in a Worker that polls the Endpoint's target Task Queue.
+Multiple Services can run in the same Worker.
+Services typically run alongside the Workflows they abstract, or in a dedicated router Worker using the [router-queue pattern](/nexus/patterns#router-queue-pattern).
+
+Callers reference a Service by name when executing a Nexus Operation.
+
+You can hand-write a Service definition, or generate it from a schema file with [NexGen](/nexus/nexgen), which emits the definition along with typed models and runtime validators for each language.

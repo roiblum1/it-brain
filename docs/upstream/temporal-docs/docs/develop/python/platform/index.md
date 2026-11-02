@@ -1,0 +1,24 @@
+---
+id: index
+title: Platform
+slug: /develop/python/platform
+sidebar_label: Platform
+description: This section explains how to implement platform with the Python SDK
+toc_max_heading_level: 4
+tags:
+  - Python SDK
+  - Temporal SDKs
+---
+
+import * as Components from '@site/src/components';
+
+<NoZoom>
+
+![Python SDK Banner](/img/assets/banner-python-temporal.png)
+
+</NoZoom>
+
+## Platform
+
+- [Observability](/develop/python/platform/observability)
+- [Enriching the UI](/develop/python/platform/enriching-ui)

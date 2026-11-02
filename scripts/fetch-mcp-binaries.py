@@ -47,6 +47,18 @@ SERVERS = {
             "windows-x86_64": "kubernetes-mcp-server-{v}-windows-x64.mcpb",
         },
     },
+    # Read-only Temporal MCP (pre-release upstream). No Windows build is published.
+    "temporal": {
+        "repo": "temporalio/temporal-mcp",
+        "version": "v0.0.5",
+        "binary": "temporal-mcp",
+        "license": "MIT",
+        "checksums": "checksums.txt",
+        "assets": {
+            "linux-x86_64": "temporal-mcp_{v}_linux_amd64.tar.gz",
+            "darwin-arm64": "temporal-mcp_{v}_darwin_arm64.tar.gz",
+        },
+    },
 }
 API = os.environ.get("UPSTREAM_API_BASE", "https://api.github.com")
 

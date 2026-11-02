@@ -1,0 +1,36 @@
+---
+id: index
+title: Temporal Encyclopedia
+slug: /encyclopedia
+description: Discover the key concepts, components, and features of Temporal for building scalable and reliable applications. Learn about Temporal SDKs, Workflows, Activities, Workers, and more.
+sidebar_label: Encyclopedia
+---
+
+[Temporal](/evaluate/why-temporal) provides developers a suite of effective tools for building reliable applications at scale.
+
+The following Encyclopedia pages describe the concepts, components, and features of Temporal in detail:
+
+- [Temporal](/temporal)
+- [Temporal architecture](/encyclopedia/architecture/temporal-architecture)
+- [Temporal SDKs](/encyclopedia/architecture/temporal-sdks)
+- [Temporal Client](/encyclopedia/temporal-client)
+- [Workflows](/workflows)
+- [Activities](/activities)
+- [Failures and error handling](/encyclopedia/failures-and-error-handling)
+- [Workers](/workers)
+- [Event History](/encyclopedia/event-history)
+- [Workflow Message Passing](/encyclopedia/workflow-message-passing)
+- [Child Workflows](/child-workflows)
+- [Visibility](/visibility)
+- [Temporal Service](/temporal-service)
+- [Namespaces](/namespaces)
+- [Temporal Nexus](/nexus)
+- [Extensibility](/encyclopedia/extensibility)
+
+For a complete list of Temporal terms, see the [Glossary](/glossary).
+
+For information on how to implement the developer-facing features see the [Develop](/develop) section.
+
+For information on how to use Temporal Cloud see the [Temporal Cloud production deployment](/cloud) section.
+
+For information on how to self-host a Temporal Service see the [Self-hosted production deployment](/self-hosted-guide) section.

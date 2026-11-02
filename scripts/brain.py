@@ -6,6 +6,7 @@
   python3 scripts/brain.py stale --days 180 [--team storage]   pages whose last_verified is older than N days
   python3 scripts/brain.py teams                  which team owns / is consulted on each area (from teams.json)
   python3 scripts/brain.py codeowners [--check]   regenerate .gitlab/CODEOWNERS from teams.json
+  python3 scripts/brain.py route "<problem>"      areas, teams and interface pages a problem touches (cross-team)
 """
 from __future__ import annotations
 
@@ -260,6 +261,15 @@ def teams_table() -> int:
     return 0
 
 
+def route_cmd(question: str, as_json: bool) -> int:
+    sys.path.insert(0, str(ROOT / "plugins/team-brain/mcp-servers/team-knowledge"))
+    from tk import route as r  # noqa: E402  (the same code the `route` MCP tool runs)
+    res = r.route(ROOT, question)
+    names = {k: v["name"] for k, v in REGISTRY["teams"].items()}
+    print(json.dumps(res, indent=2, ensure_ascii=False) if as_json else r.render(res, names))
+    return 0
+
+
 def render_codeowners() -> str:
     teams = REGISTRY["teams"]
     every = " ".join(teams[t]["codeowners"] for t in sorted(teams))
@@ -302,10 +312,14 @@ def main():
     sub.add_parser("teams")
     cp = sub.add_parser("codeowners")
     cp.add_argument("--check", action="store_true")
+    rp = sub.add_parser("route")
+    rp.add_argument("question")
+    rp.add_argument("--json", action="store_true")
     a = ap.parse_args()
     sys.exit({"validate": lambda: validate(), "index": lambda: index(a.check),
               "stale": lambda: stale(a.days, a.team), "teams": teams_table,
-              "codeowners": lambda: codeowners(a.check)}[a.cmd]())
+              "codeowners": lambda: codeowners(a.check),
+              "route": lambda: route_cmd(a.question, a.json)}[a.cmd]())
 
 
 if __name__ == "__main__":

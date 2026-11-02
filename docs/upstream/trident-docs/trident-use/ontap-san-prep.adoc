@@ -1,0 +1,305 @@
+---
+sidebar: sidebar
+permalink: trident-use/ontap-san-prep.html
+keywords: trident backend, ontap san, ontap-san, ontap-san-economy, fcp, asa r2, iscsi, nvme tcp, fc
+summary: Learn about how to prepare to configure an ONTAP backend with ONTAP SAN drivers.
+---
+
+= Prepare to configure backend with ONTAP SAN drivers
+:hardbreaks:
+:icons: font
+:imagesdir: ../media/
+
+[.lead]
+Understand the requirements and authentication options for configuring an ONTAP backend with ONTAP SAN drivers.
+
+== Requirements
+For all ONTAP backends, Trident requires at least one aggregate be assigned to the SVM.
+
+NOTE: link:https://docs.netapp.com/us-en/asa-r2/get-started/learn-about.html[ASA r2 systems^] differ from other ONTAP systems (ASA, AFF, and FAS) in the implementation of their storage layer. In ASA r2 systems, storage availability zones are used instead of aggregates. Refer to link:https://kb.netapp.com/on-prem/ASAr2/ASAr2_KBs/su_create_by_SVM_admin_using_CLI_fails_with_error_No_candidate_aggregates_are_available_for_storage_services[this^] Knowledge Base article on how to assign aggregates to SVMs in ASA r2 systems.
+
+Remember that you can also run more than one driver, and create storage classes that point to one or the other. For example, you could configure a `san-dev` class that uses the `ontap-san` driver and a `san-default` class that uses the `ontap-san-economy` one.
+
+All your Kubernetes worker nodes must have the appropriate iSCSI tools installed. Refer to link:worker-node-prep.html[Prepare the worker node] for details.
+
+== Authenticate the ONTAP backend
+
+Trident offers two modes of authenticating an ONTAP backend.
+
+* Credential-based: The username and password to an ONTAP user with the required permissions. It is recommended to use a pre-defined security login role, such as `admin` or `vsadmin` to ensure maximum compatibility with ONTAP versions.
+* Certificate-based: Trident can also communicate with an ONTAP cluster using a certificate installed on the backend. Here, the backend definition must contain Base64-encoded values of the client certificate, key, and the trusted CA certificate if used (recommended).
+
+You can update existing backends to move between credential-based and certificate-based methods. However, only one authentication method is supported at a time. To switch to a different authentication method, you must remove the existing method from the backend configuration.
+
+WARNING: If you attempt to provide *both credentials and certificates*, backend creation will fail with an error that more than one authentication method was provided in the configuration file. 
+
+=== Enable credential-based authentication
+
+Trident requires the credentials to an SVM-scoped/cluster-scoped admin to communicate with the ONTAP backend. It is recommended to make use of standard, pre-defined roles such as `admin` or `vsadmin`. This ensures forward compatibility with future ONTAP releases that might expose feature APIs to be used by future Trident releases. A custom security login role can be created and used with Trident, but is not recommended.
+
+A sample backend definition will look like this:
+
+// start tabbed area
+
+[role="tabbed-block"]
+====
+
+.YAML
+--
+[source,yaml]
+----
+---
+version: 1
+backendName: ExampleBackend
+storageDriverName: ontap-san
+managementLIF: 10.0.0.1
+svm: svm_nfs
+username: vsadmin
+password: password
+----
+--
+
+.JSON
+--
+[source,json]
+----
+{
+  "version": 1,
+  "backendName": "ExampleBackend",
+  "storageDriverName": "ontap-san",
+  "managementLIF": "10.0.0.1",
+  "svm": "svm_nfs",
+  "username": "vsadmin",
+  "password": "password"
+}
+
+----
+--
+
+====
+
+// end tabbed area
+
+
+Keep in mind that the backend definition is the only place the credentials are stored in plain text. After the backend is created, usernames/passwords are encoded with Base64 and stored as Kubernetes secrets. The creation or update of a backend is the only step that requires knowledge of the credentials. As such, it is an admin-only operation, to be performed by the Kubernetes/storage administrator.
+
+=== Enable certificate-based authentication
+
+New and existing backends can use a certificate and communicate with the ONTAP backend. Three parameters are required in the backend definition.
+
+* clientCertificate: Base64-encoded value of client certificate.
+* clientPrivateKey: Base64-encoded value of associated private key.
+* trustedCACertificate: Base64-encoded value of trusted CA certificate. If using a trusted CA, this parameter must be provided. This can be ignored if no trusted CA is used.
+
+A typical workflow involves the following steps.
+
+.Steps
+
+. Generate a client certificate and key. When generating, set Common Name (CN) to the ONTAP user to authenticate as.
++
+----
+openssl req -x509 -nodes -days 1095 -newkey rsa:2048 -keyout k8senv.key -out k8senv.pem -subj "/C=US/ST=NC/L=RTP/O=NetApp/CN=admin"
+----
+. Add trusted CA certificate to the ONTAP cluster. This might be already handled by the storage administrator. Ignore if no trusted CA is used.
++
+----
+security certificate install -type server -cert-name <trusted-ca-cert-name> -vserver <vserver-name>
+ssl modify -vserver <vserver-name> -server-enabled true -client-enabled true -common-name <common-name> -serial <SN-from-trusted-CA-cert> -ca <cert-authority>
+----
+. Install the client certificate and key (from step 1) on the ONTAP cluster.
++
+----
+security certificate install -type client-ca -cert-name <certificate-name> -vserver <vserver-name>
+security ssl modify -vserver <vserver-name> -client-enabled true
+----
++
+NOTE: After running this command, ONTAP prompts for certificate input. Paste the contents of the `k8senv.pem` file generated in step 1, then enter `END` to complete the installation.
+. Confirm the ONTAP security login role supports `cert` authentication method.
++
+----
+security login create -user-or-group-name admin -application ontapi -authentication-method cert
+security login create -user-or-group-name admin -application http -authentication-method cert
+----
+. Test authentication using certificate generated. Replace <ONTAP Management LIF> and <vserver name> with Management LIF IP and SVM name.
++
+----
+curl -X POST -Lk https://<ONTAP-Management-LIF>/servlets/netapp.servlets.admin.XMLrequest_filer --key k8senv.key --cert ~/k8senv.pem -d '<?xml version="1.0" encoding="UTF-8"?><netapp xmlns="http://www.netapp.com/filer/admin" version="1.21" vfiler="<vserver-name>"><vserver-get></vserver-get></netapp>'
+----
+. Encode certificate, key and trusted CA certificate with Base64.
++
+----
+base64 -w 0 k8senv.pem >> cert_base64
+base64 -w 0 k8senv.key >> key_base64
+base64 -w 0 trustedca.pem >> trustedca_base64
+----
+. Create backend using the values obtained from the previous step.
++
+----
+cat cert-backend.json
+{
+"version": 1,
+"storageDriverName": "ontap-san",
+"backendName": "SanBackend",
+"managementLIF": "1.2.3.4",
+"svm": "vserver_test",
+"clientCertificate": "Faaaakkkkeeee...Vaaalllluuuueeee",
+"clientPrivateKey": "LS0tFaKE...0VaLuES0tLS0K",
+"trustedCACertificate": "QNFinfO...SiqOyN",
+"storagePrefix": "myPrefix_"
+}
+
+tridentctl create backend -f cert-backend.json -n trident
++------------+----------------+--------------------------------------+--------+---------+
+|    NAME    | STORAGE DRIVER |                 UUID                 | STATE  | VOLUMES |
++------------+----------------+--------------------------------------+--------+---------+
+| SanBackend | ontap-san      | 586b1cd5-8cf8-428d-a76c-2872713612c1 | online |       0 |
++------------+----------------+--------------------------------------+--------+---------+
+----
+
+=== Update authentication methods or rotate credentials
+
+You can update an existing backend to use a different authentication method or to rotate their credentials. This works both ways: backends that make use of username/password can be updated to use certificates; backends that utilize certificates can be updated to username/password based. To do this, you must remove the existing authentication method and add the new authentication method. Then use the updated backend.json file containing the required parameters to execute `tridentctl backend update`.
+
+----
+cat cert-backend-updated.json
+{
+"version": 1,
+"storageDriverName": "ontap-san",
+"backendName": "SanBackend",
+"managementLIF": "1.2.3.4",
+"svm": "vserver_test",
+"username": "vsadmin",
+"password": "password",
+"storagePrefix": "myPrefix_"
+}
+
+#Update backend with tridentctl
+tridentctl update backend SanBackend -f cert-backend-updated.json -n trident
++------------+----------------+--------------------------------------+--------+---------+
+|    NAME    | STORAGE DRIVER |                 UUID                 | STATE  | VOLUMES |
++------------+----------------+--------------------------------------+--------+---------+
+| SanBackend | ontap-san      | 586b1cd5-8cf8-428d-a76c-2872713612c1 | online |       9 |
++------------+----------------+--------------------------------------+--------+---------+
+----
+
+NOTE: When rotating passwords, the storage administrator must first update the password for the user on ONTAP. This is followed by a backend update. When rotating certificates, multiple certificates can be added to the user. The backend is then updated to use the new certificate, following which the old certificate can be deleted from the ONTAP cluster.
+
+Updating a backend does not disrupt access to volumes that have already been created, nor impact volume connections made after. A successful backend update indicates that Trident can communicate with the ONTAP backend and handle future volume operations.
+
+=== Create custom ONTAP role for Trident
+
+You can create an ONTAP cluster role with minimum privileges so that you do not have to use the ONTAP admin role to perform operations in Trident. When you include the username in a Trident backend configuration, Trident uses the ONTAP cluster role you created to perform the operations.
+
+Refer to link:https://github.com/NetApp/trident/tree/master/contrib/ontap/trident_role[Trident custom-role generator] for more information about creating Trident custom roles.
+
+[role="tabbed-block"]
+====
+
+.Using ONTAP CLI
+--
+. Create a new role using the following command:
++
+`security login role create <role_name\> -cmddirname "command" -access all –vserver <svm_name\>`
+. Create a usename for the Trident user:
++
+`security login create -username <user_name\> -application ontapi -authmethod <password\> -role <name_of_role_in_step_1\> –vserver <svm_name\> -comment "user_description"`
+. Map the role to the user:
++
+`security login modify username <user_name\> –vserver <svm_name\> -role <role_name\> -application ontapi -application console -authmethod <password\>`
+
+--
+
+.Using System Manager
+--
+
+Perform the following steps in ONTAP System Manager:
+
+. *Create a custom role*:
+.. To create a custom role at the cluster-level, select *Cluster > Settings*.
++
+(Or) To create a custom role at the SVM level, select *Storage > Storage VMs > `required SVM`> Settings > Users and Roles*.
+.. Select the arrow icon (*->*) next to *Users and Roles*.
+.. Select *+Add* under *Roles*.
+.. Define the rules for the role and click *Save*.
+. *Map the role to the Trident user*:
++ Perform the following steps on the *Users and Roles* page:
+.. Select Add icon *+* under *Users*.
+.. Select the required username, and select a role in the drop-down menu for *Role*.
+.. Click *Save*.
+
+--
+
+====
+
+Refer to the following pages for more information:
+
+* link:https://kb.netapp.com/on-prem/ontap/Ontap_OS/OS-KBs/FAQ__Custom_roles_for_administration_of_ONTAP[Custom roles for administration of ONTAP^] or link:https://docs.netapp.com/us-en/ontap/authentication/define-custom-roles-task.html[Define custom roles^]
+* link:https://docs.netapp.com/us-en/ontap-automation/rest/rbac_roles_users.html#rest-api[Work with roles and users^]
+
+== Authenticate connections with bidirectional CHAP
+
+Trident can authenticate iSCSI sessions with bidirectional CHAP for the `ontap-san` and `ontap-san-economy` drivers. This requires enabling the `useCHAP` option in your backend definition. When set to `true`, Trident configures the SVM's default initiator security to bidirectional CHAP and set the username and secrets from the backend file. NetApp recommends using bidirectional CHAP to authenticate connections. See the following sample configuration:
+[source,yaml]
+----
+---
+version: 1
+storageDriverName: ontap-san
+backendName: ontap_san_chap
+managementLIF: 192.168.0.135
+svm: ontap_iscsi_svm
+useCHAP: true
+username: vsadmin
+password: password
+chapInitiatorSecret: cl9qxIm36DKyawxy
+chapTargetInitiatorSecret: rqxigXgkesIpwxyz
+chapTargetUsername: iJF4heBRT0TCwxyz
+chapUsername: uh2aNCLSd6cNwxyz
+----
+
+WARNING: The `useCHAP` parameter is a Boolean option that can be configured only once. It is set to false by default. After you set it to true, you cannot set it to false.
+
+In addition to `useCHAP=true`, the `chapInitiatorSecret`, `chapTargetInitiatorSecret`, `chapTargetUsername`, and `chapUsername` fields must be included in the backend definition. The secrets can be changed after a backend is created by running `tridentctl update`.
+
+=== How it works
+
+By setting `useCHAP` to true, the storage administrator instructs Trident to configure CHAP on the storage backend. This includes the following:
+
+* Setting up CHAP on the SVM:
+** If the SVM's default initiator security type is none (set by default) *and* there are no pre-existing LUNs already present in the volume, Trident will set the default security type to `CHAP` and proceed to configuring the CHAP initiator and target username and secrets.
+** If the SVM contains LUNs, Trident will not enable CHAP on the SVM. This ensures that access to LUNs that are already present on the SVM isn't restricted.
+* Configuring the CHAP initiator and target username and secrets; these options must be specified in the backend configuration (as shown above).
+
+After the backend is created, Trident creates a corresponding `tridentbackend` CRD and stores the CHAP secrets and usernames as Kubernetes secrets. All PVs that are created by Trident on this backend will be mounted and attached over CHAP.
+
+=== Rotate credentials and update backends
+
+You can update the CHAP credentials by updating the CHAP parameters in the `backend.json` file. This will require updating the CHAP secrets and using the `tridentctl update` command to reflect these changes.
+
+WARNING: When updating the CHAP secrets for a backend, you must use `tridentctl` to update the backend. Do not update the credentials on the storage cluster using the ONTAP CLI or ONTAP System Manager as Trident will not be able to pick up these changes.
+
+----
+cat backend-san.json
+{
+    "version": 1,
+    "storageDriverName": "ontap-san",
+    "backendName": "ontap_san_chap",
+    "managementLIF": "192.168.0.135",
+    "svm": "ontap_iscsi_svm",
+    "useCHAP": true,
+    "username": "vsadmin",
+    "password": "password",
+    "chapInitiatorSecret": "cl9qxUpDaTeD",
+    "chapTargetInitiatorSecret": "rqxigXgkeUpDaTeD",
+    "chapTargetUsername": "iJF4heBRT0TCwxyz",
+    "chapUsername": "uh2aNCLSd6cNwxyz",
+}
+
+./tridentctl update backend ontap_san_chap -f backend-san.json -n trident
++----------------+----------------+--------------------------------------+--------+---------+
+|   NAME         | STORAGE DRIVER |                 UUID                 | STATE  | VOLUMES |
++----------------+----------------+--------------------------------------+--------+---------+
+| ontap_san_chap | ontap-san      | aa458f3b-ad2d-4378-8a33-1a472ffbeb5c | online |       7 |
++----------------+----------------+--------------------------------------+--------+---------+
+----
+
+Existing connections will remain unaffected; they will continue to remain active if the credentials are updated by Trident on the SVM. New connections use the updated credentials and existing connections continue to remain active. Disconnecting and reconnecting old PVs will result in them using the updated credentials.

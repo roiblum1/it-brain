@@ -1,0 +1,202 @@
+// Module included in the following assemblies:
+//
+// * documentation/doc-Planning_your_migration/assemblies/assembly_planning-migration-vmware.adoc
+
+:_mod-docs-content-type: PROCEDURE
+[id="proc_creating-plan-wizard-vmware_{context}"]
+= Creating a VMware vSphere migration plan by using the MTV wizard
+
+[role="_abstract"]
+You can migrate {vmw} vSphere virtual machines (VMs) from {vmw} vCenter or from a {vmw} ESX or ESXi server by using the {project-full} plan creation wizard.
+
+The wizard is designed to lead you step-by-step in creating a migration plan.
+
+Limitations::
+
+* Do not include virtual machines with guest-initiated storage connections, such as Internet Small Computer Systems Interface (iSCSI) connections or Network File System (NFS) mounts. These require either additional planning before migration or reconfiguration after migration. This prevents concurrent disk access to the storage the guest points to.
+
+* A plan cannot contain more than 500 VMs or 500 disks.
+
+[WARNING]
+====
+{project-first} cannot migrate {vmw} vSphere 6 and {vmw} vSphere 7 VMs to a FIPS-compliant {virt} cluster.
+====
+
+.Prerequisites
+
+* Have a {vmw} source provider and {a-virt} destination provider. For more information, see xref:proc_adding-source-provider_{context}[Adding a VMware vSphere source provider] or xref:proc_adding-virt-destination-provider_dest_{context}[Adding {a-virt} destination provider].
+* If you plan to create a *Network map* or a *Storage map* that will be used by more than one migration plan, create it in the *Network maps* or *Storage maps* page of the UI before you create a migration plan that uses that map.
+* If you are using a user-defined network (UDN), note the name of its namespace as defined in {virt}.
+
+.Procedure
+
+. On the {ocp} web console, click *Migration for Virtualization* > *Migration plans*.
+. Click *Create plan*.
++
+The *Create migration plan* wizard opens.
++
+// General page
+. On the *General* page, specify the following fields:
+
+* *Plan name*: Enter a name.
+* *Plan project*: Select from the list.
+* *Source provider*: Select from the list.
+* *Target provider*: Select from the list.
+* *Target project*: Click the list and do one of the following:
+
+.. Select an existing project from the list.
+.. Create a new project by clicking *Create project* and doing the following:
+
+... Enter the *Name* of the project. A project name must consist of lowercase alphanumeric characters or `-`. A project name must start and end with alphanumeric characters. For example, `my-name` or `123-abc`.
+... Optional: Enter a *Display name* for the project.
+... Optional: Enter a *Description* of the project.
+... Click *Create project*.
+
+. Click *Next*.
++
+// Virtual machines page
+. On the *Virtual machines* page, select the virtual machines you want to migrate and click *Next*.
+. If you are using a UDN, verify that the IP address of the provider is outside the subnet of the UDN. If the IP address is within the subnet of the UDN, the migration fails.
++
+// Network map page
+. On the *Network map* page, choose one of the following options:
+
+* *Use an existing network map*: Select an existing network map from the list.
++
+These are network maps available for all plans, and therefore, they are _ownerless_ in terms of the system. If you select this option and choose a map, a copy of that map is attached to your plan, and your plan is the _owner_ of that copy. Any changes you make to your copy do not affect the original plan or any copies that other users have.
++
+[NOTE]
+====
+If you choose an existing map, be sure it has the same source provider and the same target provider as the ones you want to use in your plan.
+====
+
+* *Use a new network map*: Allows you to create a new network map by supplying the following data. This map is attached to this plan, which is then considered to be its owner. Maps that you create using this option are not available in the *Use an existing network map* option because each is created with an owner.
++
+[NOTE]
+====
+You can create an ownerless network map, which you and others can use for additional migration plans, in the *Network maps* section of the UI.
+====
+
+** *Source network*: Select from the list.
+** *Target network*: Select from the list.
++
+If needed, click *Add mapping* to add another mapping.
+** *Network map name*: Enter a name or let {project-short} automatically generate a name for the network map.
+
+. Click *Next*.
++
+// Storage map page
+. On the *Storage map* page, choose one of the following options:
+
+* *Use an existing storage map*: Select an existing storage map from the list.
++
+These are storage maps available for all plans, and therefore, they are _ownerless_ in terms of the system. If you select this option and choose a map, a copy of that map is attached to your plan, and your plan is the _owner_ of that copy. Any changes you make to your copy do not affect the original plan or any copies that other users have.
++
+[NOTE]
+====
+If you choose an existing map, be sure it has the same source provider and the same target provider as the ones you want to use in your plan.
+====
+
+* *Use new storage map*: Allows you to create one or two new storage maps by supplying the following data. These maps are attached to this plan, which is then their owner. Maps that you create using this option are not available in the *Use an existing storage map* option because each is created with an owner.
++
+[NOTE]
+====
+You can create an ownerless storage map, which you and others can use for additional migration plans, in the *Storage maps* section of the UI.
+====
+
+** *Source storage*: Select from the list.
+** *Target storage*: Select from the list.
++
+If needed, click *Add mapping* to add another mapping.
+** *Storage map name*: Enter a name or let {project-short} automatically generate a name for the storage map.
+
+. Click *Next*.
++
+// Migration type page
+. On the *Migration type* page, choose one of the following:
+
+* *Cold migration* (default)
+* *Warm migration*
+
+. Click *Next*.
++
+// Other settings page
+. On the *Other settings (optional)* page, specify any of the following settings that are appropriate for your plan. All are optional.
+
+* *Disk decryption passphrases*: For disks encrypted using Linux Unified Key Setup (LUKS).
+
+** Enter a decryption passphrase for a LUKS-encrypted device.
+** To add another passphrase, click *Add passphrase* and add a passphrase.
+** Repeat as needed.
++
+You do not need to enter the passphrases in a specific order. For each LUKS-encrypted device, {project-short} tries each passphrase until one unlocks the device.
+
+* *Transfer Network*: The network used to transfer the VMs to {virt}. This is the default transfer network of the provider.
+
+** Verify that the transfer network is in the selected target project.
+
+** To choose a different transfer network, select a different transfer network from the list.
+** Optional: To configure another {ocp-short} network in the {ocp-short} web console, click *Networking > NetworkAttachmentDefinitions*.
++
+To learn more about the different types of networks {ocp-short} supports, see link:https://docs.redhat.com/en/documentation/openshift_container_platform/{ocp-version}/html-single/networking/index#additional-networks-provided_understanding-multiple-networks[Additional Networks in OpenShift Container Platform].
+
+** To adjust the maximum transmission unit (MTU) of the {ocp-short} transfer network, you must also change the MTU of the VMware migration network. For more information, see xref:proc_selecting-migration-network-for-vmware-source-provider_vmware[Selecting a migration network for a VMware source provider].
+
+* *Preserve static IPs*: By default, virtual network interface controllers (vNICs) change during the migration process. As a result, vNICs that are configured with a static IP linked to the interface name in the guest VM lose their IP during migration.
+
+** To preserve static IPs, select the *Preserve the static IPs* checkbox.
++
+{project-short} then issues a warning message about any VMs whose vNIC properties are missing. To retrieve any missing vNIC properties, run those VMs in vSphere. This causes the vNIC properties to be reported to {project-short}.
+
+* *Root device*: Applies to multi-boot VM migrations only. By default, {project-short} uses the first bootable device detected as the root device.
+
+** To specify a different root device, enter it in the text box.
++
+{project-short} uses the following format for disk location: `/dev/sd<disk_identifier><disk_partition>`. For example, if the second disk is the root device and the operating system is on the disk's second partition, the format would be: `/dev/sdb2`. After you enter the boot device, click *Save*.
++
+If the conversion fails because the boot device provided is incorrect, it is possible to get the correct information by checking the conversion pod logs.
+
+* *Shared disks*: Applies to cold migrations only. Shared disks are disks that are attached to multiple VMs and that use the multi-writer option. These characteristics make shared disks difficult to migrate. By default, {project-short} migrates shared disks.
++
+[NOTE]
+====
+Migrating shared disks might slow down the migration process.
+====
++
+** To migrate shared disks in the migration plan, verify that *Shared disks* is selected in the checkbox.
+** To avoid migrating shared disks, clear the *Shared disks* checkbox.
+
+. Click *Next*.
++
+// Hooks page
+. On the *Hooks (optional)* page, you can add a pre-migration hook, a post-migration hook, or both types of migration hooks. All are optional.
+
+. To add a hook, select the appropriate *Enable hook* checkbox.
+. Enter the *Hook runner image*.
+. Enter the *Ansible playbook* of the hook in the window.
++
+[NOTE]
+====
+You cannot include more than one pre-migration hook or more than one post-migration hook in a migration plan.
+====
+
+. Click *Next*.
++
+// Review and create page
+. On the *Review and create* page, review the information displayed.
+. Edit any item by doing the following:
+
+.. Click its *Edit step* link.
++
+The wizard opens to the page where you defined the item.
+.. Edit the item.
+.. Either click *Next* to advance to the next page of the wizard, or click *Skip to review* to return directly to the *Review and create* page.
+
+. When you finish reviewing the details of the plan, click *Create plan*.
++
+{project-short} validates your plan. When your plan is validated, the *Plan details* page for your plan opens. If everything is OK, the *Plan details* page for your plan opens. This page contains important settings that do not appear in the wizard.
+
+.Next steps
+
+* Configure plan settings on the *Plan details* page. For more information, see xref:proc_configuring-plan-settings-vmware_{context}[Configuring VMware migration plan settings].
+

@@ -1,0 +1,74 @@
+// Module included in the following assemblies:
+//
+// * documentation/doc-Planning_your_migration/assemblies/assembly_planning-migration-rhv.adoc
+
+:_mod-docs-content-type: PROCEDURE
+[id="proc_adding-source-provider_{context}"]
+= Adding {a-rhv} source provider
+
+[role="_abstract"]
+You can add {a-rhv} source provider by using the {ocp} web console.
+
+.Prerequisites
+
+* {manager} CA certificate. If the certificate was replaced by a third-party certificate, use the {manager} Apache CA certificate instead.
+
+.Procedure
+
+. Access the *Create provider* page for {rhv-full} by doing one of the following:
+
+* *From the Providers page:* In the {ocp} web console, click *Migration for Virtualization > Providers*, click *Create Provider*, select a *Project* from the list, and then click *{rhv-full}*.
+
+* *From the Overview page (Administrators only):* In the {ocp} web console, click *Migration for Virtualization > Overview*, click *{rhv-full}* in the *Welcome* pane, and select a *Project* from the list.
++
+[NOTE]
+====
+If the *Welcome* pane is not visible, click *Show the welcome card* in the upper-right corner of the page.
+====
++
+The default project depends on the active {project-short} project. If *All projects* is active, the default is +{namespace}+. Administrators can view all projects; authorized non-administrators see only their assigned projects.
+
+. Enter the provider details:
++
+* *Provider resource name*: Name of the source provider.
+* *URL*: URL of the API endpoint of the {rhv-full} Manager (RHVM) on which the source VM is mounted. Ensure that the URL includes the path leading to the RHVM API server, usually `/ovirt-engine/api`. For example, `https://rhv-host-example.com/ovirt-engine/api`.
+
+. Enter the provider credentials:
++
+* *Username*: Username
+* *Password*: Password
+
+. Choose one of the following options for validating CA certificates:
++
+** *Use a custom CA certificate*: Keep *Skip certificate validation* toggled left and provide the certificate:
++
+*** *Upload file:* Drag the certificate to the text box, or click *Browse* and click *Select*.
+*** *Fetch from URL:* Click *Fetch certificate from URL*, select *I trust the authenticity of this certificate*, and click *Confirm*.
+
+** *Use the system CA certificate*: Keep *Skip certificate validation* toggled left and leave the *CA certificate* text box empty.
+
+** *Skip certificate validation*: Toggle *Skip certificate validation* to the right.
+
+. Click *Create provider* to add and save the provider.
++
+The provider appears in the list of providers.
++
+[NOTE]
+====
+It might take a few minutes for the provider to move to the `Ready` status.
+====
+
+. Optional: Add access to the UI of the provider:
+.. On the *Providers* page, click the provider.
++
+The *Provider details* page opens.
+.. Click the *Edit* icon under *External UI web link*.
+.. Enter the link and click *Save*.
++
+[NOTE]
+====
+If you do not enter a link, {project-short} attempts to calculate the correct link.
+
+* If {project-short} succeeds, the hyperlink of the field points to the calculated link.
+* If {project-short} does not succeed, the field remains empty.
+====

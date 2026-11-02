@@ -1,0 +1,46 @@
+---
+id: payload-codec
+title: Payload Codec
+description: A Payload Codec performs bytes-to-bytes transformations on Temporal Payloads, often for compression and encryption.
+slug: /payload-codec
+toc_max_heading_level: 4
+tags:
+  - Concepts
+  - Encryption
+  - Data Converters
+  - Security
+---
+
+This page discusses [Payload Codec](#payload-codec).
+
+## What is a Payload Codec? {/* #payload-codec */}
+
+A Payload Codec transforms an array of [Payloads](/dataconversion#payload) (for example, a list of Workflow arguments) into another array of Payloads. Unlike Payload Converters, Payload Codecs do not operate within the Workflow sandbox.
+
+This allows them to execute operations that can include calls to remote services and the use of non-deterministic modules, which are critical for tasks such as encrypting Payloads, compressing data, or offloading large payloads to an object store. Payload Codecs can also be implemented as a Codec Server.
+
+When serializing to Payloads, the Payload Converter is applied first to convert your objects to bytes, followed by codecs that convert bytes to bytes. When deserializing from Payloads, codecs are applied first to last to reverse the effect, followed by the Payload Converter.
+
+Use a custom Payload Codec to transform your Payloads; for example, implementing compression and/or encryption on your Workflow Execution data.
+
+### Operational chain
+
+In practice, the [Payload Converter](/payload-converter) and Payload Codec operate in a chain to handle data securely. Incoming data first passes through a Payload Converter through the `toPayload` method, turning application objects into Payloads. These Payloads are then processed by the Payload Codec through the `encode` method, which adjusts the Payload according to the required security or efficiency needs before it is sent to the Temporal Cluster.
+
+The process is symmetric for outgoing data. Payloads retrieved from the Temporal Cluster first pass through the Payload Codec through the `decode` method, which reverses any transformations applied during encoding. Finally, the resulting Payload is converted back into an application object by the Payload Converter through the `fromPayload` method, making it ready for use within the application.
+
+### Encryption {/* #encryption */}
+
+Using end-to-end encryption in your custom Data Converter ensures that sensitive application data is secure when handled by the Temporal Server.
+
+Apply your encryption logic in a custom Payload Codec and use it locally to encrypt data.
+You maintain all the encryption keys, and the Temporal Server sees only encrypted data. Refer to [What is Key Management?](/key-management) for more guidance.
+
+Your data exists unencrypted only on the Client and the Worker process that is executing the Workflows and Activities, on hosts that you control. For details, see [Securing your data](/production-deployment/data-encryption).
+
+The following samples use encryption (AES GCM with 256-bit key) in a custom Data Converter:
+
+- [Go sample](https://github.com/temporalio/samples-go/tree/main/encryption)
+- [Java sample](https://github.com/temporalio/samples-java/tree/main/core/src/main/java/io/temporal/samples/encryptedpayloads)
+- [Python sample](https://github.com/temporalio/samples-python/tree/main/encryption)
+- [TypeScript sample](https://github.com/temporalio/samples-typescript/tree/main/encryption)

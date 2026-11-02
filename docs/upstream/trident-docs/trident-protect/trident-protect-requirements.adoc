@@ -1,0 +1,126 @@
+---
+sidebar: sidebar
+permalink: trident-protect/trident-protect-requirements.html
+keywords: trident protect, application, cluster, snapmirror replication, ontap, configuration
+summary: Get started by verifying the readiness of your operational environment, application clusters, applications, and licenses. Ensure that your environment meets these requirements to deploy and operate Trident Protect.
+---
+= Trident Protect requirements
+:hardbreaks:
+:nofooter:
+:icons: font
+:linkattrs:
+:imagesdir: ../media/
+
+[.lead]
+Get started by verifying the readiness of your operational environment, application clusters, applications, and licenses. Ensure that your environment meets these requirements to deploy and operate Trident Protect.
+
+== Trident Protect Kubernetes cluster compatibility
+
+Trident Protect is compatible with a wide range of fully managed and self-managed Kubernetes offerings, including:
+
+* Amazon Elastic Kubernetes Service (EKS)
+* Google Kubernetes Engine (GKE)
+* Microsoft Azure Kubernetes Service (AKS)
+* Red Hat OpenShift
+* SUSE Harvester 1.7.0 (ONTAP iSCSI)
+* SUSE Rancher
+* VMware Tanzu Portfolio
+* Upstream Kubernetes
+
+[NOTE]
+====
+* Trident Protect backups are supported on Linux compute nodes only. Windows compute nodes are not supported for backup operations.
+* Ensure that the cluster on which you install Trident Protect is configured with a running snapshot controller and the related CRDs. To install a snapshot controller, refer to https://docs.netapp.com/us-en/trident/trident-use/vol-snapshots.html#deploy-a-volume-snapshot-controller[these instructions].
+* Ensure that at least one VolumeSnapshotClass exists. For more information, refer to link:https://docs.netapp.com/us-en/trident/trident-reference/objects.html#kubernetes-volumesnapshotclass-objects[VolumeSnapshotClass].
+* Helm 4.x or later is required to install Trident Protect.
+====
+
+== Trident Protect storage backend compatibility
+Trident Protect supports the following storage backends:
+
+* Amazon FSx for NetApp ONTAP
+* Cloud Volumes ONTAP
+* ONTAP storage arrays
+* Google Cloud NetApp Volumes
+* Azure NetApp Files
+
+Ensure that your storage backend meets the following requirements:
+
+* Ensure that NetApp storage connected to the cluster is using Trident 24.02 or newer (Trident 24.10 is recommended). 
+//** If NetApp Trident is older than version 24.06.1 and you plan to use NetApp SnapMirror disaster recovery functionality, you need to manually enable Astra Control Provisioner.
+
+//* Ensure that you have the latest Astra Control Provisioner (installed and enabled by default as of Astra Trident 24.06.1).
+* Ensure that you have a NetApp ONTAP storage backend.
+* Ensure that you have configured an object storage bucket for storing backups.
+* Create any application namespaces that you plan to use for applications or application data management operations. Trident Protect does not create these namespaces for you; if you specify a nonexistent namespace in a custom resource, the operation will fail.
+
+== Requirements for nas-economy volumes
+Trident Protect supports backup and restore operations to nas-economy volumes. Snapshots, clones, and SnapMirror replication to nas-economy volumes are not currently supported. You need to enable a snapshot directory for each nas-economy volume you plan to use with Trident Protect.
+
+[NOTE]
+====
+Some applications are not compatible with volumes that use a snapshot directory. For these applications, you need to hide the snapshot directory by running the following command on the ONTAP storage system:
+[source,console]
+----
+nfs modify -vserver <svm> -v3-hide-snapshot enabled
+----
+====
+
+You can enable the snapshot directory by running the following command for each nas-economy volume, replacing `<volume-UUID>` with the UUID of the volume you want to change:
+[source,console]
+----
+tridentctl update volume <volume-UUID> --snapshot-dir=true --pool-level=true -n trident
+----
+
+NOTE: You can enable snapshot directories by default for new volumes by setting the Trident backend configuration option `snapshotDir` to `true`. Existing volumes are not affected.
+
+== Protecting data with KubeVirt VMs
+include::../_include/kubevirt-freeze.adoc[]
+
+To learn how to define applications and restore VMs with Trident Protect, see link:trident-protect-kubevirt-vms.html[Protect KubeVirt virtual machines with Trident Protect].
+
+== Requirements for SnapMirror replication
+NetApp SnapMirror replication is available for use with Trident Protect for the following ONTAP solutions:
+
+* On-premises NetApp FAS, AFF, and ASA systems. SnapMirror replication with Trident protect is not currently supported for ASA r2 systems.
+* NetApp ONTAP Select
+* NetApp Cloud Volumes ONTAP
+* Amazon FSx for NetApp ONTAP
+
+=== ONTAP cluster requirements for SnapMirror replication
+Ensure your ONTAP cluster meets the following requirements if you plan to use SnapMirror replication:
+
+* *NetApp Trident*: NetApp Trident must exist on both the source and destination Kubernetes clusters that utilize ONTAP as a backend. Trident Protect supports replication with NetApp SnapMirror technology using storage classes backed by the following drivers:
+** `ontap-nas`: NFS
+** `ontap-san`: iSCSI 
+** `ontap-san`: FC
+** `ontap-san`: NVMe/TCP (requires minimum ONTAP version 9.15.1)
+* *Licenses*: ONTAP SnapMirror asynchronous licenses using the Data Protection bundle must be enabled on both the source and destination ONTAP clusters. Refer to https://docs.netapp.com/us-en/ontap/data-protection/snapmirror-licensing-concept.html[SnapMirror licensing overview in ONTAP^] for more information.
++
+Beginning with ONTAP 9.10.1, all licenses are delivered as a NetApp license file (NLF), which is a single file that enables multiple features. Refer to link:https://docs.netapp.com/us-en/ontap/system-admin/manage-licenses-concept.html#licenses-included-with-ontap-one[Licenses included with ONTAP One^] for more information.
++
+NOTE: Only SnapMirror asynchronous protection is supported.
+
+=== Peering considerations for SnapMirror replication
+Ensure your environment meets the following requirements if you plan to use storage backend peering:
+
+* *Cluster and SVM*: The ONTAP storage backends must be peered. Refer to https://docs.netapp.com/us-en/ontap/peering/index.html[Cluster and SVM peering overview^] for more information. 
++
+[NOTE] 
+Ensure that the SVM names used in the replication relationship between two ONTAP clusters are unique.
++
+* *NetApp Trident and SVM*: The peered remote SVMs must be available to NetApp Trident on the destination cluster.
+* *Managed backends*: You need to add and manage ONTAP storage backends in Trident Protect to create a replication relationship.
+
+=== Trident / ONTAP configuration for SnapMirror replication
+Trident Protect requires that you configure at least one storage backend that supports replication for both the source and destination clusters. If the source and destination clusters are the same, the destination application should use a different storage backend than the source application for the best resiliency.
+
+=== Kubernetes cluster requirements for SnapMirror replication
+Ensure your Kubernetes clusters meet the following requirements:
+
+* *AppVault accessibility*: Both source and destination clusters must have network access to read from and write to the AppVault for application object replication.
+* *Network connectivity*: Configure firewall rules, bucket permissions, and IP allowlists to enable communication between both clusters and the AppVault across WANs.
+
+NOTE: Many enterprise environments implement strict firewall policies across WAN connections. Verify these network requirements with your infrastructure team before configuring replication.
+
+

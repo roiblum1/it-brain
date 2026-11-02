@@ -30,10 +30,17 @@ Branch: `claude/it-brain-multi-team-n7n6kg` — **not to be merged into team-bra
 - [x] Redbull Workflows (Temporal) pages in `knowledge/temporal/` from the orchestrator's docs site
 - [x] Graph: `scripts/brain_graph.py` → `graphify-out/graph.json` (CI-checked) and an Obsidian vault export (`docs/it-brain/GRAPH.md`)
 
+## Phase 0b — virtualization, routing, MCPs (this branch) ✅
+
+- [x] Virtualization team; areas `kubevirt` (deep dive), `powercli` (PowerShell / PowerCLI deep dive), `python` (Pydantic)
+- [x] Cross-team routing: `route` tool + `brain.py route`, `it-triage` skill, `tests/routing.json` (CI check `route`)
+- [x] MCPs: `kubevirt` toolset in the Kubernetes MCP; vendored read-only `temporal-mcp` (optional); ONTAP and Nutanix MCPs evaluated
+- [x] 13 snapshots: KubeVirt user guide + repo docs, CDI, HCO, Forklift/MTV, PowerShell, PowerCLI examples, Temporal + temporal-mcp, Pydantic + settings, Dell CSM, Trident
+
 ## Phase 1 — make it its own brain
 
 - [ ] Teams answer the **Decisions needed** below
-- [ ] Create the GitLab project `it-brain`, push this branch as its `main`, set *require code owner approval*
+- [ ] Owner creates the empty repo `roiblum1/it-brain` and gives the Claude GitHub App access; push this branch as its `main`; set *require code owner approval*
 - [ ] Replace placeholder group handles in `teams.json` (`@it-brain/<team>-team`), regenerate CODEOWNERS
 - [ ] Rename in one change: plugin `team-brain` → `it-brain`, `TEAM_BRAIN_DIR` → `IT_BRAIN_DIR` (keep the old name as
       a fallback for one release), cache `~/.cache/team-brain` → `~/.cache/it-brain`, skill prefixes, README / CLAUDE.md
@@ -65,13 +72,13 @@ Branch: `claude/it-brain-multi-team-n7n6kg` — **not to be merged into team-bra
 
 | # | Decision | Default on this branch | Who decides |
 |---|---|---|---|
-| 1 | Separate GitLab project `it-brain`, or keep growing team-brain | separate project (Phase 1) | all teams |
-| 2 | Owner of **VMware** and **Nutanix** (or a fourth *virtualization* team) | `ocp`, provisional | management |
+| 1 | Separate repo `it-brain`, or keep growing team-brain | **decided 2026-11-02: separate repo `roiblum1/it-brain`** (GitHub; the owner creates it and grants access) | owner |
+| 2 | Owner of **VMware** and **Nutanix** (or a fourth *virtualization* team) | **decided 2026-11-02: a Virtualization team** — owns vmware, nutanix, kubevirt, powercli | owner |
 | 3 | Owner of **ODF** | `storage`, provisional | ocp + storage |
 | 4 | Owner of **OADP** and **Commvault**, or a *backup* team | OADP `ocp`, Commvault `storage`, both provisional | ocp + storage |
 | 5 | Who owns the Avi / AKO controller and DNS/NTP/DHCP (no area yet) | AKO stays in `networking` (ocp) | ocp + network |
-| 6 | Real GitLab groups for CODEOWNERS | placeholders | each team |
-| 7 | Which vendor manuals we may store offline (licence) | none until confirmed | each owning team |
+| 6 | Real groups for CODEOWNERS | placeholders; the owner grants access personally for now | each team |
+| 7 | Which **paid vendor manuals** (Commvault, PAN-OS, APIC, PowerMax, VMware, Nutanix — not on public git) may be copied for offline search. Each vendor's terms decide; copies stay outside git (*vendor-drop*) | none until a team confirms per vendor | each owning team |
 | 8 | Does any cluster use the **ACI CNI** instead of OVN-Kubernetes | assumed no | ocp + network |
 | 9 | Is FC zoning storage or network | storage (SAN) | storage + network |
 | 10 | Who owns Prefect, Airflow, Spark, ECK / Elastic, Solr, MongoDB (a *data platform* team?) | `ocp`, provisional | management |

@@ -3,10 +3,10 @@
 # @-mentioned in the MR description; they are not required approvers.
 
 # Default: anything not matched below (tooling, docs, CI) — any team's maintainers.
-* @it-brain/network-team @it-brain/ocp-team @it-brain/storage-team
+* @it-brain/network-team @it-brain/ocp-team @it-brain/storage-team @it-brain/virtualization-team
 
 # Cross-team contracts: every team (each page names its parties in `teams:`).
-/interfaces/ @it-brain/network-team @it-brain/ocp-team @it-brain/storage-team
+/interfaces/ @it-brain/network-team @it-brain/ocp-team @it-brain/storage-team @it-brain/virtualization-team
 
 /knowledge/airflow/ @it-brain/ocp-team
 /runbooks/airflow/ @it-brain/ocp-team
@@ -34,16 +34,18 @@
 /runbooks/hypershift/ @it-brain/ocp-team
 /knowledge/kubernetes/ @it-brain/ocp-team
 /runbooks/kubernetes/ @it-brain/ocp-team
-/knowledge/meta/ @it-brain/network-team @it-brain/ocp-team @it-brain/storage-team
-/runbooks/meta/ @it-brain/network-team @it-brain/ocp-team @it-brain/storage-team
+/knowledge/kubevirt/ @it-brain/virtualization-team
+/runbooks/kubevirt/ @it-brain/virtualization-team
+/knowledge/meta/ @it-brain/network-team @it-brain/ocp-team @it-brain/storage-team @it-brain/virtualization-team
+/runbooks/meta/ @it-brain/network-team @it-brain/ocp-team @it-brain/storage-team @it-brain/virtualization-team
 /knowledge/mongodb/ @it-brain/ocp-team
 /runbooks/mongodb/ @it-brain/ocp-team
 /knowledge/netapp-ontap/ @it-brain/storage-team
 /runbooks/netapp-ontap/ @it-brain/storage-team
 /knowledge/networking/ @it-brain/ocp-team
 /runbooks/networking/ @it-brain/ocp-team
-/knowledge/nutanix/ @it-brain/ocp-team
-/runbooks/nutanix/ @it-brain/ocp-team
+/knowledge/nutanix/ @it-brain/virtualization-team
+/runbooks/nutanix/ @it-brain/virtualization-team
 /knowledge/oadp/ @it-brain/ocp-team
 /runbooks/oadp/ @it-brain/ocp-team
 /knowledge/observability/ @it-brain/ocp-team
@@ -54,8 +56,12 @@
 /runbooks/openshift/ @it-brain/ocp-team
 /knowledge/palo-alto/ @it-brain/network-team
 /runbooks/palo-alto/ @it-brain/network-team
+/knowledge/powercli/ @it-brain/virtualization-team
+/runbooks/powercli/ @it-brain/virtualization-team
 /knowledge/prefect/ @it-brain/ocp-team
 /runbooks/prefect/ @it-brain/ocp-team
+/knowledge/python/ @it-brain/ocp-team
+/runbooks/python/ @it-brain/ocp-team
 /knowledge/registry-mirroring/ @it-brain/ocp-team
 /runbooks/registry-mirroring/ @it-brain/ocp-team
 /knowledge/security/ @it-brain/ocp-team
@@ -74,7 +80,7 @@
 /runbooks/temporal/ @it-brain/ocp-team
 /knowledge/trident/ @it-brain/storage-team
 /runbooks/trident/ @it-brain/storage-team
-/knowledge/vmware/ @it-brain/ocp-team
-/runbooks/vmware/ @it-brain/ocp-team
+/knowledge/vmware/ @it-brain/virtualization-team
+/runbooks/vmware/ @it-brain/virtualization-team
 /knowledge/vsphere/ @it-brain/ocp-team
 /runbooks/vsphere/ @it-brain/ocp-team

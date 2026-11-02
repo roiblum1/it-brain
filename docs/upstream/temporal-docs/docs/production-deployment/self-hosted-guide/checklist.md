@@ -1,0 +1,128 @@
+---
+id: checklist
+title: Temporal Platform's production readiness checklist
+sidebar_label: Production checklist
+description: Prepare a self-hosted Temporal Service for production with guidance on scaling, metrics, load testing, and Workflow versioning.
+slug: /self-hosted-guide/production-checklist
+toc_max_heading_level: 4
+tags:
+  - Temporal Service
+  - Self-hosting
+  - Durable Execution
+---
+
+This page covers common challenges you'll face when self-hosting Temporal for production, along with recommendations and key tests to address them.
+
+:::note
+
+This guide covers self-hosted deployments. If you're weighing self-hosting against a managed offering, see [Temporal Cloud versus self-hosted Temporal](/evaluate/features/cloud-vs-self-hosted-features).
+
+:::
+
+## Self-hosting challenge areas
+
+Resolving these challenges takes significant engineering and ongoing effort:
+
+- Scalability with spiky or growing workloads
+- Global hosting
+- Uptime, availability and reliability
+- Management and control plane
+- Latency, which you must keep low and consistent
+- [Security](/self-hosted-guide/security)
+- Maintenance and upgrades
+- Expert support to users of the service
+- Cost management
+
+Each of these components is an essential part of building a mission critical Temporal Service.
+Without demonstrated architectural durability, Temporal's [Durable Execution](https://temporal.io/how-it-works) model loses its value.
+
+## Scalability with variable or growing workloads {/* #scaling-and-metrics */}
+
+Workloads can be highly variable, and you may experience sustained workload spikes.
+Temporal recommends scaling your Temporal Service well above the average throughput.
+See [Scaling Temporal: The Basics](https://temporal.io/blog/scaling-temporal-the-basics) for an introduction to the topic.
+
+Temporal server throughput is often limited by the number of [Shards](/temporal-service/temporal-server#history-shard) configured for the Temporal Service.
+A Shard is a unit within a Temporal Service that scales concurrent Workflow Execution throughput.
+You set Shard capacity, and often overall Temporal Service throughput, at build time and can't adjust it later.
+Adding more Shards if needed requires a rebuild and a migration to the new Temporal Service.
+
+The requirements of your Temporal Service will vary widely based on your intended production workload.
+You will want to run your own proof of concept tests and watch for key metrics to understand the system health and scaling needs.
+
+**Load testing.** You can use [the Omes benchmarking tool](https://github.com/temporalio/omes/), see how we [stress test Temporal](https://temporal.io/blog/temporal-deep-dive-stress-testing/), or write your own.
+
+Temporal's source [lists](https://github.com/temporalio/temporal/blob/main/common/metrics/metric_defs.go) all metrics the server emits.
+There are also equivalent metrics that you can configure from the client side.
+At a high level, you will want to track these 3 categories of metrics:
+
+- **Service metrics**: For each request made by the service handler we emit `service_requests`, `service_errors`, and `service_latency` metrics with `type`, `operation`, and `namespace` tags.
+  This gives you basic visibility into service usage and allows you to look at request rates across services, namespaces and even operations.
+- **Persistence metrics**: The Server emits `persistence_requests`, `persistence_errors` and `persistence_latency` metrics for each persistence operation.
+  These metrics include the `operation` tag such that you can get the request rates, error rates or latencies per operation.
+  These are super useful in identifying issues caused by the database.
+- **Workflow Execution stats**: The Server also emits counters for when Workflow Executions are complete.
+  These are useful in getting overall stats about Workflow Execution completions.
+  Use `workflow_success`, `workflow_failed`, `workflow_timeout`, `workflow_terminate` and `workflow_cancel` counters for each type of Workflow Execution completion.
+  These include the `namespace` tag.
+
+## Availability
+
+A high level of availability and reliability (99.99%) is a requirement for mission critical deployments. Temporal recommends testing for this availability level while load testing. We also recommend validating this level of reliability while doing server upgrades, to ensure no loss of service availability.
+
+You can deploy Temporal Services in as many regions as you need to meet various requirements:
+
+- Data Residency
+- Latency
+- Security / Isolation
+
+## Management and control plane
+
+As your use of Temporal increases, you may go from having one or two production use cases in a single region to many use cases in many regions.
+Running multiple Temporal Services is complex work, as each needs its own setup, tuning, and configuration.
+
+Needing to monitor and manage all your Temporal Services in a unified way leads to operational management pain.
+Consider adding a layer on top of Temporal to manage multiple Temporal Services: a control plane.
+A control plane manages and directs data flow, and decides where to send data packets.
+Since Temporal does not ship its own open source control plane, building, and maintaining one is your responsibility.
+
+Self-hosted Temporal doesn't support role-based access control (RBAC) or audit logging out of the box. If your organization requires them, plan to build RBAC, audit logging, and related access controls into your control plane.
+
+## Maintenance and upgrades
+
+Temporal recommends keeping up-to-date and not falling behind on your server versions.
+
+Temporal Server is proactively updated, and releases as often as every two weeks.
+Temporal recommends [upgrading sequentially](/self-hosted-guide/upgrade-server), not skipping any minor versions, although you can skip patch versions.
+Temporal does not guarantee support for Temporal Server, but old servers will be hard for even the community to support, so we encourage you to keep up to date.
+You must create and maintain the infrastructure to host and run your self-hosted Temporal installation, such as Kubernetes, and data stores for persistence.
+
+Server upgrades can negatively affect self-hosted Temporal Service availability.
+Temporal recommends load and availability testing during the upgrade process to understand the performance implications.
+
+## Expert support
+
+Temporal recommends that customer platform teams who are building out a Temporal service gain deep experience across the lifecycle and breadth of a Temporal Application.
+
+Specific activities include:
+
+- [Worker tuning](/develop/worker-performance)
+- [Worker best practices](/workers)
+- Code reviews
+- Design guidance
+- Training
+- Security reviews
+- [Metrics](/references/sdk-metrics) and monitoring
+- Technical onboarding
+
+## Cost management
+
+Running a mission critical, global Temporal Service can be expensive.
+Temporal Server is a complex system to run and scale.
+Temporal recommends performance testing and planning scaling as your performance requirements evolve.
+Following our guidance can oversize your self-hosted Temporal Server installs, but this is necessary to handle unpredictable spiky workloads.
+Performance testing can help you right-size your environments.
+Running a mission-critical Temporal Service requires [Multi-Cluster Replication](/self-hosted-guide/multi-cluster-replication) for high availability and global coverage.
+
+It's a good practice to have trained, experienced administrators familiar with Temporal Service architecture to maintain your Temporal servers and provide a mission critical service.
+Staffing, training, and skill development can be significant costs to maintaining a Temporal Service.

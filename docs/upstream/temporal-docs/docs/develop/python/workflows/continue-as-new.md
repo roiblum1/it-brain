@@ -1,0 +1,111 @@
+---
+id: continue-as-new
+title: Continue-As-New
+sidebar_label: Continue-As-New
+description: Use Temporal's Continue-As-New in Python to manage large Event Histories by atomically creating new Workflow Executions with the same Workflow Id and fresh parameters.
+toc_max_heading_level: 2
+tags:
+  - Workflows
+  - continue-as-new
+  - Python SDK
+  - Temporal SDKs
+---
+
+This page covers the following for Python developers:
+
+- [What is Continue-As-New?](#what)
+- [Use Continue-As-New](#how)
+- [When is it right to Continue-As-New?](#when)
+- [Test Continue-As-New](#how-to-test)
+
+## What is Continue-As-New? {/* #what */}
+
+[Continue-As-New](/workflow-execution/continue-as-new) lets a Workflow Execution close successfully and creates a new Workflow Execution.
+You can think of it as a checkpoint when your Workflow gets too long or approaches certain scaling limits.
+
+The new Workflow Execution is in the same [chain](/workflow-execution#workflow-execution-chain); it keeps the same Workflow Id but gets a new Run Id and a fresh Event History.
+It also receives your Workflow's usual parameters.
+
+## Use Continue-As-New with the Python SDK {/* #how */}
+
+First, design your Workflow parameters so that you can pass in the "current state" when you Continue-As-New into the next Workflow run.
+This state is typically set to `None` for the original caller of the Workflow.
+
+<!--SNIPSTART python-continue-as-new-input-->
+[python-sandbox/workflows/continue_as_new/workflow.py](https://github.com/temporalio/documentation-sdk-code-examples/blob/main/python-sandbox/workflows/continue_as_new/workflow.py)
+```py
+@dataclass
+class ClusterManagerInput:
+    state: Optional[ClusterManagerState] = None
+    test_continue_as_new: bool = False
+
+
+@workflow.defn
+class ClusterManagerWorkflow:
+    @workflow.init
+    def __init__(self, input: ClusterManagerInput) -> None:
+        # The original caller passes state=None. Later runs receive the state from the previous run.
+        self.state = input.state or ClusterManagerState()
+        # Test hook: use a small history limit so tests reach Continue-As-New quickly.
+        self.max_history_length: Optional[int] = (
+            120 if input.test_continue_as_new else None
+        )
+
+    @workflow.run
+    async def run(self, input: ClusterManagerInput) -> ClusterManagerResult:
+```
+<!--SNIPEND-->
+
+The test hook in the above snippet is covered [below](#how-to-test).
+
+Inside your Workflow, call the [`continue_as_new()`](https://python.temporal.io/temporalio.workflow.html#continue_as_new) function with the same type.
+This stops the Workflow right away and starts a new one.
+
+<!--SNIPSTART python-continue-as-new-call-->
+[python-sandbox/workflows/continue_as_new/workflow.py](https://github.com/temporalio/documentation-sdk-code-examples/blob/main/python-sandbox/workflows/continue_as_new/workflow.py)
+```py
+workflow.continue_as_new(
+    ClusterManagerInput(
+        state=self.state,
+        test_continue_as_new=input.test_continue_as_new,
+    )
+)
+```
+<!--SNIPEND-->
+
+### Considerations for Workflows with message handlers {/* #with-message-handlers */}
+
+If you use Updates or Signals, don't call Continue-as-New from the handlers.
+Instead, wait for your handlers to finish in your main Workflow before you run `continue_as_new`.
+See the [`all_handlers_finished`](message-passing#wait-for-message-handlers) example for guidance.
+
+## When is it right to Continue-As-New with the Python SDK? {/* #when */}
+
+Use Continue-as-New when your Workflow might encounter degraded performance or [Event History Limits](/workflow-execution/event#event-history).
+
+Temporal tracks your Workflow's progress against these limits to let you know when you should Continue-as-New.
+Call `workflow.info().is_continue_as_new_suggested()` to check if it's time.
+
+## Test Continue-As-New with the Python SDK {/* #how-to-test */}
+
+Testing Workflows that naturally Continue-as-New may be time-consuming and resource-intensive.
+Instead, add a test hook to check your Workflow's Continue-as-New behavior faster in automated tests.
+
+For example, when `test_continue_as_new == True`, this sample creates a test-only variable called `self.max_history_length` and sets it to a small value.
+A helper method in the Workflow checks it each time it considers using Continue-as-New:
+
+<!--SNIPSTART python-continue-as-new-should-continue-->
+[python-sandbox/workflows/continue_as_new/workflow.py](https://github.com/temporalio/documentation-sdk-code-examples/blob/main/python-sandbox/workflows/continue_as_new/workflow.py)
+```py
+def should_continue_as_new(self) -> bool:
+    if workflow.info().is_continue_as_new_suggested():
+        return True
+    # For testing
+    if (
+        self.max_history_length
+        and workflow.info().get_current_history_length() > self.max_history_length
+    ):
+        return True
+    return False
+```
+<!--SNIPEND-->

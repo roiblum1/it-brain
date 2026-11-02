@@ -1,0 +1,7 @@
+repo: kubevirt/containerized-data-importer
+ref: main
+commit: 15b1fc5958919ae6f50d7165b1ce14a9ce3c8167
+latest_tag: v1.66.1
+paths: doc, README.md
+files: 40
+synced: 2026-11-02T21:36:17Z

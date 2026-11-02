@@ -1,0 +1,52 @@
+---
+id: payload-converter
+title: Payload Converter
+description: A Payload Converter serializes and deserializes values to and from bytes for use in the Temporal SDK.
+slug: /payload-converter
+toc_max_heading_level: 4
+tags:
+  - Concepts
+  - Encryption
+  - Data Converters
+  - Security
+---
+
+This page discusses [Payload Converter](#payload-converter).
+
+## What is a Payload Converter? {/* #payload-converter */}
+
+A Payload Converter serializes data, converting values to bytes and back. This is how you can serialize application objects into a Payload and deserialize them back into application objects.
+
+A Payload, in this context, is a binary form suitable for network transmission that may include some metadata. This serialization process transforms an object (like those in JSON or Protobuf formats) into a binary format and vice versa. For example, an object might be serialized to JSON with UTF-8 byte encoding or to a protobuf binary using a specific set of protobuf message definitions.
+
+When you initiate a Workflow Execution through a Client and pass data as input, the input is serialized using a Data Converter that runs it through a set of Payload Converters. When your Workflow Execution starts, this data input is deserialized and passed as input to your Workflow.
+
+Due to their operation within the Workflow context, Payload Converters run inside the Workflow sandbox. Consequently, Payload Converters cannot access external services or employ non-deterministic modules, which excludes most types of encryption due to their non-deterministic nature.
+
+### Composite Data Converters {/* #composite-data-converters */}
+
+A Composite Data Converter is used to apply custom, type-specific Payload Converters in a specified order.
+A Composite Data Converter can be comprised of custom rules that you created, and it can also leverage the default Data Converters built into Temporal.
+In fact, the default Data Converter logic is implemented internally in the Temporal source as a Composite Data Converter. It defines these rules in this order:
+
+```go
+defaultDataConverter = NewCompositeDataConverter(
+    NewNilPayloadConverter(),
+    NewByteSlicePayloadConverter(),
+    NewProtoJSONPayloadConverter(),
+    NewProtoPayloadConverter(),
+    NewJSONPayloadConverter(),
+)
+```
+
+The order in which the Payload Converters are applied is important.
+During serialization, the Data Converter tries the Payload Converters in that specific order until a Payload Converter returns a non-nil Payload.
+A custom PayloadConverter must implement the functions:
+
+- `FromPayload` (for a single value) or
+- `FromPayloads` (for a list of values) to convert to values from a Payload, and
+- `ToPayload` (for a single value) or
+- `ToPayloads` (for a list of values) to convert values to a Payload.
+
+Defining a new Composite Data Converter is not always necessary to implement custom data handling.
+Each SDK allows you to override or configure the default Converter with a custom Payload Codec.

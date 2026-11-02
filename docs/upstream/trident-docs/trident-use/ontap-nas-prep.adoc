@@ -1,0 +1,491 @@
+---
+sidebar: sidebar
+permalink: trident-use/ontap-nas-prep.html
+keywords: trident backend, ontap nas, ontap-nas, ontap-nas-economy, ontap-nas-flexgroups
+summary: Understand the requirements, authentication options, and export policies for configuring an ONTAP backend with ONTAP NAS drivers.
+---
+
+= Prepare to configure a backend with ONTAP NAS drivers
+:hardbreaks:
+:icons: font
+:imagesdir: ../media/
+
+[.lead]
+Understand the requirements, authentication options, and export policies for configuring an ONTAP backend with ONTAP NAS drivers. Beginning with the 25.10 release, NetApp Trident supports link:https://docs.netapp.com/us-en/ontap-afx/index.html[NetApp AFX storage system^]. NetApp AFX storage systems differ from other ONTAP systems (ASA, AFF, and FAS) in the implementation of their storage layer. In the Trident backend configuration, you need not specify that your system is AFX. When you select `ontap-nas` as the `storageDriverName`, Trident detects automatically the AFX systems. 
+
+NOTE: Only the `ontap-nas` driver (with NFS protocol) is supported for  AFX systems; SMB protocol is not supported.
+
+== Requirements
+* For all ONTAP backends, Trident requires at least one aggregate be assigned to the SVM.
+* You can run more than one driver, and create storage classes that point to one or the other. For example, you could configure a Gold class that uses the `ontap-nas` driver and a Bronze class that uses the `ontap-nas-economy` one.
+* All your Kubernetes worker nodes must have the appropriate NFS tools installed. Refer to link:worker-node-prep.html[here] for more details.
+* Trident supports SMB volumes mounted to pods running on Windows nodes only. Refer to <<Prepare to provision SMB volumes>> for details. 
+
+== Authenticate the ONTAP backend
+
+Trident offers two modes of authenticating an ONTAP backend.
+
+* Credential-based: This mode requires sufficient permissions to the ONTAP backend. It is recommended to use an account associated with a pre-defined security login role, such as `admin` or `vsadmin` to ensure maximum compatibility with ONTAP versions.
+* Certificate-based: This mode requires a certificate installed on the backend for Trident to communicate with an ONTAP cluster. Here, the backend definition must contain Base64-encoded values of the client certificate, key, and the trusted CA certificate if used (recommended).
+
+You can update existing backends to move between credential-based and certificate-based methods. However, only one authentication method is supported at a time. To switch to a different authentication method, you must remove the existing method from the backend configuration.
+
+WARNING: If you attempt to provide *both credentials and certificates*, backend creation will fail with an error that more than one authentication method was provided in the configuration file. 
+
+=== Enable credential-based authentication
+
+Trident requires the credentials to an SVM-scoped/cluster-scoped admin to communicate with the ONTAP backend. It is recommended to make use of standard, pre-defined roles such as `admin` or `vsadmin`. This ensures forward compatibility with future ONTAP releases that might expose feature APIs to be used by future Trident releases. A custom security login role can be created and used with Trident, but is not recommended.
+
+A sample backend definition will look like this:
+
+// start tabbed area
+
+[role="tabbed-block"]
+====
+
+.YAML
+--
+[source,yaml]
+----
+---
+version: 1
+backendName: ExampleBackend
+storageDriverName: ontap-nas
+managementLIF: 10.0.0.1
+dataLIF: 10.0.0.2
+svm: svm_nfs
+credentials:
+  name: secret-backend-creds
+----
+--
+
+.JSON
+--
+[source,json]
+----
+{
+  "version": 1,
+  "backendName": "ExampleBackend",
+  "storageDriverName": "ontap-nas",
+  "managementLIF": "10.0.0.1",
+  "dataLIF": "10.0.0.2",
+  "svm": "svm_nfs",
+  "credentials": {
+        "name": "secret-backend-creds"
+    }
+}
+----
+--
+====
+
+// end tabbed area
+
+
+Keep in mind that the backend definition is the only place the credentials are stored in plain text. After the backend is created, usernames/passwords are encoded with Base64 and stored as Kubernetes secrets. The creation/updation of a backend is the only step that requires knowledge of the credentials. As such, it is an admin-only operation, to be performed by the Kubernetes/storage administrator.
+
+=== Enable certificate-based Authentication
+
+New and existing backends can use a certificate and communicate with the ONTAP backend. Three parameters are required in the backend definition.
+
+* clientCertificate: Base64-encoded value of client certificate.
+* clientPrivateKey: Base64-encoded value of associated private key.
+* trustedCACertificate: Base64-encoded value of trusted CA certificate. If using a trusted CA, this parameter must be provided. This can be ignored if no trusted CA is used.
+
+A typical workflow involves the following steps.
+
+.Steps
+
+. Generate a client certificate and key. When generating, set Common Name (CN) to the ONTAP user to authenticate as.
++
+----
+openssl req -x509 -nodes -days 1095 -newkey rsa:2048 -keyout k8senv.key -out k8senv.pem -subj "/C=US/ST=NC/L=RTP/O=NetApp/CN=vsadmin"
+----
+. Add trusted CA certificate to the ONTAP cluster. This might be already handled by the storage administrator. Ignore if no trusted CA is used.
++
+----
+security certificate install -type server -cert-name <trusted-ca-cert-name> -vserver <vserver-name>
+ssl modify -vserver <vserver-name> -server-enabled true -client-enabled true -common-name <common-name> -serial <SN-from-trusted-CA-cert> -ca <cert-authority>
+----
+. Install the client certificate and key (from step 1) on the ONTAP cluster.
++
+----
+security certificate install -type client-ca -cert-name <certificate-name> -vserver <vserver-name>
+security ssl modify -vserver <vserver-name> -client-enabled true
+----
+. Confirm the ONTAP security login role supports `cert` authentication method.
++
+----
+security login create -user-or-group-name vsadmin -application ontapi -authentication-method cert -vserver <vserver-name> 
+security login create -user-or-group-name vsadmin -application http -authentication-method cert -vserver <vserver-name>
+----
+. Test authentication using certificate generated. Replace <ONTAP Management LIF> and <vserver name> with Management LIF IP and SVM name. You must ensure the LIF has its service policy set to `default-data-management`.
++
+----
+curl -X POST -Lk https://<ONTAP-Management-LIF>/servlets/netapp.servlets.admin.XMLrequest_filer --key k8senv.key --cert ~/k8senv.pem -d '<?xml version="1.0" encoding="UTF-8"?><netapp xmlns="http://www.netapp.com/filer/admin" version="1.21" vfiler="<vserver-name>"><vserver-get></vserver-get></netapp>'
+----
+. Encode certificate, key and trusted CA certificate with Base64.
++
+----
+base64 -w 0 k8senv.pem >> cert_base64
+base64 -w 0 k8senv.key >> key_base64
+base64 -w 0 trustedca.pem >> trustedca_base64
+----
+. Create backend using the values obtained from the previous step.
++
+----
+cat cert-backend-updated.json
+{
+"version": 1,
+"storageDriverName": "ontap-nas",
+"backendName": "NasBackend",
+"managementLIF": "1.2.3.4",
+"dataLIF": "1.2.3.8",
+"svm": "vserver_test",
+"clientCertificate": "Faaaakkkkeeee...Vaaalllluuuueeee",
+"clientPrivateKey": "LS0tFaKE...0VaLuES0tLS0K",
+"storagePrefix": "myPrefix_"
+}
+
+#Update backend with tridentctl
+tridentctl update backend NasBackend -f cert-backend-updated.json -n trident
++------------+----------------+--------------------------------------+--------+---------+
+|    NAME    | STORAGE DRIVER |                 UUID                 | STATE  | VOLUMES |
++------------+----------------+--------------------------------------+--------+---------+
+| NasBackend | ontap-nas      | 98e19b74-aec7-4a3d-8dcf-128e5033b214 | online |       9 |
++------------+----------------+--------------------------------------+--------+---------+
+----
+
+=== Update authentication methods or rotate credentials
+
+You can update an existing backend to use a different authentication method or to rotate their credentials. This works both ways: backends that make use of username/password can be updated to use certificates; backends that utilize certificates can be updated to username/password based. To do this, you must remove the existing authentication method and add the new authentication method. Then use the updated backend.json file containing the required parameters to execute `tridentctl update backend`.
+
+----
+cat cert-backend-updated.json
+----
+[source,json]
+----
+{
+"version": 1,
+"storageDriverName": "ontap-nas",
+"backendName": "NasBackend",
+"managementLIF": "1.2.3.4",
+"dataLIF": "1.2.3.8",
+"svm": "vserver_test",
+"username": "vsadmin",
+"password": "password",
+"storagePrefix": "myPrefix_"
+}
+----
+----
+#Update backend with tridentctl
+tridentctl update backend NasBackend -f cert-backend-updated.json -n trident
++------------+----------------+--------------------------------------+--------+---------+
+|    NAME    | STORAGE DRIVER |                 UUID                 | STATE  | VOLUMES |
++------------+----------------+--------------------------------------+--------+---------+
+| NasBackend | ontap-nas      | 98e19b74-aec7-4a3d-8dcf-128e5033b214 | online |       9 |
++------------+----------------+--------------------------------------+--------+---------+
+----
+
+NOTE: When rotating passwords, the storage administrator must first update the password for the user on ONTAP. This is followed by a backend update. When rotating certificates, multiple certificates can be added to the user. The backend is then updated to use the new certificate, following which the old certificate can be deleted from the ONTAP cluster.
+
+Updating a backend does not disrupt access to volumes that have already been created, nor impact volume connections made after. A successful backend update indicates that Trident can communicate with the ONTAP backend and handle future volume operations.
+
+=== Create custom ONTAP role for Trident
+
+You can create an ONTAP cluster role with minimum privileges so that you do not have to use the ONTAP admin role to perform operations in Trident. When you include the username in a Trident backend configuration, Trident uses the ONTAP cluster role you created to perform the operations.
+
+Refer to link:https://github.com/NetApp/trident/tree/master/contrib/ontap/trident_role[Trident custom-role generator] for more information about creating Trident custom roles.
+
+[role="tabbed-block"]
+====
+
+.Using ONTAP CLI
+--
+. Create a new role using the following command:
++
+`security login role create <role_name\> -cmddirname "command" -access all –vserver <svm_name\>`
+. Create a usename for the Trident user:
++
+`security login create -username <user_name\> -application ontapi -authmethod <password\> -role <name_of_role_in_step_1\> –vserver <svm_name\> -comment "user_description"`
+. Map the role to the user:
++
+`security login modify username <user_name\> –vserver <svm_name\> -role <role_name\> -application ontapi -application console -authmethod <password\>`
+
+--
+
+.Using System Manager
+--
+
+Perform the following steps in ONTAP System Manager:
+
+. *Create a custom role*:
+.. To create a custom role at the cluster-level, select *Cluster > Settings*.
++
+(Or) To create a custom role at the SVM level, select *Storage > Storage VMs > `required SVM`> Settings > Users and Roles*.
+.. Select the arrow icon (*->*) next to *Users and Roles*.
+.. Select *+Add* under *Roles*.
+.. Define the rules for the role and click *Save*.
+. *Map the role to the Trident user*:
++ Perform the following steps on the *Users and Roles* page:
+.. Select Add icon *+* under *Users*.
+.. Select the required username, and select a role in the drop-down menu for *Role*.
+.. Click *Save*.
+
+--
+
+====
+
+Refer to the following pages for more information:
+
+* link:https://kb.netapp.com/on-prem/ontap/Ontap_OS/OS-KBs/FAQ__Custom_roles_for_administration_of_ONTAP[Custom roles for administration of ONTAP^] or link:https://docs.netapp.com/us-en/ontap/authentication/define-custom-roles-task.html[Define custom roles^]
+* link:https://docs.netapp.com/us-en/ontap-automation/rest/rbac_roles_users.html#rest-api[Work with roles and users^]
+
+== Manage NFS export policies
+
+Trident uses NFS export policies to control access to the volumes that it provisions.
+
+Trident provides two options when working with export policies:
+
+* Trident can dynamically manage the export policy itself; in this mode of operation, the storage administrator specifies a list of CIDR blocks that represent admissible IP addresses. Trident adds applicable node IPs that fall in these ranges to the export policy automatically at publish time. Alternatively, when no CIDRs are specified, all global-scoped unicast IPs found on the node that the volume being published to will be added to the export policy.
+* Storage administrators can create an export policy and add rules manually. Trident uses the default export policy unless a different export policy name is specified in the configuration.
+
+=== Dynamically manage export policies
+
+Trident provides the ability to dynamically manage export policies for ONTAP backends. This provides the storage administrator the ability to specify a permissible address space for worker node IPs, rather than defining explicit rules manually. It greatly simplifies export policy management; modifications to the export policy no longer require manual intervention on the storage cluster. Moreover, this helps restrict access to the storage cluster only to worker nodes that are mounting volumes and have IPs in the range specified, supporting a fine-grained and automated management.
+
+NOTE: Do not use Network Address Translation (NAT) when using dynamic export policies. With NAT, the storage controller sees the frontend NAT address and not the actual IP host address, so access will be denied when no match is found in the export rules.
+
+==== Example
+
+There are two configuration options that must be used. Here's an example backend definition:
+[source,yaml]
+----
+---
+version: 1
+storageDriverName: ontap-nas-economy
+backendName: ontap_nas_auto_export
+managementLIF: 192.168.0.135
+svm: svm1
+username: vsadmin
+password: password
+autoExportCIDRs:
+  - 192.168.0.0/24
+autoExportPolicy: true
+
+----
+
+NOTE: When using this feature, you must ensure that the root junction in your SVM has a previously created export policy with an export rule that permits the node CIDR block (such as the default export policy). Always follow NetApp recommended best practice to dedicate an SVM for Trident.
+
+Here is an explanation of how this feature works using the example above:
+
+* `autoExportPolicy` is set to `true`. This indicates that Trident creates an export policy for each volume provisioned with this backend for the `svm1` SVM and handle the addition and deletion of rules using `autoexportCIDRs` address blocks. Until a volume is attached to a node, the volume uses an empty export policy with no rules to prevent unwanted access to that volume. When a volume is published to a node Trident creates an export policy with the same name as the underlying qtree containing the node IP within the specified CIDR block. These IPs will also be added to the export policy used by the parent FlexVol volume
+** For example:
+*** backend UUID 403b5326-8482-40db-96d0-d83fb3f4daec
+*** `autoExportPolicy` set to `true`
+*** storage prefix `trident`
+*** PVC UUID a79bcf5f-7b6d-4a40-9876-e2551f159c1c
+*** qtree named trident_pvc_a79bcf5f_7b6d_4a40_9876_e2551f159c1c creates an export policy for the FlexVol named `trident-403b5326-8482-40db96d0-d83fb3f4daec`, an export policy for the qtree named 
+`trident_pvc_a79bcf5f_7b6d_4a40_9876_e2551f159c1c`, and an empty export policy named `trident_empty` on the SVM. The rules for the FlexVol export policy will be a superset of any rules contained in the qtree export policies. The empty export policy will be reused by any volumes that are not attached.
+
+* `autoExportCIDRs` contains a list of address blocks. This field is optional and it defaults to ["0.0.0.0/0", "::/0"]. If not defined, Trident adds all globally-scoped unicast addresses found on the worker nodes with publications.
+
+In this example, the `192.168.0.0/24` address space is provided. This indicates that Kubernetes node IPs that fall within this address range with publications will be added to the export policy that Trident creates. When Trident registers a node it runs on, it retrieves the IP addresses of the node and checks them against the address blocks provided in `autoExportCIDRs`. At publish time, after filtering the IPs, Trident creates the export policy rules for the client IPs for the node it is publishing to.
+
+You can update `autoExportPolicy` and `autoExportCIDRs` for backends after you create them. You can append new CIDRs for a backend that is automatically managed or delete existing CIDRs. Exercise care when deleting CIDRs to ensure that existing connections are not dropped. You can also choose to disable `autoExportPolicy` for a backend and fall back to a manually created export policy. This will require setting the `exportPolicy` parameter in your backend config.
+
+After Trident creates or updates a backend, you can check the backend using `tridentctl` or the corresponding `tridentbackend` CRD:
+----
+./tridentctl get backends ontap_nas_auto_export -n trident -o yaml
+items:
+- backendUUID: 403b5326-8482-40db-96d0-d83fb3f4daec
+  config:
+    aggregate: ""
+    autoExportCIDRs:
+    - 192.168.0.0/24
+    autoExportPolicy: true
+    backendName: ontap_nas_auto_export
+    chapInitiatorSecret: ""
+    chapTargetInitiatorSecret: ""
+    chapTargetUsername: ""
+    chapUsername: ""
+    dataLIF: 192.168.0.135
+    debug: false
+    debugTraceFlags: null
+    defaults:
+      encryption: "false"
+      exportPolicy: <automatic>
+      fileSystemType: ext4
+----
+
+When a node is removed, Trident checks all export policies to remove the access rules corresponding to the node. By removing this node IP from the export policies of managed backends, Trident prevents rogue mounts, unless this IP is reused by a new node in the cluster.
+
+For previously existing backends, updating the backend with `tridentctl update backend` ensures that Trident manages the export policies automatically. This creates two new export policies named after the backend's UUID and qtree name when they are needed. Volumes that are present on the backend will use the newly created export policies after they are unmounted and mounted again.
+
+NOTE: Deleting a backend with auto-managed export policies will delete the dynamically created export policy. If the backend is re-created, it is treated as a new backend and will result in the creation of a new export policy.
+
+If the IP address of a live node is updated, you must restart the Trident pod on the node. Trident will then update the export policy for backends it manages to reflect this IP change.
+
+== Prepare to provision SMB volumes
+With a little additional preparation, you can provision SMB volumes using `ontap-nas` drivers. 
+
+WARNING: You must configure both NFS and SMB/CIFS protocols on the SVM to create an `ontap-nas-economy` SMB volume for ONTAP on-premises clusters. Failure to configure either of these protocols will cause SMB volume creation to fail.
+
+NOTE: `autoExportPolicy` is not supported for SMB volumes.
+
+
+.Before you begin
+Before you can provision SMB volumes, you must have the following. 
+
+* A Kubernetes cluster with a Linux controller node and at least one Windows worker node running Windows Server 2022. Trident supports SMB volumes mounted to pods running on Windows nodes only.
+
+* At least one Trident secret containing your Active Directory credentials. To generate secret `smbcreds`:
++
+----
+kubectl create secret generic smbcreds --from-literal username=user --from-literal password='password'
+----
+
+* A CSI proxy configured as a Windows service. To configure a `csi-proxy`, refer to link:https://github.com/kubernetes-csi/csi-proxy[GitHub: CSI Proxy^] or link:https://github.com/Azure/aks-engine/blob/master/docs/topics/csi-proxy-windows.md[GitHub: CSI Proxy for Windows^] for Kubernetes nodes running on Windows.
+
+.Steps
+
+. For on-premises ONTAP, you can optionally create an SMB share or Trident can create one for you. 
++
+NOTE: SMB shares are required for Amazon FSx for ONTAP. 
++
+You can create the SMB admin shares in one of two ways either using the link:https://learn.microsoft.com/en-us/troubleshoot/windows-server/system-management-components/what-is-microsoft-management-console[Microsoft Management Console^] Shared Folders snap-in or using the ONTAP CLI. To create the SMB shares using the ONTAP CLI:
++
+.. If necessary, create the directory path structure for the share.
++
+The `vserver cifs share create` command checks the path specified in the -path option during share creation. If the specified path does not exist, the command fails.
+
+.. Create an SMB share associated with the specified SVM:
++
+----
+vserver cifs share create -vserver vserver_name -share-name share_name -path path [-share-properties share_properties,...] [other_attributes] [-comment text]
+----
+
+.. Verify that the share was created:
++
+----
+vserver cifs share show -share-name share_name
+----
++
+NOTE: Refer to link:https://docs.netapp.com/us-en/ontap/smb-config/create-share-task.html[Create an SMB share^] for full details.
+
+. When creating the backend, you must configure the following to specify SMB volumes. For all FSx for ONTAP backend configuration options, refer to link:trident-fsx-examples.html[FSx for ONTAP configuration options and examples].
++
+[cols="1,2,1",options="header"]
+|===
+|Parameter |Description | Example
+
+|`smbShare`
+| You can specify one of the following: the name of an SMB share created using the Microsoft Management Console or ONTAP CLI; a name to allow Trident to create the SMB share; or you can leave the parameter blank to prevent common share access to volumes. 
+
+This parameter is optional for on-premises ONTAP. 
+
+This parameter is required for Amazon FSx for ONTAP backends and cannot be blank.
+
+| `smb-share` 
+
+|`nasType`
+| *Must set to `smb`.* If null, defaults to `nfs`.
+|`smb`
+
+|`securityStyle` 
+|Security style for new volumes. 
+
+*Must be set to `ntfs` or `mixed` for SMB volumes.*
+|`ntfs` or `mixed` for SMB volumes
+
+|`unixPermissions`
+|Mode for new volumes. *Must be left empty for SMB volumes.*
+|""
+|===
+
+// Secure SMB - Added for 25.06 (June 2025), Writer: Arul Deepa A
+=== Enable secure SMB
+
+Beginning with the 25.06 release, NetApp Trident supports secure provisioning of SMB volumes created using `ontap-nas` and `ontap-nas-economy` backends. When secure SMB is enabled, you can provide controlled access to SMB the shares for Active Directory (AD) users and user groups using Access Control Lists (ACLs).
+
+.Points to remember
+
+* Importing `ontap-nas-economy` volumes is not supported.
+* Only read-only clones are supported for `ontap-nas-economy` volumes.
+* If Secure SMB is enabled, Trident will ignore the SMB share mentioned in the backend.
+* Updating the  PVC annotation, storage class annotation, and backend field does not update the SMB share ACL.
+* The SMB share ACL specified in the annotation of the clone PVC will take precedence over those in the source PVC.
+* Ensure that you provide valid AD users while enabling secure SMB. Invalid users will not be added to the ACL.
+* If you provide the same AD user in the backend, storage class, and PVC with different permissions, the permission priority will be: PVC, storage class, and then backend.
+* Secure SMB is supported for `ontap-nas` managed volume imports and not applicable to unmanaged volume imports.
+
+.Steps
+
+1.  Specify adAdminUser in TridentBackendConfig as shown in the following example:
++
+[source,yaml]
+----
+apiVersion: trident.netapp.io/v1
+kind: TridentBackendConfig
+metadata:
+  name: backend-tbc-ontap
+  namespace: trident
+spec:
+  version: 1
+  storageDriverName: ontap-nas
+  managementLIF: 10.193.176.x
+  svm: svm0
+  useREST: true
+  defaults:
+    adAdminUser: tridentADtest
+  credentials:
+    name: backend-tbc-ontap-invest-secret
+----
+
+2.  Add the annotation in the storage class.
++
+Add the `trident.netapp.io/smbShareAdUser` annotation to the storage class to enable secure SMB without fail.
+The user value specified for the annotation `trident.netapp.io/smbShareAdUser` should be the same as the username specified in the `smbcreds` secret.
+You can choose one of the following for `smbShareAdUserPermission`: `full_control`, `change`, or `read`. The default permission is `full_control`. 
+
+[source,yaml]
+----
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ontap-smb-sc
+  annotations:
+    trident.netapp.io/smbShareAdUserPermission: change
+    trident.netapp.io/smbShareAdUser: tridentADuser
+parameters:
+  backendType: ontap-nas
+  csi.storage.k8s.io/node-stage-secret-name: smbcreds
+  csi.storage.k8s.io/node-stage-secret-namespace: trident
+  trident.netapp.io/nasType: smb
+provisioner: csi.trident.netapp.io
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+----
+[start=3]
+3. Create a PVC.
++
+The following example creates a PVC:
+[source,yaml]
+----
+apiVersion: v1  
+kind: PersistentVolumeClaim  
+metadata:  
+  name: my-pvc4  
+  namespace: trident  
+  annotations:  
+    trident.netapp.io/snapshotDirectory: "true"  
+    trident.netapp.io/smbShareAccessControl: |  
+      read:  
+        - tridentADtest  
+spec:  
+  accessModes:  
+    - ReadWriteOnce  
+  resources:  
+    requests:  
+      storage: 1Gi  
+  storageClassName: ontap-smb-sc  
+----

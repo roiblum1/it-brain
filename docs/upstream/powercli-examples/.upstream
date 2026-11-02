@@ -1,0 +1,7 @@
+repo: vmware/PowerCLI-Example-Scripts
+ref: master
+commit: 097172029b710036232f3937dd7c04bbb6a760ad
+latest_tag: 
+paths: README.md, Modules, Scripts
+files: 91
+synced: 2026-11-02T21:36:30Z

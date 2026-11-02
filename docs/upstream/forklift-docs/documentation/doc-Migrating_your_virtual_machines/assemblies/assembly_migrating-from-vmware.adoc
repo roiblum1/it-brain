@@ -1,0 +1,55 @@
+ifdef::context[:parent-context: {context}]
+
+
+:_mod-docs-content-type: ASSEMBLY
+
+[id="assembly_migrating-from-vmware_{context}"]
+
+= Migrating from VMware vSphere
+
+//:context: migrating-vmware
+
+[role="_abstract"]
+Run your VMware migration plan from the MTV UI or from the command-line.
+
+:context: vmware
+:vmware:
+
+include::../modules/con_migrating-vmware-prerequisites.adoc[leveloffset=+1]
+
+include::../modules/proc_inspecting-vms-ui.adoc[leveloffset=+1]
+
+include::../modules/proc_inspecting-vms-cli.adoc[leveloffset=+1]
+
+include::../modules/proc_running-migration-plan.adoc[leveloffset=+1]
+
+include::../modules/ref_migration-plan-options-ui.adoc[leveloffset=+2]
+
+include::../modules/proc_canceling-migration-ui.adoc[leveloffset=+2]
+
+include::../modules/proc_migrating-vms-cli-vmware.adoc[leveloffset=+1]
+
+include::../modules/proc_storage-copy-offload-cli.adoc[leveloffset=+1]
+
+include::../modules/proc_retrieving-vmware-moref.adoc[leveloffset=+2]
+
+include::../modules/proc_mtv-shared-disks.adoc[leveloffset=+2]
+
+include::../modules/ref_known-issues-shared-disks.adoc[leveloffset=+2]
+
+include::../modules/ref_shared-disks-workaround-duplicate-disk.adoc[leveloffset=+2]
+
+include::../modules/ref_shared-disks-workaround-remove-disk.adoc[leveloffset=+2]
+
+include::../modules/con_mtv-template-utility.adoc[leveloffset=+2]
+
+include::../modules/con_canceling-migration-cli.adoc[leveloffset=+2]
+
+include::../modules/proc_canceling-migration-cli-entire.adoc[leveloffset=+3]
+
+include::../modules/proc_canceling-migration-cli-specific.adoc[leveloffset=+3]
+
+:vmware!:
+
+ifdef::parent-context[:context: {parent-context}]
+ifndef::parent-context[:!context:]

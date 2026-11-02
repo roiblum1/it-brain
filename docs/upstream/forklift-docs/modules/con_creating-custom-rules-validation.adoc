@@ -1,0 +1,13 @@
+// Module included in the following assemblies:
+//
+// * documentation/doc-Migrating_your_virtual_machines/assemblies/assembly_advanced-migration-options.adoc
+
+:_mod-docs-content-type: CONCEPT
+[id="con_creating-custom-rules-validation_{context}"]
+= Creating custom rules for the Validation service
+
+[role="_abstract"]
+The Validation service uses Open Policy Agent (OPA) rules to check VM migration suitability. It generates a list of concerns for each VM, which are stored in the `Provider Inventory` service as VM attributes and displayed in the web console.
+
+You can create custom rules to extend the default ruleset of the `Validation` service. For example, you can create a rule that checks whether a VM has multiple disks.
+

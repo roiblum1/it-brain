@@ -3,7 +3,7 @@
 OpenShift running on vSphere: installer, machine API, vSphere CSI from the cluster side (the VMware platform itself is area vmware).
 
 - **Owner (approves MRs):** OpenShift Container Platform team (`ocp`)
-- **Consulted:** —
+- **Consulted:** `virtualization`
 - **Domain:** OpenShift / Kubernetes platform (`platform`)
 
 ## Scope

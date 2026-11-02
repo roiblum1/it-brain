@@ -1,0 +1,45 @@
+include::modules/common-attributes.adoc[]
+ifdef::upstream[]
+include::../upstream-attributes.adoc[]
+endif::[]
+[id="release_notes"]
+= Release notes
+:_mod-docs-content-type: ASSEMBLY
+:compat-mode:
+:context: release-notes
+
+[role="_abstract"]
+Review these release notes for {project-first} version {project-version}.
+
+include::modules/ref_rn-2-12.adoc[leveloffset=+1]
+
+// Technical changes by x-stream release
+// include::modules/ref_technical-changes-2-12.adoc[leveloffset=+2]
+
+// New features and enhancements by z-stream release
+include::modules/ref_new-features-and-enhancements-2-12.adoc[leveloffset=+2]
+
+// Resolved issues by y-stream release
+include::modules/ref_rn-resolved-issues.adoc[leveloffset=+2]
+
+// Resolved issues by z-stream release. Most recent release goes first in the list.
+include::modules/ref_resolved-issues-2-12-8.adoc[leveloffset=+3]
+
+include::modules/ref_resolved-issues-2-12-7.adoc[leveloffset=+3]
+
+include::modules/ref_resolved-issues-2-12-6.adoc[leveloffset=+3]
+
+include::modules/ref_resolved-issues-2-12-5.adoc[leveloffset=+3]
+
+include::modules/ref_resolved-issues-2-12-4.adoc[leveloffset=+3]
+
+include::modules/ref_resolved-issues-2-12-3.adoc[leveloffset=+3]
+
+include::modules/ref_resolved-issues-2-12-2.adoc[leveloffset=+3]
+
+include::modules/ref_resolved-issues-2-12-1.adoc[leveloffset=+3]
+
+include::modules/ref_resolved-issues-2-12-0.adoc[leveloffset=+3]
+
+// Known issues by x-stream release
+include::modules/ref_known-issues-2-12.adoc[leveloffset=+2]

@@ -6,7 +6,7 @@
     BASE_REF=origin/main python3 scripts/ci_checks.py     # also enforce the plugin version bump
     BRAIN_DENYLIST_FILE=/path/denylist.txt python3 ...    # real site/region/cluster names (never committed)
 
-Checks: validate, index, graph, teams, json, sources, parity, frontmatter, leaks, upstream, mcpbin, syntax, version, smoke.
+Checks: validate, index, graph, teams, route, json, sources, parity, frontmatter, leaks, upstream, mcpbin, syntax, version, smoke.
 Exit code 1 if any check fails.
 """
 from __future__ import annotations
@@ -133,6 +133,26 @@ def check_teams():
     if p.returncode:
         errs.append(".gitlab/CODEOWNERS is stale: run `python3 scripts/brain.py codeowners` and commit")
     record("teams", errs, f"{len(reg['teams'])} teams, {len(reg['areas'])} areas")
+
+
+def check_route():
+    """tests/routing.json: cross-team questions must reach every listed area / team / interface page."""
+    sys.path.insert(0, str(ROOT / "plugins/team-brain/mcp-servers/team-knowledge"))
+    from tk import route as r  # noqa: E402
+    cases = json.loads((ROOT / "tests/routing.json").read_text(encoding="utf-8"))["cases"]
+    errs = []
+    for c in cases:
+        res = r.route(ROOT, c["question"])
+        got = {a["area"] for a in res["areas"]}
+        miss = [a for a in c.get("areas", []) if a not in got]
+        if miss:
+            errs.append(f"{c['question']!r}: missing areas {miss} (got {sorted(got)})")
+        tmiss = [t for t in c.get("teams", []) if t not in res["teams"]]
+        if tmiss:
+            errs.append(f"{c['question']!r}: missing teams {tmiss}")
+        if c.get("interface") and c["interface"] not in [i["page"] for i in res["interfaces"]]:
+            errs.append(f"{c['question']!r}: expected {c['interface']} among {[i['page'] for i in res['interfaces']]}")
+    record("route", errs, f"{len(cases)} cross-team routing cases")
 
 
 def check_json():
@@ -352,7 +372,7 @@ def check_smoke():
     record("smoke", errs, f"{len(gq['queries'])} golden queries + link graph via the real server")
 
 
-CHECKS = {"validate": check_validate, "index": check_index, "graph": check_graph, "teams": check_teams, "json": check_json, "sources": check_sources,
+CHECKS = {"validate": check_validate, "index": check_index, "graph": check_graph, "teams": check_teams, "route": check_route, "json": check_json, "sources": check_sources,
           "parity": check_parity, "frontmatter": check_frontmatter, "leaks": check_leaks,
           "upstream": check_upstream, "mcpbin": check_mcpbin, "syntax": check_syntax, "version": check_version, "smoke": check_smoke}
 

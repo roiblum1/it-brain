@@ -1,0 +1,55 @@
+---
+id: activities
+title: What is a Temporal Activity?
+sidebar_label: Activities
+description:
+  Learn how Temporal turns a plain function you write into a Temporal Activity and durably executes it as a Workflow step or background job.
+slug: /activities
+toc_max_heading_level: 4
+tags:
+  - Concepts
+  - Activities
+  - Durable Execution
+  - Job Queue
+---
+
+import { Video } from '@site/src/components';
+
+An Activity is a normal function or method (an [Activity Definition](/activity-definition)) that executes a single, well-defined action
+(either short or long running), such as calling another service, transcoding a media file, or sending an email message.
+
+Activity functions are registered by name (an [Activity Type](/activity-definition#activity-type)) on a Worker that polls a Task Queue for Activity Tasks to run.
+Activity code can do whatever you want, use any library or package, and otherwise be non-deterministic.
+We recommend that it be [idempotent](/activity-definition#idempotency), so retries can be processed without duplicate side effects.
+
+Activities are started as a step in a Workflow (a [Workflow Activity](/workflow-activity)) or as a [Standalone Activity](/standalone-activity) that runs independently for [background job processing](/evaluate/features/job-queue).
+This creates a durable [Activity Execution](/activity-execution) in Temporal that orchestrates the full lifecycle of an Activity, dispatching Tasks to the Activity Worker using its Task Queue and collecting results to determine next steps.
+
+:::tip
+
+Watch a short overview of what an Activity is in Temporal:
+
+<Video videoId="rtWrzjnKlSQ" title="What is an Activity in Temporal?" />
+
+:::
+
+Activities are the most common Temporal primitive and encompass small units of work such as:
+
+- Single write operations, like updating user information or submitting a credit card payment
+- Batches of similar writes, like creating multiple orders or sending multiple messages
+- One or more read operations followed by a write operation, like checking a product status and user address before updating an order status
+- A read that should be memoized, like an LLM call, a large download, or a slow-polling read
+
+Larger pieces of functionality should be broken up into multiple Activities. This makes it easier to do failure recovery, have short timeouts, and be idempotent.
+
+If an Activity attempt fails, it is automatically retried using its [Retry Policy](/activity-definition#activity-retry-policy).
+Each attempt starts from the initial state, unless your code uses
+a [Heartbeat detail payload](/encyclopedia/detecting-activity-failures#activity-heartbeat) for checkpointing. The
+last recorded Heartbeat details are made available to the Activity function on the next attempt, so your code can
+continue processing where it left off.
+
+When specific performance optimizations are more important than full durability, an Activity may be executed in the same process as a Workflow (a [Local Activity](/local-activity)), bypassing the regular Activity Execution and Task Queue.
+Local Activities are not a replacement for regular Activities.
+
+Regardless of how you invoke an Activity, the [Activity Definition](/activity-definition) and Worker registration is the same.
+You can write an Activity once, register it with a Worker, and invoke it as a Workflow Activity, a Standalone Activity or a Local Activity.

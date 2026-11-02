@@ -1,0 +1,16 @@
+// Module included in the following assemblies:
+//
+// * documentation/doc-Planning_your_migration/assemblies/assembly_cold-warm-migration.adoc
+
+:_mod-docs-content-type: CONCEPT
+[id="con_about-cold-warm-migration_{context}"]
+
+= About cold and warm migration
+
+[role="_abstract"]
+Cold migration is for shut-down VMs and works with {vmw} vSphere, {rhv-full}, {osp}, Open Virtual Appliances (OVAs), Microsoft Hyper-V, and remote {virt} clusters. Warm migration is for running VMs from {vmw} vSphere and {rhv-full}.
+
+[NOTE]
+====
+OVA migration is validated for migrating supported guest operating systems exported from {vmw} vSphere. For third-party networking or security appliances, check with the vendor for native QCOW2 or Kernel-based Virtual Machine (KVM) images.
+====

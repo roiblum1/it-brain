@@ -1,0 +1,7 @@
+repo: MicrosoftDocs/PowerShell-Docs
+ref: main
+commit: ebaa235784a688ec72ab642186c4c17460fb438b
+latest_tag: 
+paths: reference/docs-conceptual, reference/7.4/Microsoft.PowerShell.Core
+files: 850
+synced: 2026-11-02T21:36:26Z

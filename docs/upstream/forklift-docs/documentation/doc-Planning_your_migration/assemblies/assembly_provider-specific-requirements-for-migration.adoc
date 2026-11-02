@@ -1,0 +1,54 @@
+
+ifdef::context[:parent-context: {context}]
+
+:_mod-docs-content-type: ASSEMBLY
+
+[id="assembly_provider-specific-requirements-for-migration_{context}"]
+
+= Provider-specific requirements for migration
+
+//:context: prerequisites
+
+[role="_abstract"]
+Review the specific software requirements per source provider.
+
+include::../modules/ref_rhv-prerequisites.adoc[leveloffset=+1]
+
+include::../modules/ref_openstack-prerequisites.adoc[leveloffset=+1]
+
+include::../modules/proc_openstack-token-authentication.adoc[leveloffset=+2]
+
+include::../modules/proc_openstack-application-credential-authentication.adoc[leveloffset=+2]
+
+include::../modules/ref_vmware-prerequisites.adoc[leveloffset=+1]
+
+include::../modules/ref_vmware-privileges.adoc[leveloffset=+2]
+
+include::../modules/proc_creating-vmware-role-mtv-permissions.adoc[leveloffset=+2]
+
+include::../modules/proc_creating-vddk-image.adoc[leveloffset=+2]
+
+include::../modules/proc_increasing-nfc-memory-vmware-host.adoc[leveloffset=+2]
+
+include::../modules/ref_vddk-validator-containers.adoc[leveloffset=+2]
+
+include::../modules/ref_ova-prerequisites.adoc[leveloffset=+1]
+
+include::../modules/ref_hyperv-prerequisites.adoc[leveloffset=+1]
+
+include::../modules/ref_cnv-prerequisites.adoc[leveloffset=+1]
+
+include::../modules/ref_cnv-cnv-live-prerequisites.adoc[leveloffset=+2]
+
+include::../modules/ref_aws-ec2-prerequisites.adoc[leveloffset=+1]
+
+include::../modules/ref_compatibility-guidelines.adoc[leveloffset=+1]
+
+include::../modules/ref_openshift-operator-life-cycles.adoc[leveloffset=+2]
+
+ifdef::parent-context[:context: {parent-context}]
+ifndef::parent-context[:!context:]
+
+
+
+

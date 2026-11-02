@@ -17,3 +17,9 @@ plugins/team-brain/mcp-servers/vendor/grafana/ holds unmodified release archives
 (version and sha256 in vendor/manifest.json), licensed under the Apache License 2.0; each archive contains its LICENSE.
 plugins/team-brain/mcp-servers/vendor/kubernetes/ holds unmodified release bundles of
 https://github.com/containers/kubernetes-mcp-server (version and sha256 in vendor/manifest.json), Apache License 2.0.
+plugins/team-brain/mcp-servers/vendor/temporal/ holds unmodified release archives of https://github.com/temporalio/temporal-mcp
+(version and sha256 in vendor/manifest.json), MIT License; each archive contains its LICENSE.
+New docs-only snapshots (it-brain): kubevirt-user-guide, kubevirt-docs, cdi-docs, hco-docs, forklift-docs (Apache-2.0),
+powershell-docs (CC BY 4.0; code samples MIT), powercli-examples (BSD-2-Clause), temporal-docs and temporal-mcp-docs (MIT),
+pydantic-docs and pydantic-settings-docs (MIT), dell-csm-docs (no licence file found — check before sharing),
+trident-docs (NetApp documentation, no licence file — internal offline reference only).

@@ -1,0 +1,101 @@
+// Module included in the following assemblies:
+//
+// * documentation/doc-Planning_your_migration/assemblies/assembly_planning-migration-vmware.adoc
+
+:_mod-docs-content-type: PROCEDURE
+[id="proc_adding-source-provider_{context}"]
+= Adding a {vmw} vSphere source provider
+
+[role="_abstract"]
+You can migrate {vmw} vSphere virtual machines (VMs) from {vmw} vCenter or from a {vmw} ESX/ESXi server without going through vCenter.
+
+Considerations::
+
+* {project-short} disables EMS enforcement for {vmw} vSphere source provider migrations, enabling migrations from supported vSphere versions that do not comply with 2023 FIPS requirements. Therefore, you should consider whether migrations from vSphere source providers risk your compliance with FIPS. See xref:ref_compatibility-guidelines_mtv[Software compatibility guidelines] for supported versions of vSphere.
+* Remove anti-virus software from source VMs before migration to prevent migration failures.
+* {project-short} does not support migrating VMware Non-Volatile Memory Express (NVMe) disks.
+* If you specify a non-default maximum transmission unit (MTU) value for your migration network, you must use the same MTU value in the {ocp-short} transfer network. For more information about the {ocp-short} transfer network, see xref:proc_creating-plan-wizard-vmware_vmware[Creating a {vmw} vSphere migration plan using the {project-short} wizard].
+
+.Prerequisites
+
+* Create a {vmw} Virtual Disk Development Kit (VDDK) image in a secure registry accessible to all clusters. VDDK is required for warm migrations and VMs backed by {vmw} vSAN. For cold migrations, VDDK is optional but accelerates the migration process. For more information, see xref:proc_creating-vddk-image_mtv[Creating a VDDK image].
++
+[NOTE]
+====
+You can configure the provider without VDDK if you are only performing cold migrations of VMs that are not backed by vSAN, but VDDK is strongly recommended to improve migration performance and reliability.
+====
+
+.Procedure
+
+. Access the *Create provider* page for {vmw} by doing one of the following:
+
+* *From the Providers page:* In the {ocp} web console, click *Migration for Virtualization > Providers*, click *Create Provider*, select a *Project* from the list, and then click *{vmw}*.
+
+* *From the Overview page (Administrators only):* In the {ocp} web console, click *Migration for Virtualization > Overview*, click *{vmw}* in the *Welcome* pane, and select a *Project* from the list.
++
+[NOTE]
+====
+If the *Welcome* pane is not visible, click *Show the welcome card* in the upper-right corner of the page.
+====
++
+The default project depends on the active {project-short} project. If *All projects* is active, the default is +{namespace}+. Administrators can view all projects; authorized non-administrators see only their assigned projects.
+
+. Enter the provider details:
++
+* *Provider resource name*: Name of the source provider.
+* *Endpoint type*: Select *vCenter* or *ESXi*.
++
+You can migrate VMs from:
++
+** vCenter
+** An ESX/ESXi server not managed by vCenter
+** An ESX/ESXi server managed by vCenter (bypassing vCenter)
+* *URL*: URL of the SDK endpoint. Ensure that the URL includes the `sdk` path, usually `/sdk`. For vCenter, use `https://vCenter-host-example.com/sdk`. For ESXi, use `https://esxi-host-example.com/sdk`. If you specify a certificate for FQDN, the value of this field must match the FQDN in the certificate.
+
+. Configure the *VDDK init image* field by doing one of the following:
++
+* *Enter an existing image path:* In the *VDDK init image* field, enter the image path in the format `<registry_route_or_server_path>/vddk:<tag>`.
+* *Upload a VDDK archive:* Click *Browse* next to *VDDK init image archive*, select the archive file, click *Select*, and then click *Upload*. The *VDDK init image archive* text box displays the URL of the uploaded archive.
+* *Skip VDDK:* Select *Skip {vmw} Virtual Disk Development Kit (VDDK) SDK acceleration (not recommended)*. Only skip VDDK if you are performing cold migrations of VMs that are not backed by vSAN.
++
+For more information about creating a VDDK image, see xref:proc_creating-vddk-image_mtv[Creating a VDDK image].
+
+. Enter the provider credentials:
++
+* *Username*: vCenter user or ESXi user, for example, `user@vsphere.local`
+* *Password*: vCenter user password or ESXi user password
+
+. Choose one of the following options for validating CA certificates:
++
+** *Use a custom CA certificate*: Keep *Skip certificate validation* toggled left and provide the certificate:
++
+*** *Upload file:* Drag the certificate to the text box, or click *Browse* and click *Select*.
+*** *Fetch from URL:* Click *Fetch certificate from URL*, select *I trust the authenticity of this certificate*, and click *Confirm*.
+
+** *Use the system CA certificate*: Keep *Skip certificate validation* toggled left and leave the *CA certificate* text box empty.
+
+** *Skip certificate validation*: Toggle *Skip certificate validation* to the right.
+
+. Click *Create provider* to add and save the provider.
++
+The provider appears in the list of providers.
++
+[NOTE]
+====
+It might take a few minutes for the provider to move to the `Ready` status.
+====
+
+. Optional: Add access to the UI of the provider:
+.. On the *Providers* page, click the provider.
++
+The *Provider details* page opens.
+.. Click the *Edit* icon under *External UI web link*.
+.. Enter the link and click *Save*.
++
+[NOTE]
+====
+If you do not enter a link, {project-short} attempts to calculate the correct link.
+
+* If {project-short} succeeds, the hyperlink of the field points to the calculated link.
+* If {project-short} does not succeed, the field remains empty.
+====

@@ -1,0 +1,12 @@
+# Example config for the read-only Temporal MCP (temporal-mcp, vendored in vendor/temporal/).
+# Copy it OUTSIDE the repo (e.g. ~/.config/it-brain/temporal-mcp.yaml), fill the placeholders, then
+#   export TEMPORAL_MCP_CONFIG=~/.config/it-brain/temporal-mcp.yaml
+# and restart Claude Code. Reference: mcp/servers/temporal.md and docs/config.md inside the vendored archive.
+# The server rejects unknown keys. Never put an API key in this file in git: use `api_key: {env: VAR}` per the docs.
+targets:
+  - name: hub
+    aliases: [redbull-workflows]
+    description: Temporal on the hub cluster — the Redbull Workflows orchestrator (segment, server, provisioning, upgrade workflows).
+    address: <temporal-frontend-host>:7233
+    namespace: <namespace>
+    # payload_handling: omit    # default: workflow inputs/results are not shown (they can hold names and IPs)

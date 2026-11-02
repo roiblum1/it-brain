@@ -6,9 +6,18 @@ description: Search the team's offline knowledge before troubleshooting or answe
 # Look it up before you dig in
 
 The `team-knowledge` MCP server searches every offline source at once. Its tools are
-`search`, `read`, `related`, `list_refs`, `search_code`, `find_definition`, `read_code`, `list_sources`
+`route`, `search`, `read`, `related`, `list_refs`, `search_code`, `find_definition`, `read_code`, `list_sources`
 (exposed as `mcp__plugin_team-brain_team-knowledge__*`, or `mcp__team-knowledge-shared__*` if the
 team's shared server is configured).
+
+## 0. Route first (it-brain: several teams, one brain)
+
+Call `route` with the problem in the user's words (product names + error). It returns every area the problem
+touches with its owner team, and the **interface page** between those teams. If more than one team is involved,
+read that interface page first and continue with `team-brain:it-triage`. A team profile (`IT_BRAIN_TEAM`) only
+says where to look first — **never limit search to one team's pages**. A PowerFlex PVC problem on OpenShift needs
+the PowerFlex pages (storage team) *and* the cluster storage pages (ocp team).
+Fallback without the MCP: `python3 "$BRAIN/scripts/brain.py" route "<problem>"`.
 
 ## 1. Pin down the context
 

@@ -1,7 +1,7 @@
 {
   "name": "team-brain",
-  "version": "0.6.0",
-  "description": "Connects Claude Code to the team brain repo: lookup before troubleshooting, capture after learning, incident postmortems, team MCP servers.",
+  "version": "0.7.0",
+  "description": "Connects Claude Code to it-brain (team-brain): cross-team routing, lookup before troubleshooting, capture after learning, incident postmortems, team MCP servers.",
   "author": {
     "name": "Platform Team"
   }

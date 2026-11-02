@@ -2,11 +2,9 @@
 
 Nutanix AOS / AHV / Prism, Nutanix Files and Objects, the Nutanix CSI driver.
 
-- **Owner (approves MRs):** OpenShift Container Platform team (`ocp`)
-- **Consulted:** `storage`, `network`
+- **Owner (approves MRs):** Virtualization team (`virtualization`)
+- **Consulted:** `ocp`, `storage`, `network`
 - **Domain:** hypervisors (`virtualization`)
-
-> **Ownership is provisional** — not yet confirmed by the teams (`docs/it-brain/ROADMAP.md`).
 
 ## Belongs here
 
@@ -26,6 +24,6 @@ Use `<prism>`, container / storage-container names → `<pool>`. General rules: 
 
 ## First pages we want
 
-- who owns Nutanix (provisional) and which clusters run on it
+- which clusters run on Nutanix, Prism Central layout, and the Nutanix CSI driver version per cluster; the candidate Nutanix MCP: `mcp/servers/nutanix-mcp.md`
 
 Write pages from `templates/` and the frontmatter in `docs/FRONTMATTER.md`; this README is the area's charter, not a knowledge page.

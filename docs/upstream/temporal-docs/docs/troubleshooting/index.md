@@ -1,0 +1,27 @@
+---
+id: index
+title: Error handling and troubleshooting
+slug: /troubleshooting
+sidebar_label: Troubleshooting
+description: Discover effective troubleshooting solutions for potential Temporal errors and edge cases with our comprehensive guides, ensuring smooth Workflow execution and error management.
+toc_max_heading_level: 4
+tags:
+ - Errors
+ - Failures
+---
+
+Even the most reliable systems can encounter issues.
+Our troubleshooting guides are designed to help you quickly identify and resolve potential errors, ensuring your Temporal applications run smoothly and efficiently.
+
+- [Troubleshoot the BlobSizeLimitError](/troubleshooting/blob-size-limit-error): The `BlobSizeLimitError` happens when the size of a blob (payloads including Workflow context and each Workflow and Activity argument and return value) is too large.
+  The maximum payload for a single request is 2 MB, and the maximum size for any Event History transaction is 4 MB.
+- [Troubleshoot the Deadline-Exceeded Error](/troubleshooting/deadline-exceeded-error):
+  The "Context: deadline exceeded" error occurs when requests to the Temporal Service by the Client or Worker cannot be completed.
+  This can be due to network issues, timeouts, server overload, or Query errors.
+- [Troubleshoot the Failed Reaching Server Error](/troubleshooting/last-connection-error): The message "Failed reaching server: last connection error" often happens due to an expired TLS certificate or during the Server startup process when Client requests reach the Server before roles are fully initialized.
+- [Troubleshoot missed Schedule Actions](/troubleshooting/schedule-missed-actions): Diagnose missed or delayed Actions with examples of common overlap and buffering pitfalls, then use metrics and Schedule state to find the affected Schedule.
+- [Troubleshoot Serverless Workers](/troubleshooting/serverless-workers): Diagnose issues with Serverless Workers by tracing the flow from Task Queue to Worker execution, on [AWS Lambda](/troubleshooting/serverless-workers/aws-lambda) or [GCP Cloud Run](/troubleshooting/serverless-workers/cloud-run).
+- [Troubleshoot request failures](/troubleshooting/request-failures): Diagnose gRPC failures and slow requests from Workers and Clients to the Temporal Service, including NOT_FOUND on respond operations, RESOURCE_EXHAUSTED throttling, and UNIMPLEMENTED or INTERNAL responses.
+- [Troubleshoot Worker capacity](/troubleshooting/worker-capacity): Diagnose exhausted Task slots, disconnected pollers, Task completions dropping to zero, rising schedule-to-start latency, and an empty Sticky Execution cache.
+- [Troubleshoot Workflow and Activity execution failures](/troubleshooting/execution-failures): Diagnose non-determinism errors, oversized Workflow Task responses, unhandled exceptions in Workflow and Activity code, and Local Activities running past the Workflow Task heartbeat timeout.
+- [Recover pinned Workflows after a bad rollout](/production-deployment/worker-deployments/recover-pinned-workflows): Recover pinned Workflows that have failed or are stuck retrying tasks after rolling out a faulty Worker Deployment Version.

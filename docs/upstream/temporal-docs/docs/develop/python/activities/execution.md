@@ -1,0 +1,143 @@
+---
+id: execution
+title: Activity Execution
+description: Call an Activity from a Python Workflow with workflow.execute_activity, set the required Timeout, and await the Activity result.
+sidebar_label: Activity Execution
+slug: /develop/python/activities/execution
+toc_max_heading_level: 3
+tags:
+  - Activities
+  - Python SDK
+  - Temporal SDKs
+---
+
+## Start an Activity Execution {/* #activity-execution */}
+
+Calls to spawn [Activity Executions](/activity-execution) are written within a
+[Workflow Definition](/workflow-definition). The call to spawn an Activity Execution generates the
+[ScheduleActivityTask](/references/commands#scheduleactivitytask) Command. This results in the set of three
+[Activity Task](/tasks#activity-task) related Events ([ActivityTaskScheduled](/references/events#activitytaskscheduled),
+[ActivityTaskStarted](/references/events#activitytaskstarted), and ActivityTask[Closed]) in your Workflow Execution Event
+History.
+
+A single instance of the Activities implementation is shared across multiple simultaneous Activity invocations. Activity
+implementation code should be _idempotent_.
+
+The values passed to Activities through invocation parameters or returned through a result value are recorded in the
+Execution history. The entire Execution history is transferred from the Temporal Service to Workflow Workers when a
+Workflow state needs to recover. A large Execution history can thus adversely impact the performance of your Workflow.
+
+Therefore, be mindful of the amount of data you transfer through Activity invocation parameters or Return Values.
+Otherwise, no additional limitations exist on Activity implementations.
+
+To spawn an Activity Execution, use the
+[`execute_activity()`](https://python.temporal.io/temporalio.workflow.html#execute_activity) operation from within your
+Workflow Definition.
+
+`execute_activity()` is a shortcut for
+[`start_activity()`](https://python.temporal.io/temporalio.workflow.html#start_activity) that waits on its result.
+
+To get just the handle to wait and cancel separately, use `start_activity()`. In most cases, use `execute_activity()`
+unless advanced task capabilities are needed.
+
+A single argument to the Activity is positional. Multiple arguments are not supported in the type-safe form of
+`start_activity()` or `execute_activity()` and must be supplied by the `args` keyword argument.
+
+<!--SNIPSTART python-workflow-basics-workflow-->
+[python-sandbox/workflows/workflow_basics/your_workflow.py](https://github.com/temporalio/documentation-sdk-code-examples/blob/main/python-sandbox/workflows/workflow_basics/your_workflow.py)
+```py
+from datetime import timedelta
+
+from temporalio import workflow
+
+with workflow.unsafe.imports_passed_through():
+    from workflow_basics.your_activities import your_activity
+    from workflow_basics.your_dataobject import YourParams
+
+@workflow.defn(name="YourWorkflow")
+class YourWorkflow:
+    @workflow.run
+    async def run(self, name: str) -> str:
+        return await workflow.execute_activity(
+            your_activity,
+            YourParams("Hello", name),
+            start_to_close_timeout=timedelta(seconds=10),
+        )
+```
+<!--SNIPEND-->
+
+### Set the required Activity Timeouts {/* #required-timeout */}
+
+Activity Execution semantics rely on several parameters. The only required value that needs to be set is either a
+[Schedule-To-Close Timeout](/encyclopedia/detecting-activity-failures#schedule-to-close-timeout) or a
+[Start-To-Close Timeout](/encyclopedia/detecting-activity-failures#start-to-close-timeout). These values are set in the
+Activity Options.
+
+Activity options are set as keyword arguments after the Activity arguments.
+
+Available timeouts are:
+
+- schedule_to_close_timeout
+- schedule_to_start_timeout
+- start_to_close_timeout
+
+<!--SNIPSTART python-activity-execution-timeouts {"highlightedLines": "8-15"}-->
+[python-sandbox/activities/activity_execution/timeout_workflow.py](https://github.com/temporalio/documentation-sdk-code-examples/blob/main/python-sandbox/activities/activity_execution/timeout_workflow.py)
+```py {8-15}
+with workflow.unsafe.imports_passed_through():
+    from activity_execution.activities import your_activity, YourParams
+
+@workflow.defn
+class YourWorkflow:
+    @workflow.run
+    async def run(self, greeting: str) -> list[str]:
+        activity_timeout_result = await workflow.execute_activity(
+            your_activity,
+            YourParams(greeting, "Activity Timeout option"),
+            # Activity Execution Timeout
+            start_to_close_timeout=timedelta(seconds=10),
+            # schedule_to_start_timeout=timedelta(seconds=10),
+            # schedule_to_close_timeout=timedelta(seconds=10),
+        )
+```
+<!--SNIPEND-->
+
+### Get the results of an Activity Execution {/* #get-activity-results */}
+
+The call to spawn an [Activity Execution](/activity-execution) generates the
+[ScheduleActivityTask](/references/commands#scheduleactivitytask) Command and provides the Workflow with an Awaitable.
+Workflow Executions can either block progress until the result is available through the Awaitable or continue
+progressing, making use of the result when it becomes available.
+
+Use [`start_activity()`](https://python.temporal.io/temporalio.workflow.html#start_activity) to start an Activity and
+return its handle, [`ActivityHandle`](https://python.temporal.io/temporalio.workflow.ActivityHandle.html). Use
+[`execute_activity()`](https://python.temporal.io/temporalio.workflow.html#execute_activity) to return the results.
+
+You must provide either `schedule_to_close_timeout` or `start_to_close_timeout`.
+
+`execute_activity()` is a shortcut for `await start_activity()`. An asynchronous `execute_activity()` helper is provided
+which takes the same arguments as `start_activity()` and `await`s on the result. `execute_activity()` should be used in
+most cases unless advanced task capabilities are needed.
+
+<!--SNIPSTART python-workflow-basics-workflow-->
+[python-sandbox/workflows/workflow_basics/your_workflow.py](https://github.com/temporalio/documentation-sdk-code-examples/blob/main/python-sandbox/workflows/workflow_basics/your_workflow.py)
+```py
+from datetime import timedelta
+
+from temporalio import workflow
+
+with workflow.unsafe.imports_passed_through():
+    from workflow_basics.your_activities import your_activity
+    from workflow_basics.your_dataobject import YourParams
+
+@workflow.defn(name="YourWorkflow")
+class YourWorkflow:
+    @workflow.run
+    async def run(self, name: str) -> str:
+        return await workflow.execute_activity(
+            your_activity,
+            YourParams("Hello", name),
+            start_to_close_timeout=timedelta(seconds=10),
+        )
+```
+<!--SNIPEND-->

@@ -1,0 +1,151 @@
+---
+id: enriching-ui
+title: Enriching the user interface
+sidebar_label: Enriching the UI
+description: Add contextual information to workflows and events in the Temporal UI using the Python SDK.
+toc_max_heading_level: 3
+tags:
+  - UI Enrichment
+  - Python SDK
+  - Temporal SDKs
+---
+
+
+Temporal supports adding context to Workflows and events with metadata. 
+This helps users identify and understand Workflows and their operations.
+
+## Adding summary and details to Workflows
+
+### Starting a Workflow
+
+When starting a Workflow, you can provide a static summary and details to help identify the Workflow in the UI:
+
+<!--SNIPSTART python-enriching-ui-start-workflow-->
+[python-sandbox/platform/enriching_ui/starter.py](https://github.com/temporalio/documentation-sdk-code-examples/blob/main/python-sandbox/platform/enriching_ui/starter.py)
+```py
+# Start a Workflow with static summary and details
+handle = await client.start_workflow(
+    YourWorkflow.run,
+    "workflow input",
+    id="your-workflow-id",
+    task_queue="your-task-queue",
+    static_summary="Order processing for customer #12345",
+    static_details="Processing premium order with expedited shipping"
+)
+```
+<!--SNIPEND-->
+
+`static_summary` is a single-line description that appears in the Workflow list view, limited to 200 bytes.
+`static_details` can be multi-line and provides more comprehensive information that appears in the Workflow details view, with a larger limit of 20K bytes.
+
+The input format is standard Markdown excluding images, HTML, and scripts.
+
+You can also use the `execute_workflow` method with the same parameters:
+
+<!--SNIPSTART python-enriching-ui-execute-workflow-->
+[python-sandbox/platform/enriching_ui/starter.py](https://github.com/temporalio/documentation-sdk-code-examples/blob/main/python-sandbox/platform/enriching_ui/starter.py)
+```py
+result = await client.execute_workflow(
+    YourWorkflow.run,
+    "workflow input",
+    id="your-workflow-id",
+    task_queue="your-task-queue",
+    static_summary="Order processing for customer #12345",
+    static_details="Processing premium order with expedited shipping"
+)
+```
+<!--SNIPEND-->
+
+### Inside the Workflow
+
+Within a Workflow, you can get and set the _current Workflow details_. 
+Unlike static summary/details set at Workflow start, this value can be updated throughout the life of the Workflow. 
+Current Workflow details also takes Markdown format (excluding images, HTML, and scripts) and can span multiple lines.
+
+<!--SNIPSTART python-enriching-ui-current-details-->
+[python-sandbox/platform/enriching_ui/details_workflow.py](https://github.com/temporalio/documentation-sdk-code-examples/blob/main/python-sandbox/platform/enriching_ui/details_workflow.py)
+```py
+@workflow.defn
+class YourWorkflow:
+    @workflow.run
+    async def run(self, input: str) -> str:
+        # Get the current details
+        current_details = workflow.get_current_details()
+        print(f"Current details: {current_details}")
+
+        # Set/update the current details
+        workflow.set_current_details("Updated workflow details with new status")
+
+        return "Workflow completed"
+```
+<!--SNIPEND-->
+
+### Adding Summary to Activities and Timers
+
+You can attach a metadata parameter `summary` to Activities when starting them from within a Workflow:
+
+<!--SNIPSTART python-enriching-ui-activity-summary-->
+[python-sandbox/platform/enriching_ui/activity_summary_workflow.py](https://github.com/temporalio/documentation-sdk-code-examples/blob/main/python-sandbox/platform/enriching_ui/activity_summary_workflow.py)
+```py
+@workflow.defn
+class YourWorkflow:
+    @workflow.run
+    async def run(self, input: str) -> str:
+        # Start an activity with a summary
+        result = await workflow.execute_activity(
+            your_activity,
+            input,
+            start_to_close_timeout=timedelta(seconds=10),
+            summary="Processing user data"
+        )
+        return result
+```
+<!--SNIPEND-->
+
+Similarly, you can attach a `summary` to Timers within a Workflow:
+
+<!--SNIPSTART python-enriching-ui-timer-summary-->
+[python-sandbox/platform/enriching_ui/timer_summary_workflow.py](https://github.com/temporalio/documentation-sdk-code-examples/blob/main/python-sandbox/platform/enriching_ui/timer_summary_workflow.py)
+```py
+@workflow.defn
+class YourWorkflow:
+    @workflow.run
+    async def run(self, input: str) -> str:
+        # Create a timer with a summary
+        await workflow.sleep(timedelta(minutes=5), summary="Waiting for payment confirmation")
+        return "Timer completed"
+```
+<!--SNIPEND-->
+
+The input format for `summary` is a string, and limited to 200 bytes.
+
+## Viewing summary and details in the UI
+
+Once you've added summaries and details to your Workflows, Activities, and Timers, you can view this enriched information in the Temporal Web UI. 
+Navigate to your Workflow's details page to see the metadata displayed in three key locations:
+
+### User Metadata
+
+On the Workflow Details page, under the **User Metadata** tab, you'll find the workflow-level metadata:
+
+- **Summary & Details** - Displays the static summary and static details set when starting the Workflow
+- **Current Details** - Displays the dynamic details that can be updated during Workflow execution
+
+All Workflow details support standard Markdown formatting (excluding images, HTML, and scripts), allowing you to create rich, structured information displays.
+
+### Timeline
+ 
+The **Timeline** tab on the Workflow details page renders each Activity and Timer as a horizontal bar. When you set a `Summary` on an Activity or Timer, the summary text is shown directly on the bar label, making it possible to distinguish individual instances of the same Activity Type at a glance.
+  
+Labels longer than 120 characters are truncated with an ellipsis.
+  
+Setting a distinct `Summary` per Activity is especially useful for **fan-out Workflows** that schedule many instances of the same Activity Type, where the Activity Type alone is not enough to tell each bar apart on the Timeline. 
+     
+Activity `Summary` support on the Timeline shipped in Temporal UI **v2.34.6** and is available on Temporal Cloud and on self-hosted UI builds at that version or later.
+
+### Event History
+
+Individual events in the Workflow's Event History display their associated summaries when available.
+
+Workflow, Activity and Timer summaries appear in purple text next to their corresponding events, providing immediate context without requiring you to expand the Event details. 
+When you do expand an Event, the summary is also prominently displayed in the detailed view.

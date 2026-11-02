@@ -1,0 +1,91 @@
+---
+id: data-encryption
+title: Payload encryption
+sidebar_label: Payload encryption
+slug: /develop/python/data-handling/data-encryption
+toc_max_heading_level: 2
+tags:
+  - Security
+  - Encryption
+  - Codec Server
+  - Python SDK
+  - Temporal SDKs
+description: Encrypt data sent to and from the Temporal Service using a custom Payload Codec in the Python SDK.
+---
+
+Payload Codecs transform `Payload` bytes after serialization (by the Payload Converter) and before the data is sent to the Temporal Service.
+Unlike Payload Converters, codecs run outside the Workflow sandbox, so they can use non-deterministic operations and call external services.
+
+The most common use case is encryption: encrypting payloads before they reach the Temporal Service so that sensitive data is never stored in plaintext.
+
+## PayloadCodec interface
+
+Implement a `PayloadCodec` with `encode()` and `decode()` methods.
+These should loop through all of a Workflow's payloads, perform your marshaling, compression, or encryption steps in order, and set an `"encoding"` metadata field.
+
+In this example, the `encode` method compresses a payload using Python's [cramjam](https://github.com/milesgranger/cramjam) library to provide `snappy` compression.
+The `decode()` function implements the `encode()` logic in reverse:
+
+<!--SNIPSTART python-data-encryption-codec-->
+[python-sandbox/best_practices/data_encryption/codec.py](https://github.com/temporalio/documentation-sdk-code-examples/blob/main/python-sandbox/best_practices/data_encryption/codec.py)
+```py
+from typing import Iterable, List
+
+import cramjam
+from temporalio.api.common.v1 import Payload
+from temporalio.converter import PayloadCodec
+
+class CompressionCodec(PayloadCodec):
+    async def encode(self, payloads: Iterable[Payload]) -> List[Payload]:
+        return [
+            Payload(
+                metadata={
+                    "encoding": b"binary/snappy",
+                },
+                data=(bytes(cramjam.snappy.compress(p.SerializeToString()))),
+            )
+            for p in payloads
+        ]
+
+    async def decode(self, payloads: Iterable[Payload]) -> List[Payload]:
+        ret: List[Payload] = []
+        for p in payloads:
+            if p.metadata.get("encoding", b"").decode() != "binary/snappy":
+                ret.append(p)
+                continue
+            ret.append(Payload.FromString(bytes(cramjam.snappy.decompress(p.data))))
+        return ret
+```
+<!--SNIPEND-->
+
+## Configure the codec on the Data Converter
+
+Add a `data_converter` parameter to your `Client.connect()` options that overrides the default converter with your Payload Codec:
+
+<!--SNIPSTART python-data-encryption-client-->
+[python-sandbox/best_practices/data_encryption/client.py](https://github.com/temporalio/documentation-sdk-code-examples/blob/main/python-sandbox/best_practices/data_encryption/client.py)
+```py
+import dataclasses
+
+import temporalio.converter
+from temporalio.client import Client
+
+from data_encryption.codec import CompressionCodec
+
+async def connect() -> Client:
+    client = await Client.connect(
+        "localhost:7233",
+        data_converter=dataclasses.replace(
+            temporalio.converter.default(), payload_codec=CompressionCodec()
+        ),
+    )
+```
+<!--SNIPEND-->
+
+For reference, see the [Encryption](https://github.com/temporalio/samples-python/tree/main/encryption) sample.
+
+## Codec Server
+
+A Codec Server is an HTTP server that runs your `PayloadCodec` remotely, so that the Temporal Web UI and CLI can decode encrypted payloads for display.
+
+For more information, see [Codec Server](/codec-server).

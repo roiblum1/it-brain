@@ -78,6 +78,26 @@ SOURCES = {
     "tensorrt-llm": ("NVIDIA/TensorRT-LLM", ["docs/source"]),
     "dynamo": ("ai-dynamo/dynamo", ["docs"]),
     "ray-docs": ("ray-project/ray", ["doc/source/serve", "doc/source/cluster/kubernetes"]),
+    # it-brain: virtualization (KubeVirt / OpenShift Virtualization, MTV, PowerShell / PowerCLI)
+    "kubevirt-user-guide": ("kubevirt/user-guide", ["docs"]),
+    "kubevirt-docs": ("kubevirt/kubevirt", ["docs"]),
+    "cdi-docs": ("kubevirt/containerized-data-importer", ["doc", "README.md"]),
+    "hco-docs": ("kubevirt/hyperconverged-cluster-operator", ["docs", "README.md"]),
+    "forklift-docs": ("kubev2v/forklift-documentation", ["documentation", "modules"]),
+    "powershell-docs": ("MicrosoftDocs/PowerShell-Docs", ["reference/docs-conceptual", "reference/7.4/Microsoft.PowerShell.Core"]),
+    "powercli-examples": ("vmware/PowerCLI-Example-Scripts", ["README.md", "Modules", "Scripts"]),
+    # it-brain: platform tools (Temporal, Pydantic) and storage (Dell CSM, Trident)
+    "temporal-docs": ("temporalio/documentation", [
+        "docs/encyclopedia", "docs/develop/python", "docs/production-deployment/self-hosted-guide",
+        "docs/troubleshooting", "docs/references", "docs/cli", "docs/best-practices"]),
+    "temporal-mcp-docs": ("temporalio/temporal-mcp", ["README.md", "REQUEST_FOR_COMMENT.md", "docs"]),
+    "pydantic-docs": ("pydantic/pydantic", ["docs"]),
+    "pydantic-settings-docs": ("pydantic/pydantic-settings", ["docs", "README.md"]),
+    "dell-csm-docs": ("dell/csm-docs", ["content/docs"]),
+    "trident-docs": ("NetAppDocs/trident", [
+        "trident-concepts", "trident-get-started", "trident-install", "trident-managing-k8s", "trident-protect",
+        "trident-reco", "trident-reference", "trident-use", "troubleshooting.adoc", "known-issues.adoc",
+        "trident-rn.adoc", "faq.adoc"]),
     "nccl": ("NVIDIA/nccl", ["docs"]),
     "ucx": ("openucx/ucx", ["docs"]),
     "rdma-core": ("linux-rdma/rdma-core", [

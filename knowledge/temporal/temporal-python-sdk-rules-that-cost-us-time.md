@@ -22,7 +22,7 @@ Each failure mode looks like something else. They apply to any `temporalio` Pyth
 | Run hangs in **RUNNING**, workflow task retrying forever, never FAILED | A plain Python exception raised **in workflow code** fails the *workflow task*, which Temporal retries forever | Deterministic failures in workflow code must be `ApplicationError`. In **activity** code ordinary exceptions are fine (converted, class name = error type) |
 | Run RUNNING with one activity failing every minute, forever | Activities retry without attempt limit; a permanent error not classified non-retryable retries forever | List it in `non_retryable_error_types` or raise a non-retryable `ApplicationError`. **Fix by classifying, never by adding a deadline** |
 | A "non-retryable" error still retries | Error type list written as string literals with a typo — Temporal matches on type *name* | Build the list from the exception classes (`Cls.__name__`), so a wrong name is an ImportError at worker start |
-| Worker / sandbox crash on importing models | Pydantic's C extensions break the workflow sandbox | In workflow modules import `shared/` under `with workflow.unsafe.imports_passed_through():`. Entrypoints import normally. Never import settings in workflow code |
+| Worker / sandbox crash on importing models | Our model modules are re-imported inside the workflow sandbox (the docs blame Pydantic's C extensions; in newer SDKs, e.g. 1.35.0, `pydantic` / `pydantic_core` are already passed through by default, and it is our own `shared/` modules that need it — `knowledge/python/pydantic-with-temporal-data-converter-sandbox-model-evolution.md`) | In workflow modules import `shared/` under `with workflow.unsafe.imports_passed_through():`. Entrypoints import normally. Never import settings in workflow code |
 | Payloads fail to (de)serialize at one boundary | One `Client.connect(...)` without the Pydantic converter | Pass `pydantic_data_converter` on **every** client: every worker and the API |
 | Workflow gets a raw `dict` instead of its model, no error | Typed conversion is skipped silently when payload count ≠ declared parameters | Give `run()` exactly **one** Pydantic argument: a `RunArgs` wrapping input + internal resume state |
 | Activity never starts; run sits forever | `execute_activity` without `task_queue=` goes to the workflow's own queue, which no limb polls | Always pass `task_queue=` from `shared/consts.py` |
@@ -67,3 +67,4 @@ router) and passed in as input; a lookup inside the workflow would change behavi
 ## History
 
 - 2026-11-02: created from the "SDK rules that cost us time" and design sections of the Redbull Workflows docs site v1.0.61
+- 2026-11-02: sandbox-import cause refined from the Temporal Python SDK source (see the python area)

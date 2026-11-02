@@ -1,0 +1,656 @@
+# Live Migration
+
+Live migration is a process during which a running Virtual Machine
+Instance moves to another compute node while the guest workload
+continues to run and remain accessible.
+
+## Enabling the live-migration support
+
+Live migration is enabled by default in recent versions of KubeVirt. Versions
+prior to v0.56, it must be enabled in the feature gates. The
+[feature gates](../cluster_admin/activating_feature_gates.md#how-to-activate-a-feature-gate)
+field in the KubeVirt CR must be expanded by adding the `LiveMigration` to it.
+
+## Limitations
+
+- Virtual machines using a PersistentVolumeClaim (PVC) must have a
+  shared ReadWriteMany (RWX) access mode to be live migrated.
+
+- Live migration is not allowed with a pod network binding of bridge
+  interface type
+  (</#/creation/interfaces-and-networks>)
+
+- Live migration requires ports `49152, 49153` to be available in the virt-launcher pod.
+  If these ports are explicitly specified in [masquarade interface](../network/interfaces_and_networks.md#masquerade), live migration will not function.
+
+- Live migration requires the virt-launcher pod's primary network interface to have the same name on both source and target pods.
+
+- Post-copy live migration requires additional node-level permissions on
+  most environments. See [Node configuration for post-copy](#node-configuration-for-post-copy)
+  for details.
+
+- Live migration of VMs with GPUs has limitations. See [Live migration with vGPUs](#live-migration-with-nvidia-vgpus).
+
+## Initiate live migration
+
+Live migration is initiated by posting a VirtualMachineInstanceMigration
+(VMIM) object to the cluster. The example below starts a migration
+process for a virtual machine instance `vmi-fedora`
+
+```yaml
+apiVersion: kubevirt.io/v1
+kind: VirtualMachineInstanceMigration
+metadata:
+  name: migration-job
+spec:
+  vmiName: vmi-fedora
+```
+
+### Using virtctl to initiate live migration
+Live migration can also be initiated using virtctl
+```console
+    virtctl migrate vmi-fedora
+```
+
+
+## Migration Status Reporting
+
+### Condition and migration method
+
+When starting a virtual machine instance, it has also been calculated
+whether the machine is live migratable. The result is stored in
+the VMI `VMI.status.conditions`. The calculation can be based on
+multiple parameters of the VMI, however, at the moment, the calculation
+is largely based on the `Access Mode` of the VMI volumes. Live migration
+is only permitted when the volume access mode is set to `ReadWriteMany`.
+Requests to migrate a non-LiveMigratable VMI will be rejected.
+
+The reported `Migration Method` is also calculated during VMI
+start. `BlockMigration` indicates that some of the VMI disks require
+copying from the source to the destination. `LiveMigration` means that
+only the instance memory will be copied.
+
+```yaml
+Status:
+  Conditions:
+    Status: True
+    Type: LiveMigratable
+  Migration Method: BlockMigration
+```
+
+### Migration Status
+
+The migration progress status is reported in the VMI `VMI.status`.
+Most importantly, it indicates whether the migration has been
+`Completed` or if it `Failed`.
+
+Below is an example of a successful migration.
+
+```
+Migration State:
+    Completed:        true
+    End Timestamp:    2019-03-29T03:37:52Z
+    Migration Config:
+      Completion Timeout Per GiB:  800
+      Progress Timeout:             150
+    Migration UID:                  c64d4898-51d3-11e9-b370-525500d15501
+    Source Node:                    node02
+    Start Timestamp:                2019-03-29T04:02:47Z
+    Target Direct Migration Node Ports:
+      35001:                      0
+      41068:                      49152
+      38284:                      49153
+    Target Node:                  node01
+    Target Node Address:          10.128.0.46
+    Target Node Domain Detected:  true
+    Target Pod:                   virt-launcher-testvmimcbjgw6zrzcmp8wpddvztvzm7x2k6cjbdgktwv8tkq
+```
+
+## Canceling a live migration
+
+Live migration can also be canceled by simply deleting the migration
+object. A successfully aborted migration will indicate that the abort
+has been requested `Abort Requested`, and that it succeeded:
+`Abort Status: Succeeded`. The migration in this case will be `Completed`
+and `Failed`.
+
+```
+Migration State:
+    Abort Requested:  true
+    Abort Status:     Succeeded
+    Completed:        true
+    End Timestamp:    2019-03-29T04:02:49Z
+    Failed:           true
+    Migration Config:
+      Completion Timeout Per GiB:  800
+      Progress Timeout:             150
+    Migration UID:                  57a693d6-51d7-11e9-b370-525500d15501
+    Source Node:                    node02
+    Start Timestamp:                2019-03-29T04:02:47Z
+    Target Direct Migration Node Ports:
+      39445:                      0
+      43345:                      49152
+      44222:                      49153
+    Target Node:                  node01
+    Target Node Address:          10.128.0.46
+    Target Node Domain Detected:  true
+    Target Pod:                   virt-launcher-testvmimcbjgw6zrzcmp8wpddvztvzm7x2k6cjbdgktwv8tkq
+```
+
+### Using virtctl to cancel a live migration
+Live migration can also be canceled using virtctl, by specifying the name
+of a VMI which is currently being migrated
+```console
+    virtctl migrate-cancel vmi-fedora
+```
+
+## Changing Cluster Wide Migration Configuration
+
+KubeVirt puts some limits in place, so that migrations don't overwhelm
+the cluster. By default, it is configured to only run `5` migrations in
+parallel with an additional limit of a maximum of `2` outbound
+migrations per node. Finally, every migration is limited to a bandwidth
+of `64MiB/s`.
+
+These values can be changed in the `kubevirt` CR:
+
+```yaml
+apiVersion: kubevirt.io/v1
+kind: Kubevirt
+metadata:
+  name: kubevirt
+  namespace: kubevirt
+spec:
+  configuration:
+    migrations:
+      parallelMigrationsPerCluster: 5
+      parallelOutboundMigrationsPerNode: 2
+      bandwidthPerMigration: 64Mi
+      completionTimeoutPerGiB: 800
+      progressTimeout: 150
+      disableTLS: false
+      nodeDrainTaintKey: "kubevirt.io/drain"
+      allowAutoConverge: false
+      allowPostCopy: false
+      unsafeMigrationOverride: false
+```
+
+### Configuring Acceptable Levels of Workload Disruption
+
+The **AllowWorkloadDisruption** parameter enables administrators to define the
+acceptable level of workload disruption during a migration, specifically when it
+fails to converge within the specified `AcceptableCompletionTime`, which is determined by the `completionTimeoutPerGiB` configuration and the VM "size". This option
+provides a balance between ensuring migration completion and mitigating risks
+associated with different migration strategies.
+
+#### Understanding the AllowWorkloadDisruption
+
+The behavior dictated by `AllowWorkloadDisruption` depends on its configuration:
+
+- **When disabled**:
+  - Workloads are not disrupted during migration.
+  - If the migration does not converge within the `AcceptableCompletionTime`, it will be canceled and may need to be restarted.
+  - This approach minimizes workload disruption, however, "busy" workloads may not migrate in time, which increases the risk of repeated migration.
+
+- **When enabled**:
+  - The migration controller is allowed to disrupt the workload associated with long-running migrations to facilitate migration completion.
+  - When `AcceptableCompletionTime` threshold is reached, the migration controller will switch the migration into a post-copy
+    mode. If post-copy is not permitted, the migration controller will instead pause the corresponding Virtual Machine Instance to ensure migration
+    completion.
+
+#### Configuration
+
+To configure `AllowWorkloadDisruption`:
+
+1. **Disabling Workload Disruption**:
+   - Leave `AllowWorkloadDisruption` unset or explicitly set it to `false`.
+   - Example:
+
+    ```yaml
+    spec:
+      configuration:
+        migrations:
+         allowWorkloadDisruption: false
+     ```
+
+2. **Enabling Workload Disruption**:
+   - Set `AllowWorkloadDisruption` to `true` to allow the migration controller to act after the `AcceptableCompletionTime` threshold.
+   - To enable post-copy, set `AllowPostCopy` to `true`. Otherwise, if paused mode is preferred, unset `AllowPostCopy` or explicitly set it to `false`:
+
+    ```yaml
+    spec:
+      configuration:
+        migrations:
+         allowWorkloadDisruption: true
+         allowPostCopy: true
+     ```
+
+#### Key Considerations
+
+- `AllowWorkloadDisruption` determines whether the migration controller can prioritize completing the migration over avoiding workload disruption.
+- Post-copy migration, when enabled, poses some risk of data loss if a failure occurs during the post-copy phase.
+- Post-copy requires additional node-level permissions on most environments. See [Node configuration for post-copy](#node-configuration-for-post-copy) for details.
+- Pausing the workload facilitates completion of the migration without risk of data loss but may result in temporary workload inactivity.
+
+
+Bear in mind that most of these configuration can be overridden and fine-tuned to
+a specified group of VMs. For more information, please see [Migration Policies](../cluster_admin/migration_policies.md).
+
+## Understanding different migration strategies
+Live migration is a complex process. During a migration, the source VM needs to transfer its
+whole state (mainly RAM) to the target VM. If there are enough resources available, such as
+network bandwidth and CPU power, migrations should converge nicely. If this is not the scenario,
+however, the migration might get stuck without an ability to progress.
+
+The main factor that affects migrations from the guest perspective is its `dirty rate`, which is the
+rate by which the VM dirties memory. Guests with high dirty rate lead to a race during migration. On the
+one hand, memory would be transferred continuously to the target, and on the other, the same memory
+would get dirty by the guest. On such scenarios, one could consider to use more advanced migration
+strategies.
+
+Let's explain the 3 supported migration strategies as of today.
+
+### Pre-copy
+Pre-copy is the default strategy. It should be used for most cases.
+
+The way it works is as following:
+
+  1. The target VM is created, but the guest keeps running on the source VM.
+  2. The source starts sending chunks of VM state (mostly memory) to the target. This continues until
+  all of the state has been transferred to the target.
+  3. The guest starts executing on the target VM.
+  4. The source VM is removed.
+
+Pre-copy is the safest and fastest strategy for most cases. Furthermore, it can be easily cancelled,
+can utilize multithreading, and more. If there is no real reason to use another strategy, this is
+definitely the strategy to go with.
+
+However, on some cases migrations might not converge easily, that is, by the time the chunk of source
+VM state would be received by the target VM, it would already be mutated by the source VM (which is
+the VM the guest executes on). There are many reasons for migrations to fail converging, such as a
+high dirty-rate or low resources like network bandwidth and CPU. On such scenarios, see the following
+alternative strategies below.
+
+For virtual machines that explicitly set CPU resource limits, multithreaded migration is disabled and single-threaded migration will be used instead.
+### Post-copy
+The way post-copy migrations work is as following:
+
+  1. The target VM is created.
+  2. The guest is run on the **target VM**.
+  3. The source starts sending chunks of VM state (mostly memory) to the target.
+  4. When the guest, running on the target VM, would access memory:
+    1. If the memory exists on the target VM, the guest can access it.
+    2. Otherwise, the target VM asks for a chunk of memory from the source VM.
+  5. Once all of the memory state is updated at the target VM, the source VM is removed.
+
+The main idea here is that the guest starts to run immediately on the target VM. This approach
+has advantages and disadvantages:
+
+<u>advantages</u>:
+
+* The same memory chunk is never transferred twice. This is possible due to the fact that
+with post-copy it doesn't matter that a page had been dirtied since the guest is already running
+on the target VM.
+  * This means that a high dirty-rate has much less effect.
+* Consumes less network bandwidth.
+
+<u>disadvantages</u>:
+
+* When using post-copy, the VM state has no one source of truth. When the guest (running on the
+target VM) writes to memory, this memory is one part of the guest's state, but some other parts of
+it may still be updated only at the source VM. This situation is generally dangerous, since, for 
+example, if either the target or guest VMs crash the state cannot be recovered.
+* Slow warmup: when the guest starts executing, no memory is present at the target VM. Therefore,
+the guest would have to wait for a lot of memory in a short period of time.
+* Slower than pre-copy on most cases.
+* Harder to cancel a migration.
+
+#### Node configuration for post-copy
+
+Post-copy migration uses the `userfaultfd` syscall on the target node to
+fetch memory pages on demand from the source. Because the QEMU process
+runs unprivileged, additional permissions may be required depending on
+your environment.
+
+##### Kernel sysctl
+
+The following sysctl must be enabled on every node that may receive a
+post-copy migration:
+
+```
+vm.unprivileged_userfaultfd=1
+```
+
+Supported versions of OpenShift/OKD already set this sysctl via the Machine Config
+Operator, so no action is needed there. On other Kubernetes
+distributions, persist the setting by adding the line to a file such as
+`/etc/sysctl.d/99-postcopy.conf` either manually or using your cluster's node
+configuration tooling (e.g. cloud-init, Ansible, or a DaemonSet).
+
+!!! warning
+    Enabling `vm.unprivileged_userfaultfd` allows VM processes to use the
+    `userfaultfd` syscall. Some security-hardened kernels disable it by
+    default.
+
+##### Seccomp
+
+On clusters where seccomp is enforced, container runtimes such as CRI-O
+may block `userfaultfd` by default. The `KubevirtSeccompProfile`
+[feature gate](../cluster_admin/activating_feature_gates.md#how-to-activate-a-feature-gate)
+installs a seccomp profile that permits this syscall. This feature gate
+reached Beta in KubeVirt v1.7, but Beta feature gates are only enabled by
+default since v1.9 — on older versions it must be enabled explicitly.
+
+In addition to the feature gate, the KubeVirt CR must be configured to
+use the custom profile:
+
+```yaml
+apiVersion: kubevirt.io/v1
+kind: KubeVirt
+metadata:
+  name: kubevirt
+  namespace: kubevirt
+spec:
+  configuration:
+    seccompConfiguration:
+      virtualMachineInstanceProfile:
+        customProfile:
+          localhostProfile: kubevirt/kubevirt.json
+```
+
+##### SELinux
+
+On nodes with SELinux enforcing, the virt-launcher process may be
+denied `userfaultfd` depending on the `container_t` policy in use.
+Nodes running `container-selinux` v2.248 or later already include the
+necessary permission (`kernel_userfaultfd_use(container_domain)`). On
+older versions, administrators may need to create a custom SELinux
+policy module to permit this syscall for the relevant context.
+
+### Auto-converge
+Auto-converge is a technique to help pre-copy migrations converge faster without changing the core
+algorithm of how the migration works.
+
+Since a high dirty-rate is usually the most significant factor for migrations to not converge,
+auto-converge simply throttles the guest's CPU. If the migration would converge fast enough,
+the guest's CPU would not be throttled or throttled negligibly. But, if the migration would
+not converge fast enough, the CPU would be throttled more and more as time goes.
+
+This technique dramatically increases the probability of the migration converging eventually.
+
+## Using a different network for migrations
+
+Live migrations can be configured to happen on a different network than
+the one Kubernetes is configured to use.
+That potentially allows for more determinism, control and/or bandwidth,
+depending on use-cases.
+
+### Creating a migration network on a cluster
+
+A separate physical network is required, meaning that every node on the
+cluster has to have at least 2 NICs, and the NICs that will be used for
+migrations need to be interconnected, i.e. all plugged to the same switch.
+The examples below assume that `eth1` will be used for migrations.
+
+It is also required for the Kubernetes cluster to have
+[multus](https://github.com/k8snetworkplumbingwg/multus-cni.git) installed.
+
+If the desired network doesn't include a DHCP server, then
+[whereabouts](https://github.com/k8snetworkplumbingwg/whereabouts) will
+be needed as well.
+
+Finally, a NetworkAttachmentDefinition needs to be created in the
+namespace where KubeVirt is installed. Here is an example:
+```yaml
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+  name: migration-network
+  namespace: kubevirt
+spec:
+  config: '{
+      "cniVersion": "0.3.1",
+      "name": "migration-bridge",
+      "type": "macvlan",
+      "master": "eth1",
+      "mode": "bridge",
+      "ipam": {
+        "type": "whereabouts",
+        "range": "10.1.1.0/24"
+      }
+    }'
+```
+
+### Configuring KubeVirt to migrate VMIs over that network
+
+This is just a matter of adding the name of the
+NetworkAttachmentDefinition to the KubeVirt CR, like so:
+```yaml
+apiVersion: kubevirt.io/v1
+kind: Kubevirt
+metadata:
+  name: kubevirt
+  namespace: kubevirt
+spec:
+  configuration:
+    developerConfiguration:
+      featureGates:
+      - LiveMigration
+    migrations:
+      network: migration-network
+```
+
+That change will trigger a restart of the virt-handler pods, as they
+get connected to that new network.
+
+From now on, migrations will happen over that network.
+
+### Configuring KubeVirtCI for testing migration networks
+
+Developers and people wanting to test the feature before deploying
+it on a real cluster might want to configure a dedicated migration
+network in KubeVirtCI.
+
+KubeVirtCI can simply be configured to include a virtual secondary
+network, as well as automatically install multus and whereabouts.
+The following environment variables just have to be declared before
+running `make cluster-up`:
+```
+export KUBEVIRT_NUM_NODES=2;
+export KUBEVIRT_NUM_SECONDARY_NICS=1;
+export KUBEVIRT_DEPLOY_ISTIO=true;
+export KUBEVIRT_WITH_CNAO=true
+```
+
+## Migration timeouts
+
+Depending on the type, the live migration process will copy virtual
+machine memory pages and disk blocks to the destination. During this
+process non-locked pages and blocks are copied and become free for
+the instance to use again. To achieve a successful migration, it is
+assumed that the instance will write to the free pages and blocks
+(pollute the pages) at a lower rate than these are being copied.
+
+### Completion time
+
+In some cases the virtual machine can have a high dirty-rate, which
+means it will write to different memory pages / disk blocks at a
+higher rate than these can be copied over.
+This situation will prevent the migration process from completing
+in a reasonable amount of time.
+
+In this case, a timeout can be defined so that live migration will
+either be aborted or switched to post-copy mode (if it's enabled)
+if it is running for a long period of time.
+
+The timeout is calculated based on the size of
+the VMI, its memory and the ephemeral disks that are needed to be
+copied. The configurable parameter `completionTimeoutPerGiB`, which
+defaults to 150s, is the maximum amount of time per GiB of data allowed before the migration
+gets aborted / switched to post-copy mode.
+For example, with the default value, a VMI with 8GiB of memory will time-out after 1200 seconds.
+
+### Progress timeout
+
+Live migrations will also abort when it notices that the "remaining bytes"
+in the migration are not making any progress. The time to wait for live migrations
+to make progress in transferring data is configurable by the `progressTimeout`
+parameter, which defaults to 150s. Since this timeout resets whenever *any*
+progress is made, this mechanism does not timeout migrations whose remaining
+bytes are fluctuating back-and-forth and is only useful for migrations that
+are completely stuck.
+
+### Stall detection
+
+**FEATURE STATE:** KubeVirt v1.9 (Alpha)
+
+Busy guests more often fail to converge because remaining bytes plateau or oscillate than because
+transfer is completely stuck. Stall detection covers that case: once remaining bytes stop making
+*net progress*, it switches the migration over near a local minimum instead of waiting for
+`completionTimeoutPerGiB`. This feature is alpha and must be enabled via the
+`MigrationStallDetection` feature gate.
+
+```yaml
+apiVersion: kubevirt.io/v1
+kind: KubeVirt
+metadata:
+  name: kubevirt
+  namespace: kubevirt
+spec:
+  configuration:
+    developerConfiguration:
+      featureGates:
+        - MigrationStallDetection
+```
+
+There are two important configuration options associated with stall detection:
+
+- `maxDowntimeMs` (default 900): the maximum acceptable downtime for your workload, in milliseconds.
+  Only meaningful when `allowWorkloadDisruption` is false (the default). The stall detector will try
+  for a better downtime than this; if even this budget cannot be met, the migration aborts.
+  Configurable on the KubeVirt CR
+  ([MigrationConfiguration](https://kubevirt.io/api-reference/main/definitions.html#_v1_migrationconfiguration))
+  and on [MigrationPolicy](../cluster_admin/migration_policies.md)
+  ([MigrationPolicySpec](https://kubevirt.io/api-reference/main/definitions.html#_v1alpha1_migrationpolicyspec)).
+- `stallProgressTimeout` (default 40): how many seconds remaining bytes may plateau before the
+  migration is considered stalled. Higher values spend more time looking for a better switchover
+  point (longer migration, usually better downtime); lower values do the opposite. In alpha this
+  lives under `MigrationPolicy.spec.experimental.stallDetector`
+  ([ExperimentalMigrationOptions](https://kubevirt.io/api-reference/main/definitions.html#_v1_experimentalmigrationoptions)).
+  At graduation it is expected to repurpose the existing `progressTimeout` field.
+
+Additional stall-detector options are also exposed under
+`MigrationPolicy.spec.experimental.stallDetector` in alpha; see
+[StallDetectorOptions](https://kubevirt.io/api-reference/main/definitions.html#_v1_stalldetectoroptions)
+for the full list. Only `stallProgressTimeout` is currently expected to graduate. The rest are
+exposed so the community can try different values if the defaults do not work well for them, and
+report whether there is a real need to keep any of those options exposed. Most of those other fields
+are technically dense and algorithm-specific; for details on what they do, see the
+[StallDetectorOptions](https://kubevirt.io/api-reference/main/definitions.html#_v1_stalldetectoroptions)
+API Reference or
+[VEP 248](https://github.com/kubevirt/enhancements/tree/main/veps/sig-compute/248-migration-convergence).
+
+## Disabling secure migrations
+
+**FEATURE STATE:** KubeVirt v0.43
+
+Sometimes it may be desirable to disable TLS encryption of migrations to
+improve performance. Use `disableTLS` to do that:
+
+```yaml
+apiVersion: kubevirt.io/v1
+kind: Kubevirt
+metadata:
+  name: kubevirt
+  namespace: kubevirt
+spec:
+  configuration:
+    developerConfiguration:
+      featureGates:
+        - "LiveMigration"
+    migrations:
+      disableTLS: true
+```
+
+**Note:** While this increases performance it may allow MITM attacks. Be careful.
+
+## Live migration with (NVIDIA) vGPUs
+
+**FEATURE STATE:** KubeVirt v1.9 (Alpha)
+
+KubeVirt can live migrate a VirtualMachineInstance that has a single NVIDIA vGPU exposed as a
+mediated device (mdev).
+
+### Prerequisites
+
+Before a vGPU-backed VMI can live migrate, complete all of the following:
+
+1. Install the NVIDIA Virtual GPU Manager (host driver) on every node that may run or receive
+   the VM. NVIDIA requires this driver before any mediated devices exist on the node. Install
+   it yourself or with the NVIDIA GPU Operator.
+2. Create the mediated device instances on those nodes. With the vendor driver already installed,
+   pick **one** creator so they do not conflict:
+   - KubeVirt's [mediated devices configuration](../compute/mediated_devices_configuration.md), which creates mdevs from the types the driver
+     exposes.
+   - The NVIDIA GPU Operator [vGPU Device Manager](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/gpu-operator-kubevirt.html), or another vendor tool that creates mdevs. If an
+     external plugin owns creation, disable KubeVirt mdev management on those nodes
+     (`spec.configuration.mediatedDevicesConfiguration.enabled: false`).
+3. Allowlist the mdev type under `permittedHostDevices.mediatedDevices` and assign it to the VM as
+   described in [Host Devices Assignment](../compute/host-devices.md#listing-permitted-devices). If the NVIDIA GPU Operator (or another plugin) advertises
+   the resource, set `externalResourceProvider: true`. PCI GPU passthrough is not migratable; the
+   device must appear as a mediated device.
+4. Enable the `VGPULiveMigration` feature gate (see below).
+
+Source and destination hosts must also satisfy [NVIDIA's vGPU migration requirements](https://docs.nvidia.com/vgpu/latest/grid-vgpu-release-notes-red-hat-el-kvm/validated-platforms.html#red-hat-el-vgpu-migration-support). In alpha,
+KubeVirt does not enforce those constraints when choosing a target.
+
+### Enabling vGPU live migration
+
+Enable the `VGPULiveMigration` feature gate in the KubeVirt CR:
+
+```yaml
+apiVersion: kubevirt.io/v1
+kind: KubeVirt
+metadata:
+  name: kubevirt
+  namespace: kubevirt
+spec:
+  configuration:
+    developerConfiguration:
+      featureGates:
+        - VGPULiveMigration
+```
+
+Once enabled, migrate the VMI the same way as any other live-migratable VM (for example with a
+`VirtualMachineInstanceMigration` object or `virtctl migrate`).
+
+### Limitations and requirements
+
+Alpha support is intentionally narrow. The following restrictions apply:
+
+- **Single NVIDIA mdev vGPU only.** The VMI must request exactly one GPU that is a mediated device.
+  Live migration is not supported for:
+  - PCI GPU passthrough
+  - SR-IOV vGPUs
+  - VMs with multiple vGPUs (planned for Beta)
+- **Compatible guest OS.** The operating system running on the guest VM must be running either
+  a [supported version of Windows](https://docs.nvidia.com/vgpu/latest/grid-vgpu-release-notes-red-hat-el-kvm/validated-platforms.html#red-hat-el-windows-support) or a [supported version of Linux](https://docs.nvidia.com/vgpu/latest/grid-vgpu-release-notes-red-hat-el-kvm/validated-platforms.html#red-hat-el-linux-support).
+- **Compatible guest drivers.** The NVIDIA drivers running on the guest [must be compatible](https://docs.nvidia.com/vgpu/latest/grid-vgpu-release-notes-red-hat-el-kvm/release-notes.html) with the host Virtual GPU Manager.
+- **NVIDIA guest feature limits.** Migration fails if the guest has CUDA unified memory, debuggers,
+  or profilers enabled. See the NVIDIA link in [Prerequisites](#prerequisites) for the full vendor requirements.
+- **No post-copy.** Post-copy live migration is not available for VMs with a vGPU.
+- **Convergence and downtime.** Even an idle guest with a vGPU has a baseline memory dirty rate,
+  so pre-copy usually cannot meet QEMU's default ~300 ms downtime target. In practice most vGPU
+  migrations therefore need [`allowWorkloadDisruption`](#configuring-acceptable-levels-of-workload-disruption) (for example via a [MigrationPolicy](../cluster_admin/migration_policies.md)). Because
+  post-copy is unavailable for vGPUs, disruption means pausing the guest until the migration
+  finishes.
+
+  With that default path, switchover still waits for the migration completion timeout
+  (`completionTimeoutPerGiB` and VM size), which can leave the migration running for a long time
+  before the pause.
+
+  Enabling [stall detection](#stall-detection) (also alpha) changes that behavior: once remaining bytes plateau,
+  KubeVirt can switch over earlier instead of waiting out the completion timeout. Stall detection
+  also exposes `maxDowntimeMs`, which lets you keep `allowWorkloadDisruption` false and still converge
+  by raising the downtime budget up to a maximum acceptable downtime you choose; if even that limit
+  cannot be met, the migration aborts.

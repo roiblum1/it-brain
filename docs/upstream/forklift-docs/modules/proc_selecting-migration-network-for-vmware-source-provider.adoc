@@ -1,0 +1,48 @@
+// Module included in the following assemblies:
+//
+// * documentation/doc-Planning_your_migration/assemblies/assembly_planning-migration-vmware.adoc
+
+:_mod-docs-content-type: PROCEDURE
+[id="proc_selecting-migration-network-for-vmware-source-provider_{context}"]
+= Selecting a migration network for a VMware source provider
+
+[role="_abstract"]
+You can select a migration network in the {ocp} web console for a source provider to reduce risk to the source environment and to improve performance.
+
+Using the default network for migration can result in poor performance because the network might not have sufficient bandwidth. This situation can have a negative effect on the source platform because the disk transfer operation might saturate the network.
+
+You can also control the network from which disks are transferred from a host by using the Network File Copy (NFC) service in vSphere.
+
+[NOTE]
+====
+If you input any value of maximum transmission unit (MTU) besides the default value in your migration network, you must also input the same value in the {ocp-short} transfer network that you use. For more information about the {ocp-short} transfer network, see xref:proc_creating-plan-wizard-vmware_vmware[Creating a migration plan].
+====
+
+.Prerequisites
+
+* The migration network must have enough throughput, minimum speed of 10 Gbps, for disk transfer.
+* The migration network must be accessible to the {virt} nodes through the default gateway.
++
+The source virtual disks are copied by a pod that is connected to the pod network of the target namespace.
+
+* The target namespace must have network connectivity to the {vmw} source environment.
++
+Migration pods run in the target namespace and require outbound access to the {vmw} API and ESXi hosts. If you use NetworkPolicies to restrict egress connections from the target namespace, you must configure policies that allow connections to {vmw}. This requirement applies whether you use the pod network, user-defined networks (UDNs), or cluster user-defined networks (CUDNs) in the target namespace.
+
+* The migration network should have jumbo frames enabled.
+
+.Procedure
+
+. In the {ocp} web console, click *Migration for Virtualization* > *Providers*.
+. Click the host number in the *Hosts* column beside a provider to view a list of hosts.
+. Select one or more hosts and click *Select migration network*.
+. Specify the following fields:
+
+* *Network*: Network name
+* *ESXi host admin username*: For example, `root`
+* *ESXi host admin password*: Password
+
+. Click *Save*.
+. Verify that the status of each host is *Ready*.
++
+If a host status is not *Ready*, the host might be unreachable on the migration network or the credentials might be incorrect. You can modify the host configuration and save the changes.

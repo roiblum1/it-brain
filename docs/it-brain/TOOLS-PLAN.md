@@ -33,7 +33,10 @@ air gap): `docs/ADMIN.md` and `scripts/fetch-mcp-binaries.py`.
 
 | System | Team | Candidate | Status | Notes |
 |---|---|---|---|---|
-| NetApp ONTAP | storage | [`NetApp/ontap-mcp`](https://github.com/NetApp/ontap-mcp) (Go, Apache-2.0) | evaluate first | its `docs/tools.md` describes `--read-only` (only `readOnlyHint` tools registered) and multi-cluster config — read from the docs on 2026-11-02, not run |
+| Kubernetes / KubeVirt | ocp, virtualization | vendored `kubernetes-mcp-server` + **`kubevirt` toolset** | **in the plugin** | `mcp/servers/kubernetes.md` |
+| Temporal | ocp | vendored [`temporalio/temporal-mcp`](https://github.com/temporalio/temporal-mcp) v0.0.5 (MIT, pre-release, read-only) | **in the plugin (optional)** | `mcp/servers/temporal.md` |
+| server-scan | ocp | its own read-only MCP at `/mcp` | per engineer (`claude mcp add`) | `mcp/servers/server-scan.md` |
+| NetApp ONTAP | storage | [`NetApp/ontap-mcp`](https://github.com/NetApp/ontap-mcp) (Go, Apache-2.0) | evaluated — container on the shared deployment | `--read-only`; `mcp/servers/ontap-mcp.md` |
 | Dell PowerMax | storage | Unisphere REST API | find / build | in-house read-only wrapper if no vendor MCP fits |
 | Dell PowerFlex | storage | PowerFlex gateway REST API | find / build | |
 | Dell PowerScale | storage | OneFS platform API (PAPI) | find / build | |
@@ -41,8 +44,11 @@ air gap): `docs/ADMIN.md` and `scripts/fetch-mcp-binaries.py`.
 | Commvault | storage | Commvault REST API | find / build | |
 | Cisco ACI | network | APIC REST API | find / build | read-only APIC user; class queries (`/api/class/fvAEPg.json`) are enough for most questions |
 | Palo Alto | network | PAN-OS / Panorama XML + REST API | find / build | read-only admin role; API keys are secrets (validate flags `LUFRPT…`) |
-| VMware | ocp (provisional) | vCenter REST API | find / build | read-only role |
-| Nutanix | ocp (provisional) | Prism Central v3/v4 API | find / build | viewer role |
+| VMware | virtualization | vCenter REST API; community MCPs exist (not vetted) | find / build | read-only role; PowerCLI is the scripted path (`knowledge/powercli/README.md`) |
+| Nutanix | virtualization | [`nutanix/ntnx-api-mcp-server`](https://github.com/nutanix/ntnx-api-mcp-server) (Apache-2.0, Python, `READ_ONLY_MODE=true` default) | evaluated — container or wheelhouse | `mcp/servers/nutanix-mcp.md` |
+
+Community MCP servers found for vSphere, PAN-OS, ACI and Ceph (GitHub search, 2026-11-02) are small, single-author
+projects — not vendored; prefer the vendor's own server or the in-house read-only wrapper below.
 
 **In-house fallback:** one stdlib Python MCP server (`it-infra-readonly`, Phase 3) with a per-system allow-list of
 `GET` endpoints, response size limits and a redaction pass (IPs, serials, WWNs/IQNs → placeholders) before results

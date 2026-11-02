@@ -1,0 +1,42 @@
+include::modules/common-attributes.adoc[]
+ifdef::upstream[]
+include::../upstream-attributes.adoc[]
+endif::[]
+
+[id="{migrating-guide-title}"]
+= {migrating-guide-title}
+
+:compat-mode:
+:context: mtv
+
+:_mod-docs-content-type: ASSEMBLY
+
+include::modules/con_performing-migration-intro.adoc[leveloffset=+1]
+
+include::assemblies/assembly_migrating-from-vmware.adoc[leveloffset=+1]
+
+include::assemblies/assembly_migrating-from-rhv.adoc[leveloffset=+1]
+
+include::assemblies/assembly_migrating-from-osp.adoc[leveloffset=+1]
+
+include::assemblies/assembly_migrating-from-ova.adoc[leveloffset=+1]
+
+include::assemblies/assembly_migrating-from-hyperv.adoc[leveloffset=+1]
+
+include::assemblies/assembly_migrating-from-aws.adoc[leveloffset=+1]
+
+include::assemblies/assembly_migrating-from-cnv.adoc[leveloffset=+1]
+
+include::assemblies/assembly_advanced-migration-options.adoc[leveloffset=+1]
+
+include::assemblies/assembly_upgrading-uninstalling-mtv.adoc[leveloffset=+1]
+
+include::assemblies/assembly_understanding-mtv-migration.adoc[leveloffset=+1]
+
+include::assemblies/assembly_troubleshooting-migration.adoc[leveloffset=+1]
+
+include::assemblies/assembly_mtv-performance-recommendations.adoc[leveloffset=+1]
+
+include::modules/con_mtv-telemetry.adoc[leveloffset=+1]
+
+

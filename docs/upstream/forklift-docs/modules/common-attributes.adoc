@@ -1,0 +1,62 @@
+// Attributes for the Migration Toolkit for Virtualization (downstream)
+// Attributes for Forklift (upstream) are in ../upstream-attributes.adoc
+// text
+:kebab: Options menu image:kebab.png[title="Options menu",height=20]
+// Note: Backticks (`) block variable substitution. To format {namespace} in monospace
+// while allowing it to resolve, use +{namespace}+ instead of `{namespace}`.
+:namespace: openshift-mtv
+:oc: oc
+:ocp: Red Hat OpenShift
+:ocp-name: OpenShift
+:ocp-short: OpenShift
+// when updating the ocp-version, update the ocp-y-version
+:ocp-version: 4.22
+:ocp-y-version: 4.22, 4.21, 4.20
+:ocp-doc: link:https://docs.redhat.com/en/documentation/openshift_container_platform/{ocp-version}/html-single
+:operator: mtv-operator
+:operator-name-ui: Migration Toolkit for Virtualization Operator
+:operator-name: MTV Operator
+:osp: OpenStack
+:aws: AWS
+:ec2: EC2
+:rosa: ROSA
+:project-full: Migration Toolkit for Virtualization
+:project-short: MTV
+:project-first: {project-full} ({project-short})
+:project-version: 2.12
+:mtv-plan: https://docs.redhat.com/en/documentation/migration_toolkit_for_virtualization/{project-version}/html/planning_your_migration_to_red_hat_openshift_virtualization/
+:mtv-mig: https://docs.redhat.com/en/documentation/migration_toolkit_for_virtualization/{project-version}/html/migrating_your_virtual_machines_to_red_hat_openshift_virtualization/
+:project-z-version: 2.12.8
+:rhel-first: Red Hat Enterprise Linux (RHEL)
+:virt: OpenShift Virtualization
+:must-gather-image: registry.redhat.io/migration-toolkit-virtualization/mtv-must-gather-rhel8:{project-z-version}
+:hook-runner-image: registry.redhat.io/rhmtc/openshift-migration-hook-runner-rhel8
+:rhv-full: Red Hat Virtualization
+:rhv-short: RHV
+:a-rhv: a {rhv-full}
+:a-virt: an {virt}
+:manager: Manager
+:vmw: VMware
+
+// Red Hat OpenShift Lightspeed
+:lightspeed-full: Red Hat OpenShift Lightspeed
+:lightspeed-short: Lightspeed
+:lightspeed-operator: Red Hat OpenShift Lightspeed Operator
+
+// doc metadata
+:icons: font
+:build: downstream
+:toc: macro
+:experimental:
+:keywords: migration, VMware, OpenShift Virtualization, KubeVirt, migrating, virtual machines, OpenShift, Red Hat Virtualization, RHV
+:imagesdir: modules/images
+//planning guide
+:planning-guide-title: Planning your migration to Red Hat {virt}
+:subtitle-planning: Planning your migration of virtual machines from VMware vSphere, {rhv-full} or {osp} platforms, or other platforms to Red Hat {virt} by using the {project-full}
+:abstract-planning: Install the {project-first} Operator and configure {project-short} to plan a cold or warm migration of virtual machines to Red Hat {virt} on an OpenShift platform. Map the source and destination infrastructure for your migration, including storage and networking, and create validation rules.
+//migrating guide
+:migrating-guide-title: Migrating your virtual machines to Red Hat {virt}
+:subtitle-migrating: Migrating virtual machines from {vmw} vSphere, {rhv-full} or {osp} platforms, or other platforms to Red Hat {virt} by using the {project-full}
+:abstract-migrating: Run your migration plan by using either the {project-first} user interface in the Red Hat OpenShift web console or the command-line interface.
+
+

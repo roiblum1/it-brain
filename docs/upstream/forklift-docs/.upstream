@@ -1,0 +1,7 @@
+repo: kubev2v/forklift-documentation
+ref: main
+commit: 3a11e610e5f85ef8cf75267e5d728df891a7f1ab
+latest_tag: v2.11
+paths: documentation, modules
+files: 514
+synced: 2026-11-02T21:36:22Z

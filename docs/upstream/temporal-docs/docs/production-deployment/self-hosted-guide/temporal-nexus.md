@@ -1,0 +1,163 @@
+---
+id: nexus
+title:  Self-hosted Temporal Nexus
+sidebar_label: Temporal Nexus
+description: Use Nexus in your self-hosted Temporal Service.
+toc_max_heading_level: 4
+tags:
+  - Self hosting
+  - enable-nexus
+  - multi-cluster-replication
+---
+
+:::info NEW TO NEXUS?
+
+This page explains how to self-host Nexus. To learn about Nexus, see the [how Nexus works page](/nexus). To evaluate whether Nexus fits your use case, see the [evaluation guide](/evaluate/features/nexus).
+
+:::
+
+## Enable Nexus
+
+Nexus can be configured by setting static configuration and dynamic configuration entries.
+
+:::note
+Replace `$PUBLIC_URL` with a URL value that's accessible to external callers or internally within the cluster.
+Currently, external Nexus calls are considered experimental so it should be safe to use the address of an internal load balancer for the Frontend Service.
+:::
+
+To enable Nexus in your deployment:
+
+1. Enable the HTTP API in the server's static configuration.
+
+   ```yaml
+   services:
+     frontend:
+       rpc:
+         # NOTE: keep other fields as they were
+         httpPort: 7243
+
+   clusterMetadata:
+     # NOTE: keep other fields as they were
+     clusterInformation:
+       active:
+         # NOTE: keep other fields as they were
+         httpAddress: $PUBLIC_URL:7243
+   ```
+
+2. Set the required dynamic configuration
+    1. **Prior to version 1.30.X**, you must set the public callback URL and the allowed callback addresses.
+
+       **NOTE**: the callback endpoint template and allowed addresses should be set when using the experimental
+       "external" endpoint targets.
+
+       ```yaml
+       component.nexusoperations.callback.endpoint.template:
+         # The URL must be publicly accessible if the callback is meant to be called by external services.
+         # When using Nexus for cross namespace calls, the URL's host is irrelevant as the address is resolved using
+         # membership. The URL is a Go template that interpolates the `NamepaceName` and `NamespaceID` variables.
+         - value: https://$PUBLIC_URL:7243/namespaces/{{.NamespaceName}}/nexus/callback
+       component.callbacks.allowedAddresses:
+         # Limits which callback URLs are accepted by the server.
+         # Wildcard patterns (*) and insecure (HTTP) callbacks are intended for development only.
+         # For production, restrict allowed hosts and set AllowInsecure to false
+         # whenever HTTPS/TLS is supported. Allowing HTTP increases MITM and data exposure risk.
+         - value:
+             - Pattern: "*" # Update to restrict allowed callers, for example "*.example.com"
+               AllowInsecure: true # In production, set to false and ensure traffic is HTTPS/TLS encrypted
+       ```
+
+    2. **Version 1.30.X+**: Nexus is enabled by default. Only the system callback URL is needed.
+       ```yaml
+       component.nexusoperations.useSystemCallbackURL:
+         - value: true
+       ```
+
+## Build and use Nexus Services
+
+See [how Nexus works](/nexus) for an architectural overview, then follow an SDK guide to build your first Nexus Service.
+
+:::tip SDK GUIDES
+
+- [Go](/develop/go/nexus/feature-guide) |
+  [Java](/develop/java/nexus) |
+  [Python](/develop/python/nexus) |
+  [TypeScript](/develop/typescript/nexus) |
+  [.NET](/develop/dotnet/nexus)
+
+:::
+
+## Multi-Cluster Replication (multi-region failover)
+
+:::warning EXPERIMENTAL
+
+Nexus across [Multi-Cluster Replication](/self-hosted-guide/multi-cluster-replication)
+is experimental.
+
+:::
+
+Nexus works across
+[Multi-Cluster Replication](/self-hosted-guide/multi-cluster-replication). An
+asynchronous Nexus Operation started in one Cluster completes even if its Namespace
+fails over, or its Cluster is lost, before the Operation finishes.
+
+:::note Endpoint target types
+
+This applies to [Worker-target Endpoints](/nexus/endpoints), where the Endpoint
+routes to a target Namespace and Task Queue that a Worker polls. Endpoints can also
+target an external URL (`--target-url`), which is experimental and not covered here.
+
+:::
+
+### Configuration
+
+1. **Set up Multi-Cluster Replication.** See
+   [Multi-Cluster Replication](/self-hosted-guide/multi-cluster-replication) for
+   connecting Clusters and creating replicated Namespaces.
+
+2. **Advertise a frontend HTTP address on every Cluster.** Set
+   `frontend.rpc.httpPort` and `clusterInformation.<cluster>.httpAddress` (shown in
+   [Enable Nexus](#enable-nexus) for one Cluster) on **each** Cluster, each with its
+   own address, so the other Clusters can reach it to deliver callbacks.
+
+3. **Register Endpoints on every Cluster.** The
+   [Nexus Endpoint registry](/nexus/registry) isn't replicated across Clusters.
+   Create the same Endpoints (same target Namespace and Task Queue) on **each** Cluster.
+
+4. **Cross-Cluster forwarding.** Nexus request and callback forwarding to the
+   active Cluster is on by default; no additional configuration is required.
+
+### What to expect on failover
+
+An asynchronous Nexus Operation completes even when the Handler Namespace fails
+over before its completion callback is delivered. Two properties make this work:
+
+- The pending completion callback is **durable state on the Handler Workflow**, so
+  it fails over together with the Handler Namespace and is re-driven from the new
+  active Cluster.
+- Each Namespace resolves its active Cluster **independently**. The callback is
+  routed to the **Caller Namespace's** current active Cluster (re-resolved on each
+  attempt), which is unaffected by the Handler Namespace's failover.
+
+The sequence below shows the Handler Namespace failing over from Cluster A to
+Cluster B while the Caller Namespace stays active on Cluster A. The Handler
+Workflow finishes on Cluster B, and its completion callback is still delivered back
+to the Caller on Cluster A:
+
+```mermaid
+sequenceDiagram
+    box Cluster A
+    participant caA as Caller Namespace
+    participant haA as Handler Namespace
+    end
+    box Cluster B
+    participant haB as Handler Namespace
+    end
+    Note over caA,haA: Caller and Handler Namespaces<br/>active on Cluster A
+    caA->>haA: start Nexus Operation
+    haA-->>caA: Operation started, token returned
+    Note over haA: Handler Workflow running, completion callback pending
+    Note over haA,haB: 💥 Handler Namespace fails over to Cluster B<br/>(Caller stays on Cluster A)
+    Note over haB: Handler Workflow resumes on B, pending callback re-driven from B
+    haB->>caA: deliver completion callback to Caller's active Cluster (A)
+    Note over caA: Operation completes on the Caller
+```

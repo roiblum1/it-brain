@@ -1,0 +1,46 @@
+---
+id: parent-close-policy
+title: Parent Close Policy
+description: Understand the Parent-Child Workflow relationship, including when to use Child Workflows and Parent Close Policies. 
+slug: /parent-close-policy
+toc_max_heading_level: 4
+tags:
+  - Concepts
+  - Child Workflows
+  - Parent Close Policy
+---
+
+import { CaptionedImage } from '@site/src/components';
+
+This page discusses [Parent Close Policy](#parent-close-policy).
+
+## What is a Parent Close Policy? {/* #parent-close-policy */}
+
+A Parent Close Policy determines what happens to a Child Workflow Execution if its Parent changes to a Closed status (Completed, Failed, or Timed out).
+
+- [How to set a Parent Close Policy using the Go SDK](/develop/go/workflows/child-workflows#parent-close-policy)
+- [How to set a Parent Close Policy using the Java SDK](/develop/java/workflows/child-workflows#parent-close-policy)
+- [How to set a Parent Close Policy using the PHP SDK](/develop/php/workflows/child-workflows#parent-close-policy)
+- [How to set a Parent Close Policy using the Python SDK](/develop/python/workflows/child-workflows#parent-close-policy)
+- [How to set a Parent Close Policy using the TypeScript SDK](/develop/typescript/workflows/child-workflows#parent-close-policy)
+- [How to set a Parent Close Policy using the .NET SDK](/develop/dotnet/workflows/child-workflows#parent-close-policy)
+- [How to set a Parent Close Policy using the Rust SDK](/develop/rust/workflows/child-workflows#parent-close-policy)
+
+There are three possible values:
+
+- **Abandon:** the Child Workflow Execution is not affected.
+- **Request Cancel:** a Cancellation request is sent to the Child Workflow Execution.
+- **Terminate** (default): the Child Workflow Execution is forcefully Terminated.
+
+[`ParentClosePolicy`](https://github.com/temporalio/api/blob/70cec27214ec2173974fb045667df324b45e705c/temporal/api/enums/v1/workflow.proto#L50) proto definition.
+
+Each Child Workflow Execution may have its own Parent Close Policy.
+This policy applies only to Child Workflow Executions and has no effect otherwise.
+
+<CaptionedImage
+    src="/diagrams/parent-close-policy.svg"
+    title="Parent Close Policy entity relationship"
+    />
+
+You can set policies per child, which means you can opt out of propagating terminates / cancels on a per-child basis.
+This is useful for starting Child Workflows asynchronously (see [relevant issue here](https://community.temporal.io/t/best-way-to-create-an-async-child-workflow/114) or the corresponding SDK docs).

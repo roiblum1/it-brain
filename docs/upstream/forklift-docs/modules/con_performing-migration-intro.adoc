@@ -1,0 +1,17 @@
+// Module included in the following assemblies:
+//
+// * documentation/doc-Migrating_your_virtual_machines/master.adoc
+
+:_mod-docs-content-type: CONCEPT
+
+[id="con_performing-migration-intro_{context}"]
+= Performing a migration
+
+[role="_abstract"]
+When you have planned your migration by using the {project-first}, you can migrate virtual machines from the following source providers to {virt} destination providers:
+
+* VMware vSphere
+* {rhv-full} ({rhv-short})
+* {osp}
+* Open Virtual Appliances (OVAs) that were created by VMware vSphere
+* Remote {virt} clusters

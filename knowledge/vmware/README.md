@@ -2,11 +2,9 @@
 
 The VMware platform itself: vCenter, ESXi, vSAN, NSX (OpenShift-on-vSphere quirks stay in area vsphere).
 
-- **Owner (approves MRs):** OpenShift Container Platform team (`ocp`)
-- **Consulted:** `storage`, `network`
+- **Owner (approves MRs):** Virtualization team (`virtualization`)
+- **Consulted:** `ocp`, `storage`, `network`
 - **Domain:** hypervisors (`virtualization`)
-
-> **Ownership is provisional** — not yet confirmed by the teams (`docs/it-brain/ROADMAP.md`).
 
 ## Belongs here
 
@@ -18,7 +16,7 @@ OpenShift-on-vSphere installer / machine API / vSphere CSI from the cluster side
 
 ## Offline sources
 
-`vsphere-csi-driver` docs (kubernetes-sigs/vsphere-csi-driver `docs/` — planned); VMware product docs → vendor-drop. Status of each: `docs/it-brain/SOURCES-PLAN.md`.
+`vsphere-csi-driver` docs (kubernetes-sigs/vsphere-csi-driver `docs/` — planned); `powercli-examples` and `powershell-docs` (snapshots) for automation; VMware product docs → vendor-drop. Status of each: `docs/it-brain/SOURCES-PLAN.md`.
 
 ## Redact
 
@@ -26,6 +24,6 @@ Use `<vcenter>`, `<datastore>`, cluster / host names → placeholders. General r
 
 ## First pages we want
 
-- who owns vCenter (ownership is provisional — confirm a team)
+- vCenter / cluster layout per site, and which VMs are OpenShift nodes (so maintenance does not drain a cluster by surprise); PowerCLI recipes live in `knowledge/powercli/`, migrations to KubeVirt in `knowledge/kubevirt/`
 
 Write pages from `templates/` and the frontmatter in `docs/FRONTMATTER.md`; this README is the area's charter, not a knowledge page.

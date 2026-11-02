@@ -1,0 +1,7 @@
+repo: temporalio/documentation
+ref: main
+commit: 8a3ddeebf4fff5b739a91241abf689021c4327b0
+latest_tag: 
+paths: docs/encyclopedia, docs/develop/python, docs/production-deployment/self-hosted-guide, docs/troubleshooting, docs/references, docs/cli, docs/best-practices
+files: 261
+synced: 2026-11-02T21:36:33Z

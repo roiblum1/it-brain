@@ -5,7 +5,7 @@ area: openshift
 tags: [mcp, kubernetes, openshift, cluster-admin, kubeconfig]
 applies_to: []
 confidence: observed
-last_verified: 2026-10-03
+last_verified: 2026-11-02
 owners: [platform-team]
 source: claude-session
 ---
@@ -64,10 +64,30 @@ ClusterOperator, Application, Secret…).
 Write: `pods_exec`, `pods_run`, `pods_delete`, `resources_create_or_update`, `resources_delete`,
 `resources_scale`.
 
-Other toolsets exist upstream (`helm`, `kubevirt`, `tekton`, `kiali`, `netobserv`, `kcp`); enable one in
+### KubeVirt toolset (enabled since 2026-11-02 — we run OpenShift Virtualization)
+
+`kubernetes.toml` enables `toolsets = ["core", "config", "kubevirt"]`, which adds 6 tools (25 in total with the
+dummy single-context kubeconfig used for the check; `configuration_contexts_list` appears with several contexts):
+
+| Tool | Does | Changes state |
+|---|---|---|
+| `vm_troubleshoot` | collects VM + VMI status, volumes, virt-launcher pod, its logs and events into one report | no |
+| `vm_guest_info` | guest-agent data of a running VM | no |
+| `vm_lifecycle` | `start` / `stop` / `restart` by setting `runStrategy` (`Always` / `Halted`) | **yes** |
+| `vm_create`, `vm_create_from_template` | create a VirtualMachine (instance types, preferences, Multus NICs) | **yes** |
+| `vm_clone` | creates a `VirtualMachineClone` | **yes** |
+
+Air-gap caveat: `vm_create` resolves OS names (`fedora`, `rhel9` …) to container disks on `quay.io/containerdisks`,
+which our clusters cannot reach — pass an image from the mirror registry or use an in-cluster DataSource.
+Approve every write call; VM guidance: `knowledge/kubevirt/README.md`.
+
+Other toolsets exist upstream (`helm`, `tekton`, `kiali`, `netobserv`, `kcp`); enable one in
 `kubernetes.toml` only when we use that product.
 
 ## What is verified
+
+- 2026-11-02, linux x86_64 (vendored v0.0.67) with `kubevirt` enabled: starts and lists the 25 tools including the
+  6 `vm_*` tools; not run against a cluster with KubeVirt.
 
 - 2026-10-03, macOS arm64: the binary starts from the plugin with this config and lists the 20 tools above;
   `configuration_view` is absent; `context` appears on tools when the kubeconfig has several contexts.
@@ -80,3 +100,4 @@ Other toolsets exist upstream (`helm`, `kubevirt`, `tekton`, `kiali`, `netobserv
 
 - 2026-10-03: added, vendored v0.0.67.
 - 2026-10-03: switched from read-only to full access at the platform team's request (cluster admins, per-call approval).
+- 2026-11-02: KubeVirt toolset enabled (6 vm_* tools)

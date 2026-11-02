@@ -1,0 +1,58 @@
+ifdef::context[:parent-context: {context}]
+
+:_mod-docs-content-type: ASSEMBLY
+
+[id="assembly_troubleshooting-migration_{context}"]
+
+= Troubleshooting migration
+
+//:context: troubleshooting
+
+[role="_abstract"]
+Troubleshoot migration issues by following diagnostic workflows, resolving common errors, and collecting logs for analysis.
+
+:context: mtv
+:mtv:
+
+include::../modules/proc_troubleshooting-workflow.adoc[leveloffset=+1]
+
+include::../modules/proc_using-lightspeed-troubleshooting.adoc[leveloffset=+1]
+
+include::../modules/ref_common-migration-issues.adoc[leveloffset=+1]
+
+include::../modules/ref_error-messages.adoc[leveloffset=+1]
+
+include::../modules/proc_troubleshooting-warm-import-retry-limit.adoc[leveloffset=+2]
+
+include::../modules/proc_troubleshooting-resize-disk-image.adoc[leveloffset=+2]
+
+include::../modules/proc_troubleshooting-connection-test-failed-ova.adoc[leveloffset=+2]
+
+include::../modules/proc_troubleshooting-vddk-image-pull-error.adoc[leveloffset=+2]
+
+include::../modules/proc_troubleshooting-vddk-required-vsan.adoc[leveloffset=+2]
+
+include::../modules/ref_troubleshooting-storage-copy-offload.adoc[leveloffset=+1]
+
+include::../modules/ref_troubleshooting-storage-copy-offload-vsphere-esxi-issues.adoc[leveloffset=+2]
+
+include::../modules/ref_troubleshooting-storage-copy-offload-ssh-issues.adoc[leveloffset=+2]
+
+include::../modules/ref_troubleshooting-storage-copy-offload-netapp-issues.adoc[leveloffset=+2]
+
+include::../modules/proc_using-must-gather.adoc[leveloffset=+1]
+
+include::../modules/con_about-self-service-tsr.adoc[leveloffset=+1]
+
+include::../modules/con_collected-logs-cr-info.adoc[leveloffset=+1]
+
+include::../modules/proc_accessing-logs-ui.adoc[leveloffset=+2]
+
+include::../modules/proc_accessing-logs-cli.adoc[leveloffset=+2]
+
+
+:mtv!:
+
+ifdef::parent-context[:context: {parent-context}]
+ifndef::parent-context[:!context:]
+

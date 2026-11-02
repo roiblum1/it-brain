@@ -1,0 +1,72 @@
+---
+id: index
+title: Best practices
+slug: /best-practices
+description:
+  Prescriptive, validated guidance for platform teams and architects establishing Temporal standards, covering
+  namespace and tenancy design, Cloud security, Worker and Workflow reliability, and organizational enablement.
+toc_max_heading_level: 3
+hide_table_of_contents: false
+tags:
+  - Best Practices
+---
+
+This section collects prescriptive, validated guidance for platform teams, architects, and developers establishing
+Temporal standards across an organization. Each page recommends a specific approach based on real-world deployments,
+rather than explaining how a feature works internally — for that, see [Encyclopedia](/temporal). Looking for a working
+code example instead of a principle? See [Guides](/guides) for pattern-by-pattern implementations with runnable code.
+
+## Namespace, tenancy, and capacity
+
+Start here to decide how many Namespaces you need, how tenants share them, and what capacity model fits your traffic.
+These pages form one decision chain: draw your Namespace boundaries, decide how tenants share those boundaries, size
+your Actions-per-second capacity, and understand what it costs.
+
+- **[Namespace best practices](./managing-namespace.mdx)** — naming conventions, organizational patterns for splitting
+  Namespaces, and production safeguards like deletion protection and Infrastructure as Code.
+- **[Multi-tenant application patterns](./multi-tenant-patterns.mdx)** — Task Queue and Namespace isolation patterns for
+  multi-tenant applications, with worked capacity-planning examples.
+- **[Managing Actions per Second (APS) limits](./managing-aps-limits.mdx)** — why workloads hit APS limits, how to
+  design Workflows that use Actions efficiently, and when to use Provisioned Capacity.
+- **[Cost optimization](./cost-optimization.mdx)** — common cost anti-patterns and strategies for reducing Actions and
+  Storage costs without sacrificing observability.
+- **[Cost governance](./cost-governance.mdx)** — a design framework for cost attribution, budget forecasting, and
+  anomaly detection using the Billing API and OpenMetrics.
+
+## Security and access control
+
+Temporal Cloud secures the managed service; you're responsible for how your applications authenticate to it and who can
+administer your account. These two pages cover both halves.
+
+- **[Managing Temporal Cloud access control](./cloud-access-control.mdx)** — choosing between mTLS certificates and API
+  keys, structuring Service Accounts, and rotating credentials without downtime.
+- **[Security controls for Temporal Cloud](./security-controls.mdx)** — identity and access management, network
+  isolation, data encryption, and availability guidance for a Temporal Cloud account.
+
+## Worker and Workflow reliability
+
+These pages cover the full lifecycle of running reliable Workflows in production: deploy and tune Workers correctly,
+alert on the metrics that catch failures early, handle errors correctly in Workflow and Activity code, and validate
+that all of it survives real failure conditions before you rely on it.
+
+- **[Worker deployment and performance](./worker.mdx)** — deployment, scaling, and tuning practices for Workers,
+  illustrated with a reference application.
+- **[Alerting on Worker metrics](./worker-alerting.mdx)** — a recommended alert set with thresholds and triage links.
+- **[Error handling](./error-handling.mdx)** — categorizing failures, when to mark errors non-retryable, and
+  implementing compensation with the Saga pattern.
+- **[Pre-production testing](./pre-production-testing.mdx)** — failure injection, load testing, and a game-day runbook
+  for validating operational readiness.
+
+## Organizational enablement
+
+Once your own standards are established, the next challenge is getting every team to follow them without funneling
+every question through the platform team.
+
+- **[Knowledge hub](./knowledge-hub.mdx)** — what belongs in an internal Temporal knowledge hub, how to measure its
+  effectiveness, and how to keep it current.
+
+:::note Scope
+Most of this section covers Temporal Cloud operations. Namespace best practices, Worker deployment, and error handling
+apply to self-hosted Temporal too; security controls, access control, cost optimization, cost governance, and APS
+limits are Cloud-specific. For self-hosted security guidance, see [Security (self-hosted)](/self-hosted-guide/security).
+:::

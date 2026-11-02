@@ -29,6 +29,18 @@
         "--config",
         "${CLAUDE_PLUGIN_ROOT}/mcp-servers/kubernetes.toml"
       ]
+    },
+    "temporal": {
+      "command": "python3",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/mcp-servers/launch.py",
+        "--needs-file",
+        "TEMPORAL_MCP_CONFIG",
+        "temporal",
+        "--stdio",
+        "--config",
+        "${TEMPORAL_MCP_CONFIG:-}"
+      ]
     }
   }
 }

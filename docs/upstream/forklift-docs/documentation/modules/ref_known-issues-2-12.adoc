@@ -1,0 +1,46 @@
+// Module included in the following assemblies:
+//
+// * documentation/doc-Release_notes/master.adoc
+
+:_mod-docs-content-type: REFERENCE
+[id="ref_known-issues-2-12_{context}"]
+= {project-short} known issues
+
+[role="_abstract"]
+{project-first} {project-version} has the following known issues.
+
+Windows Server 2012 R2 VMs do not boot after migration from {vmw}::
+The current `virtio-win` package does not include VirtIO drivers for Windows Server 2012 or Windows Server 2012 R2. As a consequence, when you migrate a Windows Server 2012 R2 virtual machine (VM) from {vmw} vSphere, {project-short} cannot inject the required storage and network drivers during conversion. The VM does not boot correctly on {virt} and might enter Windows Recovery Environment or a login loop.
++
+Currently, there is no workaround for this issue.
++
+link:https://redhat.atlassian.net/browse/MTV-6329[MTV-6329]
+
+Static IP loss during RHEL 9 and 10 VM migrations::
+On Red Hat Enterprise Linux (RHEL) 9 and 10 systems, predictable network interface naming overrides `udev` rename rules. As a consequence, NetworkManager fails to activate the connection, and the virtual machine (VM) loses its static IP address.
++
+To work around this problem, manually add systemd `.link` files into the `/etc/systemd/network/` directory to rename the interface. As a result, NetworkManager activates the connection and retains the static IP address.
++
+link:https://issues.redhat.com/browse/MTV-5530[MTV-5530]
+
+VM migrations with XFS v4 file systems fail during conversion::
+Migrating a virtual machine (VM) with an XFS v4 file system uses a Red Hat Enterprise Linux 9 `virt-v2v` image. This image does not support the `virt_v2v_memsize` and `virt_v2v_smp` parameters. As a consequence, the migration fails during the conversion phase if you set these parameters with `xfsCompatibility: true`.
++
+To work around this problem, apply the instructions in the Red Hat Knowledgebase solution link:https://access.redhat.com/solutions/7135435[MTV Migrations fails as virt-v2v appliance runs out of memory]. As a result, you avoid unexpected conversion failures.
++
+link:https://redhat.atlassian.net/browse/MTV-5595[MTV-5595]
+
+
+Deploying many User Defined Networks simultaneously causes node failures::
+Migrating from VMware to OpenShift Virtualization or deploying User Defined Networks (UDNs) can cause heavy resource contention. This contention occurs if you create more than 72 UDNs and their attached resources simultaneously. Open vSwitch (OVS) becomes starved for CPU time. Additionally, there is no way to determine if a UDN is fully created before attaching resources. As a consequence, high pod ready latency occurs, and nodes might enter a `NotReady` state.
++
+To work around this problem, limit simultaneous UDN creation to 72 or fewer. For larger deployments, create the UDNs upfront. Wait for Open Virtual Network Kubernetes (OVNK) utilization to settle before you deploy attached resources. As a result, you maintain stable pod ready latency and prevent node failures.
++
+link:https://redhat.atlassian.net/browse/MTV-5695[MTV-5695]
+
+Duplicate default persistent routes retained after VM migrations::
+A script execution issue during a virtual machine (VM) migration causes duplicate default persistent routes to be retained. As a consequence, the duplicated routes cause network issues after the migration.
++
+To work around this problem, manually remove the duplicate persistent routes. As a result, the system uses the correct network configuration.
++
+link:https://issues.redhat.com/browse/MTV-5880[MTV-5880]

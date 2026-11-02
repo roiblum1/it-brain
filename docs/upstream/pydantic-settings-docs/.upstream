@@ -1,0 +1,7 @@
+repo: pydantic/pydantic-settings
+ref: main
+commit: d90133c7d6304c0ae3821c3fd9e30793ebd2815f
+latest_tag: v2.16.2
+paths: docs, README.md
+files: 2
+synced: 2026-11-02T21:36:38Z

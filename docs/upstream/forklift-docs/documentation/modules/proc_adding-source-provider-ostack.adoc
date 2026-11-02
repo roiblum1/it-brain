@@ -1,0 +1,100 @@
+// Module included in the following assemblies:
+//
+// * documentation/doc-Planning_your_migration/assemblies/assembly_planning-migration-osp.adoc
+
+:_mod-docs-content-type: PROCEDURE
+[id="proc_adding-source-provider_{context}"]
+= Adding an {osp} source provider
+
+[role="_abstract"]
+You can add an {osp} source provider by using the {ocp} web console.
+
+[IMPORTANT]
+====
+When you migrate an image-based VM from an {osp} provider, {project-short} creates a snapshot of the source VM image and copies it to the target VM. The snapshot is created at migration time. Therefore, the target VM has the same state as the source VM at that point.
+====
+
+.Procedure
+
+. Access the *Create provider* page for {osp} by doing one of the following:
+
+* *From the Providers page:* In the {ocp} web console, click *Migration for Virtualization > Providers*, click *Create Provider*, select a *Project* from the list, and then click *{osp}*.
+
+* *From the Overview page (Administrators only):* In the {ocp} web console, click *Migration for Virtualization > Overview*, click *{osp}* in the *Welcome* pane, and select a *Project* from the list.
++
+[NOTE]
+====
+If the *Welcome* pane is not visible, click *Show the welcome card* in the upper-right corner of the page.
+====
++
+The default project depends on the active {project-short} project. If *All projects* is active, the default is +{namespace}+. Administrators can view all projects; authorized non-administrators see only their assigned projects.
+
+. Enter the provider details:
++
+* *Provider resource name*: Name of the source provider.
+* *URL*: URL of the {osp} Identity (Keystone) endpoint. For example, `http://controller:5000/v3`.
+* *Authentication type*: Choose an authentication method and supply the required information.
++
+For example, if you choose *Application credential ID*, the system prompts you for the application credential ID and secret.
+
+** *Application credential ID*
+*** *Application credential ID*: {osp} application credential ID
+*** *Application credential secret*: {osp} application credential `Secret`
+
+** *Application credential name*
+*** *Application credential name*: {osp} application credential name
+*** *Application credential secret*: {osp} application credential `Secret`
+*** *Username*: {osp} username
+*** *Domain*: {osp} domain name
+
+** *Token with user ID*
+*** *Token*: {osp} token
+*** *User ID*: {osp} user ID
+*** *Project ID*:  {osp} project ID
+
+** *Token with user name*
+*** *Token*: {osp} token
+*** *Username*: {osp} username
+*** *Project*: {osp} project
+*** *Domain name*: {osp} domain name
+
+** *Password*
+*** *Username*: {osp} username
+*** *Password*: {osp} password
+*** *Project*: {osp} project
+*** *Domain*: {osp} domain name
++
+. Choose one of the following options for validating CA certificates:
++
+** *Use a custom CA certificate*: Keep *Skip certificate validation* toggled left and provide the certificate:
++
+*** *Upload file:* Drag the certificate to the text box, or click *Browse* and click *Select*.
+*** *Fetch from URL:* Click *Fetch certificate from URL*, select *I trust the authenticity of this certificate*, and click *Confirm*.
+
+** *Use the system CA certificate*: Keep *Skip certificate validation* toggled left and leave the *CA certificate* text box empty.
+
+** *Skip certificate validation*: Toggle *Skip certificate validation* to the right.
+
+. Click *Create provider* to add and save the provider.
++
+The provider appears in the list of providers.
++
+[NOTE]
+====
+It might take a few minutes for the provider to move to the `Ready` status.
+====
+
+. Optional: Add access to the UI of the provider:
+.. On the *Providers* page, click the provider.
++
+The *Provider details* page opens.
+.. Click the *Edit* icon under *External UI web link*.
+.. Enter the link and click *Save*.
++
+[NOTE]
+====
+If you do not enter a link, {project-short} attempts to calculate the correct link.
+
+* If {project-short} succeeds, the hyperlink of the field points to the calculated link.
+* If {project-short} does not succeed, the field remains empty.
+====

@@ -1,0 +1,12 @@
+// Module included in the following assemblies:
+//
+// * documentation/doc-Migrating_your_virtual_machines/master.adoc
+
+:_mod-docs-content-type: CONCEPT
+[id="con_about-configuring-target-vm-scheduling_{context}"]
+= About scheduling target VMs
+
+[role="_abstract"]
+Use the target VM scheduling feature to direct {project-short} to migrate VMs to specific {virt} nodes and schedule when to power them on. Design and enforce rules using the UI or CLI.
+
+Previously, when you migrated VMs to {virt}, {virt} automatically determined the node the VMs would be migrated to. Although this served many customers' needs, there are certain situations in which it is useful to be able to specify the target node of a VM or the conditions under which the VM is powered on, regardless of the type of migration involved.

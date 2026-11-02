@@ -1,0 +1,25 @@
+---
+id: index
+title: Temporal CLI command reference
+sidebar_label: Command reference
+description: Complete command reference for the Temporal CLI, including the cloud extension.
+slug: /cli/command-reference
+toc_max_heading_level: 4
+tags:
+  - Temporal CLI
+---
+
+This section includes the complete command reference for the `temporal` CLI, including the cloud extension.
+
+- [activity](/cli/command-reference/activity)
+- [batch](/cli/command-reference/batch)
+- [cloud](/cli/command-reference/cloud)
+- [config](/cli/command-reference/config)
+- [env](/cli/command-reference/env)
+- [nexus](/cli/command-reference/nexus)
+- [operator](/cli/command-reference/operator)
+- [schedule](/cli/command-reference/schedule)
+- [server](/cli/command-reference/server)
+- [task-queue](/cli/command-reference/task-queue)
+- [worker](/cli/command-reference/worker)
+- [workflow](/cli/command-reference/workflow)

@@ -1,0 +1,206 @@
+---
+sidebar: sidebar
+permalink: troubleshooting.html
+keywords: troubleshooting, trident
+summary: Use the pointers provided here for troubleshooting issues you might encounter while installing and using Trident.
+---
+
+= Troubleshooting
+:hardbreaks:
+:icons: font
+:imagesdir: ./media/
+
+[.lead]
+Use the pointers provided here for troubleshooting issues you might encounter while installing and using Trident.
+
+NOTE: For help with Trident, create a support bundle using `tridentctl logs -a -n trident` and send it to NetApp Support.
+
+== General troubleshooting
+
+* If the Trident pod fails to come up properly (for example, when the Trident pod is stuck in the `ContainerCreating` phase with fewer than two ready containers), running `kubectl -n trident describe deployment trident` and `kubectl -n trident describe pod trident-********-****` can provide additional insights. Obtaining kubelet logs (for example, via `journalctl -xeu kubelet`) can also be helpful.
+* If there is not enough information in the Trident logs, you can try enabling the debug mode for Trident by passing the `-d` flag to the install parameter based on your installation option.
++
+Then confirm debug is set using `./tridentctl logs -n trident` and searching for `level=debug msg` in the log.
++
+Installed with Operator::
++
+----
+kubectl patch torc trident -n <namespace> --type=merge -p '{"spec":{"debug":true}}'
+----
++
+This will restart all Trident pods, which can take several seconds. You can check this by observing the 'AGE' column in the output of `kubectl get pod -n trident`.
++
+For Trident 20.07 and 20.10 use `tprov` in place of `torc`.
++
+Installed with Helm::
++
+----
+helm upgrade <name> trident-operator-21.07.1-custom.tgz --set tridentDebug=true`
+----
++
+Installed with tridentctl::
++
+----
+./tridentctl uninstall -n trident
+./tridentctl install -d -n trident
+----
+
+* You can also obtain debug logs for each backend by including `debugTraceFlags` in your backend definition. For example, include `debugTraceFlags: {"api":true, "method":true,}` to obtain API calls and method traversals in the Trident logs. Existing backends can have `debugTraceFlags` configured with a `tridentctl backend update`.
+* When using Red Hat Enterprise Linux CoreOS (RHCOS), ensure that `iscsid` is enabled on the worker nodes and started by default. This can be done using OpenShift MachineConfigs or by modifying the ignition templates.
+* A common problem you could encounter when using Trident with https://azure.microsoft.com/en-us/products/netapp/[Azure NetApp Files] is when the tenant and client secrets come from an app registration with insufficient permissions. For a complete list of Trident requirements, Refer to link:trident-use/anf.html[Azure NetApp Files] configuration.
+* If there are problems with mounting a PV to a container, ensure that `rpcbind` is installed and running. Use the required package manager for the host OS and check if `rpcbind` is running. You can check the status of the `rpcbind` service by running a `systemctl status rpcbind` or its equivalent.
+* If a Trident backend reports that it is in the `failed` state despite having worked before, it is likely caused by changing the SVM/admin credentials associated with the backend. Updating the backend information using `tridentctl update backend` or bouncing the Trident pod will fix this issue.
+* If you encounter permission issues when installing Trident with Docker as the container runtime, attempt the installation of Trident with the `--in cluster=false` flag. This will not use an installer pod and avoid permission troubles seen due to the `trident-installer` user.
+* Use the `uninstall parameter <Uninstalling Trident>` for cleaning up after a failed run. By default, the script does not remove the CRDs that have been created by Trident, making it safe to uninstall and install again even in a running deployment.
+* If you want to downgrade to an earlier version of Trident, first run the `tridentctl uninstall` command to remove Trident. Download the desired https://github.com/NetApp/trident/releases[Trident version] and install using the `tridentctl install` command. 
+* After a successful install, if a PVC is stuck in the `Pending` phase, running `kubectl describe pvc` can provide additional information about why Trident failed to provision a PV for this PVC.
+
+== Unsuccessful Trident deployment using the operator
+If you are deploying Trident using the operator, the status of `TridentOrchestrator` changes from `Installing` to `Installed`. If you observe the `Failed` status, and the operator is unable to recover by itself, you should check the logs of the operator by running following command:
+----
+tridentctl logs -l trident-operator
+----
+Trailing the logs of the trident-operator container can point to where the problem lies. For example, one such issue could be the inability to pull the required container images from upstream registries in an airgapped environment.
+
+To understand why the installation of Trident was unsuccessful, you
+should take a look at the `TridentOrchestrator` status.
+
+----
+kubectl describe torc trident-2
+Name:         trident-2
+Namespace:
+Labels:       <none>
+Annotations:  <none>
+API Version:  trident.netapp.io/v1
+Kind:         TridentOrchestrator
+...
+Status:
+  Current Installation Params:
+    IPv6:
+    Autosupport Hostname:
+    Autosupport Image:
+    Autosupport Proxy:
+    Autosupport Serial Number:
+    Debug:
+    Image Pull Secrets:         <nil>
+    Image Registry:
+    k8sTimeout:
+    Kubelet Dir:
+    Log Format:
+    Silence Autosupport:
+    Trident Image:
+  Message:                      Trident is bound to another CR 'trident'
+  Namespace:                    trident-2
+  Status:                       Error
+  Version:
+Events:
+  Type     Reason  Age                From                        Message
+  ----     ------  ----               ----                        -------
+  Warning  Error   16s (x2 over 16s)  trident-operator.netapp.io  Trident is bound to another CR 'trident'
+----
+
+This error indicates that there already exists a `TridentOrchestrator`
+that was used to install Trident. Since each Kubernetes cluster can only
+have one instance of Trident, the operator ensures that at any given
+time there only exists one active `TridentOrchestrator` that it can
+create.
+
+In addition, observing the status of the Trident pods can often indicate if something is not right.
+
+----
+kubectl get pods -n trident
+
+NAME                                READY   STATUS             RESTARTS   AGE
+trident-csi-4p5kq                   1/2     ImagePullBackOff   0          5m18s
+trident-csi-6f45bfd8b6-vfrkw        4/5     ImagePullBackOff   0          5m19s
+trident-csi-9q5xc                   1/2     ImagePullBackOff   0          5m18s
+trident-csi-9v95z                   1/2     ImagePullBackOff   0          5m18s
+trident-operator-766f7b8658-ldzsv   1/1     Running            0          8m17s
+----
+
+You can clearly see that the pods are not able to initialize completely
+because one or more container images were not fetched.
+
+To address the problem, you should edit the `TridentOrchestrator` CR.
+Alternatively, you can delete `TridentOrchestrator`, and create a new
+one with the modified and accurate definition.
+
+== Unsuccessful Trident deployment using `tridentctl`
+
+To help figure out what went wrong, you could run the installer again using the ``-d`` argument, which will turn on debug mode and help you understand what the problem is:
+
+----
+./tridentctl install -n trident -d
+----
+
+After addressing the problem, you can clean up the installation as follows, and then run the `tridentctl install` command again:
+
+----
+./tridentctl uninstall -n trident
+INFO Deleted Trident deployment.
+INFO Deleted cluster role binding.
+INFO Deleted cluster role.
+INFO Deleted service account.
+INFO Removed Trident user from security context constraint.
+INFO Trident uninstallation succeeded.
+----
+
+== Completely remove Trident and CRDs
+You can completely remove Trident and all created CRDs and associated custom resources.   
+
+WARNING: This cannot be undone. Do not do this unless you want a completely fresh installation of Trident. To uninstall Trident without removing CRDs, refer to link:trident-managing-k8s/uninstall-trident.html[Uninstall Trident].
+
+[role="tabbed-block"]
+====
+
+.Trident operator
+--
+To uninstall Trident and completely remove CRDs using the Trident operator:
+----
+kubectl patch torc <trident-orchestrator-name> --type=merge -p '{"spec":{"wipeout":["crds"],"uninstall":true}}'
+----
+--
+
+.Helm
+--
+To uninstall Trident and completely remove CRDs using Helm:
+----
+kubectl patch torc trident --type=merge -p '{"spec":{"wipeout":["crds"],"uninstall":true}}'
+----
+--
+
+.`tridentctl`
+--
+To completely remove CRDs after uninstalling Trident using `tridentctl`
+----
+tridentctl obliviate crd
+----
+--
+====
+
+== NVMe node unstaging failure with RWX raw block namespaces o Kubernetes 1.26 
+If you are running Kubernetes 1.26, node unstaging might fail when using NVMe/TCP with RWX raw block namespaces. The following scenarios provide workaround to the failure. Alternatively, you can upgrade Kubernetes to 1.27. 
+
+=== Deleted the namespace and pod
+Consider a scenario where you have a Trident managed namespace (NVMe persistent volume) attached to a pod. If you delete the namespace directly from the ONTAP backend, the unstaging process gets stuck after you attempt to delete the pod. This scenario does not impact the Kubernetes cluster or other functioning. 
+
+.Workaround
+Unmount the persistent volume (corresponding to that namespace) from the respective node and delete it.
+
+
+=== Blocked dataLIFs
+ If you block (or bring down) all the dataLIFs of the NVMe Trident backend, the unstaging process gets stuck when you attempt to delete the pod. In this scenario, you cannot run any NVMe CLI commands on the Kubernetes node. 
+
+.Workaround
+Bring up the dataLIFS to restore full functionality.
+
+=== Deleted namespace mapping
+ If you remove the `hostNQN` of the worker node from the corresponding subsystem, the unstaging process gets stuck when you attempt to delete the pod. In this scenario, you cannot run any NVMe CLI commands on the Kubernetes node. 
+
+.Workaround
+Add the `hostNQN` back to the subsystem.
+
+== NFSv4.2 clients report "invalid argument" after upgrading ONTAP when when expecting "v4.2-xattrs" being enabled 
+After upgrading ONTAP, NFSv4.2 clients might report "invalid argument" errors when attempting to mount NFSv4.2 exports. This issue occurs when the `v4.2-xattrs` option is not enabled on the SVM.
+.Workaround
+Enable the `v4.2-xattrs` option on the SVM or upgrade to ONTAP 9.12.1 or later, where this option is enabled by default.

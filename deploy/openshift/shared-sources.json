@@ -943,6 +943,201 @@
         "requirements.txt",
         "frontend/package-lock.json"
       ]
+    },
+    {
+      "name": "kubevirt-user-guide",
+      "kind": "git_repo",
+      "description": "KubeVirt user guide (kubevirt.io/user-guide): architecture, VM workloads, storage (DataVolumes, hotplug), networking (bridge, masquerade, Multus, SR-IOV), live migration, cluster admin, debugging the virt stack. OpenShift Virtualization ships Red Hat's build — RHOKP wins. Docs-only snapshot of the default branch in docs/upstream/kubevirt-user-guide (refresh: scripts/sync-ecosystem-docs.py; pin with REF_kubevirt_user_guide=<tag>); verify against the installed version",
+      "path": "${TEAM_KNOWLEDGE_SOURCES}/team-brain.git",
+      "default_ref": "main",
+      "docs": [
+        "docs/upstream/kubevirt-user-guide/**/*.md",
+        "docs/upstream/kubevirt-user-guide/**/*.rst",
+        "docs/upstream/kubevirt-user-guide/**/*.adoc"
+      ],
+      "code_include": [
+        "docs/upstream/kubevirt-user-guide/**"
+      ]
+    },
+    {
+      "name": "kubevirt-docs",
+      "kind": "git_repo",
+      "description": "kubevirt/kubevirt repo docs: component internals, design notes, devel docs (virt-handler, virt-launcher, migrations). Docs-only snapshot of the default branch in docs/upstream/kubevirt-docs (refresh: scripts/sync-ecosystem-docs.py; pin with REF_kubevirt_docs=<tag>); verify against the installed version",
+      "path": "${TEAM_KNOWLEDGE_SOURCES}/team-brain.git",
+      "default_ref": "main",
+      "docs": [
+        "docs/upstream/kubevirt-docs/**/*.md",
+        "docs/upstream/kubevirt-docs/**/*.rst",
+        "docs/upstream/kubevirt-docs/**/*.adoc"
+      ],
+      "code_include": [
+        "docs/upstream/kubevirt-docs/**"
+      ]
+    },
+    {
+      "name": "cdi-docs",
+      "kind": "git_repo",
+      "description": "Containerized Data Importer (CDI) docs: DataVolume import/clone/upload, StorageProfiles, smart clone, preallocation, scratch space. Docs-only snapshot of the default branch in docs/upstream/cdi-docs (refresh: scripts/sync-ecosystem-docs.py; pin with REF_cdi_docs=<tag>); verify against the installed version",
+      "path": "${TEAM_KNOWLEDGE_SOURCES}/team-brain.git",
+      "default_ref": "main",
+      "docs": [
+        "docs/upstream/cdi-docs/**/*.md",
+        "docs/upstream/cdi-docs/**/*.rst",
+        "docs/upstream/cdi-docs/**/*.adoc"
+      ],
+      "code_include": [
+        "docs/upstream/cdi-docs/**"
+      ]
+    },
+    {
+      "name": "hco-docs",
+      "kind": "git_repo",
+      "description": "HyperConverged Cluster Operator docs: the HyperConverged CR (OpenShift Virtualization's top-level config), feature gates, live-migration and workload-update settings. Docs-only snapshot of the default branch in docs/upstream/hco-docs (refresh: scripts/sync-ecosystem-docs.py; pin with REF_hco_docs=<tag>); verify against the installed version",
+      "path": "${TEAM_KNOWLEDGE_SOURCES}/team-brain.git",
+      "default_ref": "main",
+      "docs": [
+        "docs/upstream/hco-docs/**/*.md",
+        "docs/upstream/hco-docs/**/*.rst",
+        "docs/upstream/hco-docs/**/*.adoc"
+      ],
+      "code_include": [
+        "docs/upstream/hco-docs/**"
+      ]
+    },
+    {
+      "name": "forklift-docs",
+      "kind": "git_repo",
+      "description": "Forklift / Migration Toolkit for Virtualization (MTV) docs (AsciiDoc): providers (vSphere, oVirt, OpenStack, OVA), migration plans, warm vs cold, network and storage maps, VDDK, hooks, troubleshooting. Docs-only snapshot of the default branch in docs/upstream/forklift-docs (refresh: scripts/sync-ecosystem-docs.py; pin with REF_forklift_docs=<tag>); verify against the installed version",
+      "path": "${TEAM_KNOWLEDGE_SOURCES}/team-brain.git",
+      "default_ref": "main",
+      "docs": [
+        "docs/upstream/forklift-docs/**/*.md",
+        "docs/upstream/forklift-docs/**/*.rst",
+        "docs/upstream/forklift-docs/**/*.adoc"
+      ],
+      "code_include": [
+        "docs/upstream/forklift-docs/**"
+      ]
+    },
+    {
+      "name": "powershell-docs",
+      "kind": "git_repo",
+      "description": "PowerShell documentation: docs-conceptual (scripting, modules, remoting, error handling) and the 7.4 Microsoft.PowerShell.Core about_* topics. CC-BY-4.0. Docs-only snapshot of the default branch in docs/upstream/powershell-docs (refresh: scripts/sync-ecosystem-docs.py; pin with REF_powershell_docs=<tag>); verify against the installed version",
+      "path": "${TEAM_KNOWLEDGE_SOURCES}/team-brain.git",
+      "default_ref": "main",
+      "docs": [
+        "docs/upstream/powershell-docs/**/*.md",
+        "docs/upstream/powershell-docs/**/*.rst",
+        "docs/upstream/powershell-docs/**/*.adoc"
+      ],
+      "code_include": [
+        "docs/upstream/powershell-docs/**"
+      ]
+    },
+    {
+      "name": "powercli-examples",
+      "kind": "git_repo",
+      "description": "vmware/PowerCLI-Example-Scripts: READMEs of community PowerCLI modules and scripts (reporting, vSAN, NSX, tags…) — patterns, not the cmdlet reference. Docs-only snapshot of the default branch in docs/upstream/powercli-examples (refresh: scripts/sync-ecosystem-docs.py; pin with REF_powercli_examples=<tag>); verify against the installed version",
+      "path": "${TEAM_KNOWLEDGE_SOURCES}/team-brain.git",
+      "default_ref": "main",
+      "docs": [
+        "docs/upstream/powercli-examples/**/*.md",
+        "docs/upstream/powercli-examples/**/*.rst",
+        "docs/upstream/powercli-examples/**/*.adoc"
+      ],
+      "code_include": [
+        "docs/upstream/powercli-examples/**"
+      ]
+    },
+    {
+      "name": "temporal-docs",
+      "kind": "git_repo",
+      "description": "Temporal documentation (selected): encyclopedia (concepts: workflows, activities, task queues, retries, timeouts, versioning), Python SDK develop guide, self-hosted deployment, troubleshooting, CLI and references. Docs-only snapshot of the default branch in docs/upstream/temporal-docs (refresh: scripts/sync-ecosystem-docs.py; pin with REF_temporal_docs=<tag>); verify against the installed version",
+      "path": "${TEAM_KNOWLEDGE_SOURCES}/team-brain.git",
+      "default_ref": "main",
+      "docs": [
+        "docs/upstream/temporal-docs/**/*.md",
+        "docs/upstream/temporal-docs/**/*.rst",
+        "docs/upstream/temporal-docs/**/*.adoc"
+      ],
+      "code_include": [
+        "docs/upstream/temporal-docs/**"
+      ]
+    },
+    {
+      "name": "temporal-mcp-docs",
+      "kind": "git_repo",
+      "description": "temporal-mcp docs: config reference, deployment, identity and access, request for comment (the vendored read-only Temporal MCP, mcp/servers/temporal.md). Docs-only snapshot of the default branch in docs/upstream/temporal-mcp-docs (refresh: scripts/sync-ecosystem-docs.py; pin with REF_temporal_mcp_docs=<tag>); verify against the installed version",
+      "path": "${TEAM_KNOWLEDGE_SOURCES}/team-brain.git",
+      "default_ref": "main",
+      "docs": [
+        "docs/upstream/temporal-mcp-docs/**/*.md",
+        "docs/upstream/temporal-mcp-docs/**/*.rst",
+        "docs/upstream/temporal-mcp-docs/**/*.adoc"
+      ],
+      "code_include": [
+        "docs/upstream/temporal-mcp-docs/**"
+      ]
+    },
+    {
+      "name": "pydantic-docs",
+      "kind": "git_repo",
+      "description": "Pydantic (v2) documentation: models, fields, types, validators, serialization, config, errors and error codes, the v1→v2 migration guide. Docs-only snapshot of the default branch in docs/upstream/pydantic-docs (refresh: scripts/sync-ecosystem-docs.py; pin with REF_pydantic_docs=<tag>); verify against the installed version",
+      "path": "${TEAM_KNOWLEDGE_SOURCES}/team-brain.git",
+      "default_ref": "main",
+      "docs": [
+        "docs/upstream/pydantic-docs/**/*.md",
+        "docs/upstream/pydantic-docs/**/*.rst",
+        "docs/upstream/pydantic-docs/**/*.adoc"
+      ],
+      "code_include": [
+        "docs/upstream/pydantic-docs/**"
+      ]
+    },
+    {
+      "name": "pydantic-settings-docs",
+      "kind": "git_repo",
+      "description": "pydantic-settings docs: BaseSettings, env prefixes, nested delimiters, dotenv and secrets sources, precedence. Docs-only snapshot of the default branch in docs/upstream/pydantic-settings-docs (refresh: scripts/sync-ecosystem-docs.py; pin with REF_pydantic_settings_docs=<tag>); verify against the installed version",
+      "path": "${TEAM_KNOWLEDGE_SOURCES}/team-brain.git",
+      "default_ref": "main",
+      "docs": [
+        "docs/upstream/pydantic-settings-docs/**/*.md",
+        "docs/upstream/pydantic-settings-docs/**/*.rst",
+        "docs/upstream/pydantic-settings-docs/**/*.adoc"
+      ],
+      "code_include": [
+        "docs/upstream/pydantic-settings-docs/**"
+      ]
+    },
+    {
+      "name": "dell-csm-docs",
+      "kind": "git_repo",
+      "description": "Dell Container Storage Modules docs (latest, content/docs): CSI drivers for PowerMax (csi-powermax + reverse proxy), PowerFlex (csi-vxflexos, SDC), PowerScale (csi-isilon), PowerStore, Unity; CSM operator, replication, observability, resiliency, authorization; support matrix. Docs-only snapshot of the default branch in docs/upstream/dell-csm-docs (refresh: scripts/sync-ecosystem-docs.py; pin with REF_dell_csm_docs=<tag>); verify against the installed version",
+      "path": "${TEAM_KNOWLEDGE_SOURCES}/team-brain.git",
+      "default_ref": "main",
+      "docs": [
+        "docs/upstream/dell-csm-docs/**/*.md",
+        "docs/upstream/dell-csm-docs/**/*.rst",
+        "docs/upstream/dell-csm-docs/**/*.adoc"
+      ],
+      "code_include": [
+        "docs/upstream/dell-csm-docs/**"
+      ]
+    },
+    {
+      "name": "trident-docs",
+      "kind": "git_repo",
+      "description": "NetApp Trident documentation (AsciiDoc, latest release): install with the operator, backends (ontap-nas, -economy, ontap-san, NVMe/TCP), StorageClasses, snapshots, volume import, Trident Protect, troubleshooting, known issues, release notes. Internal use only (NetApp docs, no licence file). Docs-only snapshot of the default branch in docs/upstream/trident-docs (refresh: scripts/sync-ecosystem-docs.py; pin with REF_trident_docs=<tag>); verify against the installed version",
+      "path": "${TEAM_KNOWLEDGE_SOURCES}/team-brain.git",
+      "default_ref": "main",
+      "docs": [
+        "docs/upstream/trident-docs/**/*.md",
+        "docs/upstream/trident-docs/**/*.rst",
+        "docs/upstream/trident-docs/**/*.adoc"
+      ],
+      "code_include": [
+        "docs/upstream/trident-docs/**"
+      ]
     }
   ]
 }

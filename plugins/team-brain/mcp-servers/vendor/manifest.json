@@ -44,5 +44,23 @@
     "license": "Apache-2.0",
     "repo": "containers/kubernetes-mcp-server",
     "version": "v0.0.67"
+  },
+  "temporal": {
+    "assets": {
+      "darwin-arm64": {
+        "bytes": 8826856,
+        "file": "temporal-mcp_0.0.5_darwin_arm64.tar.gz",
+        "sha256": "eef992cbea1035e6e18474b207e4b2c605541d0b5641cc3dfcdbb4d08ae02168"
+      },
+      "linux-x86_64": {
+        "bytes": 9153410,
+        "file": "temporal-mcp_0.0.5_linux_amd64.tar.gz",
+        "sha256": "78685d9958f71d07f276756acf98c63f7b8feff73718e53fc688010624cfe57a"
+      }
+    },
+    "binary": "temporal-mcp",
+    "license": "MIT",
+    "repo": "temporalio/temporal-mcp",
+    "version": "v0.0.5"
   }
 }

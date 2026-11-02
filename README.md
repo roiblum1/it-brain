@@ -1,7 +1,8 @@
 # team-brain → it-brain
 
 > **This branch (`claude/it-brain-multi-team-n7n6kg`) is it-brain**: the same offline brain, grown to serve the
-> **OpenShift (ocp)**, **storage** and **network** teams — NetApp ONTAP / Trident, Dell PowerMax / PowerFlex /
+> **OpenShift (ocp)**, **storage**, **network** and **virtualization** teams (KubeVirt deep dive, PowerShell /
+> PowerCLI deep dive) — NetApp ONTAP / Trident, Dell PowerMax / PowerFlex /
 > PowerScale, Ceph S3, ODF, SMB/CIFS, OADP, Commvault, Cisco ACI, Palo Alto, VMware, Nutanix — plus our platform
 > tools (**server-scan**, **Temporal / Redbull Workflows**) and data/workflow platforms (Prefect, Airflow, Spark,
 > ECK / Elastic, Solr, MongoDB, on Kubernetes and VMs). Not merged into team-brain's `main`.
@@ -10,7 +11,7 @@
 > |---|---|
 > | Architecture | [`docs/it-brain/ARCHITECTURE.md`](docs/it-brain/ARCHITECTURE.md) |
 > | Teams: who owns and reviews what | [`docs/it-brain/TEAMS.md`](docs/it-brain/TEAMS.md), [`teams.json`](teams.json) |
-> | Cross-team contracts | [`interfaces/`](interfaces/README.md) |
+> | Cross-team contracts and routing | [`interfaces/`](interfaces/README.md), `python3 scripts/brain.py route "<problem>"` |
 > | Graph (graphify) and Obsidian vault | [`docs/it-brain/GRAPH.md`](docs/it-brain/GRAPH.md) |
 > | Offline vendor sources, live tools | [`docs/it-brain/SOURCES-PLAN.md`](docs/it-brain/SOURCES-PLAN.md), [`docs/it-brain/TOOLS-PLAN.md`](docs/it-brain/TOOLS-PLAN.md) |
 > | Phases and decisions needed | [`docs/it-brain/ROADMAP.md`](docs/it-brain/ROADMAP.md) |

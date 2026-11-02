@@ -1,0 +1,197 @@
+---
+id: data-conversion
+title: Payload conversion
+sidebar_label: Payload conversion
+slug: /develop/python/data-handling/data-conversion
+toc_max_heading_level: 2
+tags:
+  - Data Converters
+  - Python SDK
+  - Temporal SDKs
+description: Customize how Temporal serializes application objects using Payload Converters in the Python SDK, including Pydantic and custom type examples.
+---
+
+Payload Converters serialize your application objects into a `Payload` and deserialize them back.
+A `Payload` is a binary form with metadata that Temporal uses to transport data.
+
+By default, Temporal uses a `DefaultPayloadConverter` that handles `None`, `bytes`, protobuf messages, and anything JSON-serializable.
+You only need a custom Payload Converter when your application uses types that aren't natively supported.
+
+## Default supported types
+
+The default Data Converter supports converting multiple types including:
+
+- `None`
+- `bytes`
+- `google.protobuf.message.Message` — As JSON when encoding, but can decode binary proto from other languages
+- Anything that can be converted to JSON including:
+  - Anything that [`json.dump`](https://docs.python.org/3/library/json.html#json.dump) supports natively
+  - [dataclasses](https://docs.python.org/3/library/dataclasses.html)
+  - Iterables including ones JSON dump may not support by default, for example `set`
+  - [IntEnum, StrEnum](https://docs.python.org/3/library/enum.html) based enumerates
+  - [UUID](https://docs.python.org/3/library/uuid.html)
+
+Although Workflows, Updates, Signals, and Queries can all be defined with multiple input parameters, users are strongly
+encouraged to use a single `dataclass` or Pydantic model parameter so that fields with defaults can be easily added
+without breaking compatibility.
+Similar advice applies to return values.
+
+Classes with generics may not have the generics properly resolved.
+The current implementation does not have generic type resolution.
+Users should use concrete types.
+
+## Use Pydantic models
+
+To use Pydantic model instances, install Pydantic and set the Pydantic Data Converter when creating Client instances:
+
+<!--SNIPSTART python-data-conversion-pydantic-->
+[python-sandbox/best_practices/data_conversion/pydantic_client.py](https://github.com/temporalio/documentation-sdk-code-examples/blob/main/python-sandbox/best_practices/data_conversion/pydantic_client.py)
+```py
+from temporalio.contrib.pydantic import pydantic_data_converter
+
+client = await Client.connect("localhost:7233", data_converter=pydantic_data_converter)
+```
+<!--SNIPEND-->
+
+This Data Converter supports conversion of all [types supported by Pydantic](https://docs.pydantic.dev/latest/api/standard_library_types/) to and from JSON.
+In addition to Pydantic models, supported types include:
+
+- Everything that [`json.dumps()`](https://docs.python.org/3/library/json.html#py-to-json-table) supports by default.
+- Several standard library types that `json.dumps()` does not support, including dataclasses, types from the datetime module, sets, and UUID.
+- Custom types composed of any of these, with any degree of nesting.
+  For example, a list of Pydantic models with `datetime` fields.
+
+See the [Pydantic documentation](https://docs.pydantic.dev/latest/api/standard_library_types/) for full details.
+
+:::note
+
+Pydantic v1 isn't supported by this Data Converter.
+If you aren't yet able to upgrade from Pydantic v1, see https://github.com/temporalio/samples-python/tree/main/pydantic_converter_v1 for limited v1 support.
+
+:::
+
+`datetime.date`, `datetime.time`, and `datetime.datetime` can only be used with the Pydantic Data Converter.
+
+## How the default converter works
+
+The default converter is a `CompositePayloadConverter` that tries each encoding converter in order until one handles the value.
+Upon serialization, each `EncodingPayloadConverter` is used in order until one succeeds.
+
+Payload Converters can be customized independently of a Payload Codec.
+
+## Custom Payload Converters
+
+To handle custom data types, create a new `EncodingPayloadConverter`.
+For example, to support `IPv4Address` types:
+
+<!--SNIPSTART python-data-conversion-encoding-converter-->
+[python-sandbox/best_practices/data_conversion/ipv4_encoding_converter.py](https://github.com/temporalio/documentation-sdk-code-examples/blob/main/python-sandbox/best_practices/data_conversion/ipv4_encoding_converter.py)
+```py
+import dataclasses
+import ipaddress
+from typing import Any, Optional, Type
+
+from temporalio.api.common.v1 import Payload
+from temporalio.converter import (
+    CompositePayloadConverter,
+    DataConverter,
+    DefaultPayloadConverter,
+    EncodingPayloadConverter,
+)
+
+class IPv4AddressEncodingPayloadConverter(EncodingPayloadConverter):
+    @property
+    def encoding(self) -> str:
+        return "text/ipv4-address"
+
+    def to_payload(self, value: Any) -> Optional[Payload]:
+        if isinstance(value, ipaddress.IPv4Address):
+            return Payload(
+                metadata={"encoding": self.encoding.encode()},
+                data=str(value).encode(),
+            )
+        else:
+            return None
+
+    def from_payload(self, payload: Payload, type_hint: Optional[Type] = None) -> Any:
+        assert not type_hint or type_hint is ipaddress.IPv4Address
+        return ipaddress.IPv4Address(payload.data.decode())
+
+class IPv4AddressPayloadConverter(CompositePayloadConverter):
+    def __init__(self) -> None:
+        # Just add ours as first before the defaults
+        super().__init__(
+            IPv4AddressEncodingPayloadConverter(),
+            *DefaultPayloadConverter.default_encoding_payload_converters,
+        )
+
+my_data_converter = dataclasses.replace(
+    DataConverter.default,
+    payload_converter_class=IPv4AddressPayloadConverter,
+)
+```
+<!--SNIPEND-->
+
+### Customize the JSON converter for custom types
+
+If you need your custom type to work in lists, unions, and other collections, customize the existing JSON converter instead of adding a new encoding converter.
+The JSON converter is the last in the list, so it handles any otherwise unknown type.
+
+Customize serialization with a custom `json.JSONEncoder` and deserialization with a custom `JSONTypeConverter`:
+
+<!--SNIPSTART python-data-conversion-json-converter-->
+[python-sandbox/best_practices/data_conversion/ipv4_json_converter.py](https://github.com/temporalio/documentation-sdk-code-examples/blob/main/python-sandbox/best_practices/data_conversion/ipv4_json_converter.py)
+```py
+import dataclasses
+import inspect
+import ipaddress
+from typing import Any, Optional, Type, Union
+
+from temporalio.converter import (
+    AdvancedJSONEncoder,
+    CompositePayloadConverter,
+    DataConverter,
+    DefaultPayloadConverter,
+    JSONPlainPayloadConverter,
+    JSONTypeConverter,
+    JSONTypeConverterUnhandled,
+)
+
+class IPv4AddressJSONEncoder(AdvancedJSONEncoder):
+    def default(self, o: Any) -> Any:
+        if isinstance(o, ipaddress.IPv4Address):
+            return str(o)
+        return super().default(o)
+
+class IPv4AddressJSONTypeConverter(JSONTypeConverter):
+    def to_typed_value(
+        self, hint: Type, value: Any
+    ) -> Union[Optional[Any], JSONTypeConverterUnhandled]:
+        # Collection hints such as list[IPv4Address] aren't classes, so check first
+        if inspect.isclass(hint) and issubclass(hint, ipaddress.IPv4Address):
+            return ipaddress.IPv4Address(value)
+        return JSONTypeConverter.Unhandled
+
+class IPv4AddressPayloadConverter(CompositePayloadConverter):
+    def __init__(self) -> None:
+        # Replace default JSON plain with our own that has our encoder and type
+        # converter
+        json_converter = JSONPlainPayloadConverter(
+            encoder=IPv4AddressJSONEncoder,
+            custom_type_converters=[IPv4AddressJSONTypeConverter()],
+        )
+        super().__init__(
+            *[
+                c if not isinstance(c, JSONPlainPayloadConverter) else json_converter
+                for c in DefaultPayloadConverter.default_encoding_payload_converters
+            ]
+        )
+
+my_data_converter = dataclasses.replace(
+    DataConverter.default,
+    payload_converter_class=IPv4AddressPayloadConverter,
+)
+```
+<!--SNIPEND-->
+
+Now `IPv4Address` can be used in type hints, including collections and optionals.

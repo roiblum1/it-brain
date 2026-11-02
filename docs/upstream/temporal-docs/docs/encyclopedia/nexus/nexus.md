@@ -1,0 +1,131 @@
+---
+id: nexus
+title: Temporal Nexus
+description: Temporal Nexus connects Temporal Applications across isolated Namespaces with clean service contracts, built-in durability, observability, and security.
+toc_max_heading_level: 4
+slug: /nexus
+tags:
+  - Nexus
+  - Concepts
+---
+
+import { CaptionedImage, SdkGuideLinks } from '@site/src/components';
+
+:::info NEW TO NEXUS?
+
+This page explains what Nexus is and how it works. To evaluate whether Nexus fits your use case, see the [evaluation guide](/evaluate/features/nexus).
+
+:::
+
+As a platform grows, coordinating work across teams and applications becomes increasingly difficult. 
+Nexus lets teams selectively expose functionality that other teams can discover and reuse, without exposing their internal implementation details.
+This approach makes it easier to build new applications by reusing what already exists, forming the foundation for a more modular and collaborative platform.
+
+## What is Nexus?
+
+Nexus connects Temporal Applications across (and within) isolated Namespaces.
+Each team gets their own Namespace for security and fault isolation, while exposing a clean service contract for others to use through a [Nexus Endpoint](/nexus/endpoints).
+
+Designed for Durable Execution, Nexus combines a familiar SDK programming model with reliable execution, built-in observability, and multi-region connectivity in Temporal Cloud.
+
+Nexus is peer-to-peer, not hierarchical.
+Caller and handler Workflows are siblings that communicate across Namespace boundaries.
+
+<CaptionedImage
+    src="/img/cloud/nexus/nexus-overview-short.png"
+    title="Nexus connects caller and handler Namespaces through a Nexus Endpoint"
+    width="100%"
+    zoom="true"
+/>
+
+## How Nexus works
+
+### Services and Operations
+
+A [Nexus Service](/nexus/services) is a named collection of [Nexus Operations](/nexus/operations) that a team exposes.
+Operations abstract the underlying implementation - callers don't need to know whether an Operation starts a Workflow, sends a Signal, runs a Query, or executes other reliable code.
+If you need to orchestrate multiple Nexus Operations, call them from a Workflow. But if you just need to execute a single Nexus Operation across Namespace boundaries, use a [Standalone Nexus Operation](/standalone-nexus-operation).
+For a side-by-side comparison of these options, including when to skip Nexus and start a Workflow directly, see [Choosing a Nexus approach](/nexus/choosing-an-approach).
+
+The [Operation lifecycle](/nexus/operations#operation-lifecycle) supports two modes:
+
+- **Asynchronous** - Starts a Workflow (on the same or a different Task Queue, with optional [Eager Start](/develop/worker-performance#eager-workflow-start)) or a Standalone Activity, or sends an Update to an existing Workflow (pre-release). The handler returns an Operation token, and the backing Execution delivers its result when it completes. The maximum Schedule-to-Close timeout is [60 days](/evaluate/cloud/limits#nexus-operation-duration-limits).
+- **Synchronous** - Completes within the [10-second handler deadline](/evaluate/cloud/limits#nexus-operation-request-timeout). Use for Signals, Queries, Updates, or other reliable low-latency calls using the [Temporal SDK Client](/nexus/operations#executing-arbitrary-code-from-a-sync-handler).
+
+Use a Synchronous Operation only when its complete execution path is highly reliable, has predictably low latency, and finishes well within the 10-second handler deadline; otherwise, use an Asynchronous Operation.
+
+Services and Operations are built with the Temporal SDK and typically [collocated](/nexus/patterns#collocated-pattern) in the same Worker as the Temporal primitives they abstract, or in a dedicated router Worker using the [router-queue pattern](/nexus/patterns#router-queue-pattern).
+
+See the SDK feature guides for your language:
+
+<SdkGuideLinks
+  path="nexus/feature-guide"
+  filter={['go', 'java', 'python', 'typescript', 'dotnet']}
+  title="Nexus"
+/>
+
+:::tip QUICKSTART
+
+To get started with Nexus, follow a Quickstart:
+[Go](/develop/go/nexus/quickstart) |
+[Java](/develop/java/nexus/quickstart) |
+[Python](/develop/python/nexus/quickstart) |
+[TypeScript](/develop/typescript/nexus/quickstart) |
+[.NET](/develop/dotnet/nexus/quickstart)
+
+:::
+
+### Endpoints and Registry
+
+A [Nexus Endpoint](/nexus/endpoints) is a reverse proxy that decouples callers from handlers.
+Callers reference an Endpoint by name. The Endpoint routes requests to a target Namespace and Task Queue.
+Callers never need to know the handler's Namespace, Task Queue, or internal implementation.
+
+Endpoints are managed in the [Nexus Registry](/nexus/registry) using the UI, CLI, or Cloud Ops API.
+
+In Temporal Cloud, each Endpoint also belongs to a [Project](/cloud/projects#use-nexus-across-projects).
+The Project controls who can manage the Endpoint in the Cloud Ops API and UI.
+It does not restrict cross-Namespace Nexus calls. Runtime access remains the Endpoint allowlist of caller Namespaces.
+
+### Queue-based Worker architecture
+
+Nexus uses the same queue-based Worker architecture as the rest of Temporal.
+Handler Workers poll the Endpoint's target Task Queue for [Nexus Tasks](/tasks#nexus-task).
+If a Nexus Service is down, caller Workflows continue to schedule Operations - they process when the service is back up.
+No bespoke service deployments needed. Load balancing is automatic.
+
+<CaptionedImage
+    src="/img/cloud/nexus/nexus-workers-short.png"
+    title="Nexus Workers poll the Endpoint's target Task Queue"
+    width="100%"
+    zoom="true"
+/>
+
+See [system interactions](/nexus/operations#system-interactions) for the full request flow.
+
+### Built-in Nexus Machinery
+
+When a caller Workflow executes a Nexus Operation, the [Nexus Machinery](/glossary#nexus-machinery) handles delivery with [at-least-once](/nexus/operations#execution-semantics) execution:
+
+- Automatic retries with exponential backoff
+- Rate limiting and concurrency limiting
+- [Circuit breaking](/nexus/operations#circuit-breaking) (trips after 5 consecutive retryable errors)
+- Automatic load balancing
+
+The Machinery uses [Nexus RPC](/glossary#nexus-rpc) on the wire - a protocol supporting arbitrary-duration Operations.
+You interact only with the Temporal SDK, not Nexus RPC directly.
+
+### Multi-level calls
+
+Nexus Operations can be composed across multiple services and teams. A handler Workflow can call another Nexus Operation, forming a chain:
+
+- Workflow A -> Nexus Op 1 -> Workflow B -> Nexus Op 2 -> Workflow C
+
+Each step is a separate, durable Operation with its own retries and failure handling. This enables service composition across Namespaces without requiring direct connectivity or shared configuration between teams.
+
+## Operational reference
+
+- [Nexus security](/nexus/security) - Access controls, secure connectivity, and payload encryption.
+- [Nexus execution debugging](/nexus/execution-debugging) - Bi-directional linking, pending Operations, and tracing.
+- [Nexus error handling](/nexus/error-handling) - Error types and how they surface in caller Workflows.
+- [Nexus metrics](/nexus/metrics) - SDK, Cloud, and OSS cluster metrics.

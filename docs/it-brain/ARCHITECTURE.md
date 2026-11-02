@@ -4,7 +4,7 @@ type: reference
 area: meta
 tags: [it-brain, architecture, teams, storage, network, ocp, design]
 applies_to: []
-confidence: hypothesis
+confidence: observed
 last_verified: 2026-11-02
 owners: [ocp]
 source: it-brain-design
@@ -23,7 +23,8 @@ it-brain grows team-brain — the OpenShift team's offline memory — into one b
 | **storage** | NetApp ONTAP + Trident, Dell PowerMax / PowerFlex / PowerScale (Isilon), Ceph + S3 (RGW), ODF, SMB/CIFS, Commvault |
 | **network** | Cisco ACI, Palo Alto firewalls / Panorama, the network side of storage and cluster connectivity |
 | *ocp — our platform tools* | **server-scan** (our bare-metal inventory and management platform, `team-redbull/server-scan`), **Temporal** and the Redbull Workflows orchestrator built on it |
-| *owner to confirm* | VMware (vCenter, ESXi, vSAN, NSX), Nutanix (AOS, AHV, Prism); Prefect, Airflow, Spark, ECK / Elastic, Solr, MongoDB — on Kubernetes and on VMs |
+| **virtualization** | **KubeVirt / OpenShift Virtualization** (we run it), VMware (vCenter, ESXi, vSAN, NSX) and its automation with **PowerShell / PowerCLI**, Nutanix (AOS, AHV, Prism), VM migration (MTV) |
+| *owner to confirm* | Prefect, Airflow, Spark, ECK / Elastic, Solr, MongoDB — on Kubernetes and on VMs (`ocp` for now) |
 
 ## 1. Why one brain and not three
 
@@ -37,6 +38,26 @@ hold one third of the answer. One brain gives:
 
 What stays separate per team: who **approves** pages in an area (`teams.json` → `.gitlab/CODEOWNERS`), what each
 team's sessions are **told first** (team profile, §6), and which **live tools** a team may connect (§3.4).
+
+### 1.1 Focused per team, combined across teams
+
+More knowledge must not make Claude worse for any one team. Four mechanisms keep each session focused while still
+using every team's knowledge when a problem crosses a boundary (e.g. a PowerFlex volume on OpenShift):
+
+| Mechanism | Keeps focus by… | Crosses teams by… |
+|---|---|---|
+| **Small session context** | the SessionStart hook loads only counts, the team profile and recent changes — never page bodies; pages are read on demand | — |
+| **Team profile** (`IT_BRAIN_TEAM`) | telling Claude which areas to look at *first* | never filtering search: every source stays searchable |
+| **`route`** (team-knowledge tool, `brain.py route`) | naming the few areas a problem touches, from each area's `keywords` in `teams.json` | returning *every* matching area and its owner team, plus the interface page between them — product areas (PowerFlex) rank the contract, platform words (PVC) only break ties |
+| **Area charters + interface pages** | saying what belongs in an area and what does **not** | writing each seam once, with *how each side checks its half* and *symptoms caused on the other side* |
+
+The `it-triage` skill turns that into one answer: evidence per side, the side most likely at fault, and the team
+to involve. CI keeps it honest: `tests/routing.json` holds cross-team questions that must reach the right areas,
+teams and interface page (check `route`), next to the golden search queries (check `smoke`).
+
+Example, `brain.py route "PVC stuck Pending on OpenShift with PowerFlex"`: areas `dell-powerflex` (storage),
+`storage` + `openshift` (ocp); interface `interfaces/ocp-storage-dell-csm.md`; then the PowerFlex pages, the Dell
+CSM docs snapshot (`dell-csm-docs`) and the cluster storage pages are searched together.
 
 ## 2. Design principles (inherited from team-brain, extended)
 
@@ -94,7 +115,8 @@ Areas and owners (run `python3 scripts/brain.py teams` for the live table):
 
 | Owner | Areas |
 |---|---|
-| ocp | openshift, kubernetes, hypershift, baremetal, vsphere, networking\*, storage\*, gpu, observability, registry-mirroring, gitops, security\*, oadp\*†, vmware†, nutanix†, **server-scan**\*, **temporal**, prefect†, airflow†, spark\*†, elastic\*†, solr\*†, mongodb\*† |
+| ocp | openshift, kubernetes, hypershift, baremetal, vsphere\*, networking\*, storage\*, gpu, observability, registry-mirroring, gitops, security\*, oadp\*†, **server-scan**\*, **temporal**, **python** (Pydantic), prefect†, airflow†, spark\*†, elastic\*†, solr\*†, mongodb\*† |
+| virtualization | **kubevirt**\*, vmware\*, nutanix\*, **powercli**\* |
 | storage | netapp-ontap, trident\*, dell-powermax\*, dell-powerflex\*, dell-powerscale\*, ceph, odf\*†, smb-cifs\*, commvault\*† |
 | network | cisco-aci\*, palo-alto\* |
 | all | meta |
@@ -154,8 +176,18 @@ together with its snapshot, so CI's `sources` and `upstream` checks stay meaning
 
 ### 3.4 Live tools (MCP servers)
 
-Existing: `kubernetes` (full access, every call approved) and `grafana` (read-only). server-scan ships its own
-read-only MCP server (`mcp/servers/server-scan.md`) — the first in-house candidate to connect. For the new teams the order is:
+In the plugin today:
+
+| Server | Access | Status |
+|---|---|---|
+| `team-knowledge` | read | search, read, related, **route** (new) over the brain and every offline source |
+| `kubernetes` | full, every call approved | now with the **`kubevirt` toolset** (6 `vm_*` tools) — `mcp/servers/kubernetes.md` |
+| `grafana` | read-only | unchanged |
+| `temporal` (**new**, vendored `temporal-mcp` v0.0.5) | read-only | optional: starts when `TEMPORAL_MCP_CONFIG` is set, otherwise a stub that says how to configure it — `mcp/servers/temporal.md` |
+
+Connected per engineer: server-scan's own read-only MCP (`mcp/servers/server-scan.md`; its UI prints the
+`claude mcp add` line). Evaluated, not deployed: `ontap-mcp` (`mcp/servers/ontap-mcp.md`, container) and the
+Nutanix MCP (`mcp/servers/nutanix-mcp.md`, Python package). For the new teams the order is:
 
 1. **Docs and brain only** (Phase 1) — no live access. Already valuable.
 2. **Read-only live access** (Phase 3), one system at a time, with a dedicated read-only service account per
@@ -247,5 +279,8 @@ Commvault, real GitLab groups for CODEOWNERS, separate repo vs keep in team-brai
 (virtualization / backup) team is needed, and which vendor docs we are licensed to store offline.
 
 ## History
+
+- 2026-11-02: virtualization team (kubevirt, powercli, vmware, nutanix), python area, cross-team routing (§1.1),
+  Temporal MCP and the KubeVirt toolset, 13 new doc snapshots
 
 - 2026-11-02: created (Phase 0: registry, areas, interfaces, checks, docs)

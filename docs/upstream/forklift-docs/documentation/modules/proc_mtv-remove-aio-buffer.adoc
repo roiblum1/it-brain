@@ -1,0 +1,43 @@
+// Module included in the following assemblies:
+//
+// * documentation/doc-Migrating_your_virtual_machines/assemblies/assembly_advanced-migration-options.adoc
+
+:_mod-docs-content-type: PROCEDURE
+[id="proc_mtv-remove-aio-buffer_{context}"]
+= Removing AIO buffer configuration
+
+[role="_abstract"]
+You can remove AIO buffer configuration for a cold migration using {project-first}. You must remove AIO buffer configuration before performing warm migrations using {project-short}.
+
+[NOTE]
+====
+The procedure that follows assumes the AIO buffering was enabled and configured according to the procedure in xref:proc_mtv-enable-aio-buffer_mtv[Enabling and configuring AIO buffering].
+====
+
+.Procedure
+
+. In the +{namespace}+ namespace, edit the `ForkliftController` custom resource (CR) by performing the following steps:
+
+.. Access the `ForkliftController` CR for editing by running the following command:
++
+[source,terminal,subs="attributes+"]
+----
+{oc} edit forkliftcontroller -n {namespace}
+----
+
+.. Remove the following lines from the `spec` section of the `ForkliftController` CR:
++
+[source,terminal]
+----
+virt_v2v_extra_args: "`–vddk-config /mnt/extra-v2v-conf/input.conf`"
+virt_v2v_extra_conf_config_map: "`perf`"
+----
+
+. Delete the config map named `perf`:
++
+[source,terminal,subs="attributes+"]
+----
+{oc} delete cm perf -n {namespace}
+----
+
+. Optional: Restart the `forklift-controller` pod to ensure that the changes took effect.

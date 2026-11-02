@@ -1,0 +1,44 @@
+
+ifdef::context[:parent-context: {context}]
+
+:_mod-docs-content-type: ASSEMBLY
+
+[id="assembly_planning-migration-ova_{context}"]
+
+= Planning a migration of virtual machines from OVA
+
+//:context: planning-ova
+
+[role="_abstract"]
+Create an OVA migration plan by setting up network maps, configuring source and destination providers with migration networks, and defining the migration plan in the {project-first} UI.
+
+:context: ova
+
+include::../modules/proc_creating-form-based-network-maps-ui-ova.adoc[leveloffset=+1]
+
+include::../modules/proc_creating-yaml-based-network-maps-ui-ova.adoc[leveloffset=+1]
+
+include::../modules/proc_creating-form-based-storage-maps-ui-ova.adoc[leveloffset=+1]
+
+include::../modules/proc_creating-yaml-based-storage-maps-ui-ova.adoc[leveloffset=+1]
+
+include::../modules/proc_adding-source-provider-ova.adoc[leveloffset=+1]
+
+:context: dest_ova
+
+include::../modules/proc_adding-virt-destination-provider.adoc[leveloffset=+1]
+
+include::../modules/proc_selecting-migration-network-for-virt-provider.adoc[leveloffset=+1]
+
+:context: ova
+
+include::../modules/proc_creating-plan-wizard-ova.adoc[leveloffset=+1]
+
+include::../modules/proc_configuring-ova-web-upload.adoc[leveloffset=+1]
+
+ifdef::parent-context[:context: {parent-context}]
+ifndef::parent-context[:!context:]
+
+
+
+

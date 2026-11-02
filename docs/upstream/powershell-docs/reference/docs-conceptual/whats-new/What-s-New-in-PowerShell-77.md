@@ -1,0 +1,221 @@
+---
+title: What's New in PowerShell 7.7
+description: New features and changes released in PowerShell 7.7
+ms.date: 09/21/2026
+---
+
+# What's New in PowerShell 7.7
+
+PowerShell 7.7.0-preview.5 includes the following features, updates, and breaking changes.
+PowerShell 7.7.0-preview.5 is built on the .NET 11.0.0-rc.1 runtime.
+
+For a complete list of changes, see the [CHANGELOG][04] in the GitHub repository.
+
+## Updated modules
+
+PowerShell 7.7 includes the following updated modules:
+
+- **Microsoft.PowerShell.PSResourceGet** v1.3.0-preview2
+- **PSReadLine** v2.4.5
+
+## Breaking Changes
+
+- `New-Guid` now generates Version 7 (time-sortable) UUIDs by default instead of Version 4
+  (random). The output format is unchanged. Scripts that depend on fully random GUIDs should use
+  `[guid]::NewGuid()` directly. ([#27033][27033])
+- Add `ValidateNotNullOrEmpty` attribute to the `-Property` of `Format-Table`, `Format-List`, and
+  `Format-Custom` ([#26552][26552])
+- Use ArgumentException.ThrowIfNullOrEmpty for not-null-not-empty argument validation.
+  ([#26668][26668])
+  - The exception thrown changes to `System.ArgumentException` from
+    `System.Management.Automation.PSArgumentNullException`.
+- Correct handling of explicit `-[<Operator>]:$false` parameter values in `Where-Object`
+  ([#26485][26485]) (Thanks @yotsuda!)
+
+## Tab completion improvements
+
+- Add tab completion for `$PSBoundParameters.Keys` switch cases and access patterns
+  ([#26483][26483]) (Thanks @yotsuda!)
+- Fix the regression in tab completing positional parameters ([#27857][27857])
+
+## Cmdlet improvements
+
+- Allow user to force the default implicit formatting to use `AutoSize` ([#28018][28018])
+- Prevent localization of WPF key gesture strings ([#28020][28020])
+- Improve pointer lifecycle handling in PdhHelper ([#28008][28008])
+- Improve validation for `Copy-Item -FromSession` ([#28006][28006])
+- Add `GetImportModuleCommand` method back and check for session restriction in `ShowCommand`
+  ([#25557][25557])
+- Improve output file path determination for `Invoke-WebRequest` ([#27872][27872])
+- Improve `Authorization` header default and redirect behavior ([#27873][27873])
+- Add `New-TemporaryDirectory` cmdlet ([#27549][27549]) (Thanks @KirtiRamchandani!)
+- Change `New-Guid` to generate UUID v7 by default ([#27033][27033]) (Thanks @SufficientDaikon!)
+- Handle empty-string and null-value results returned from custom argument completer more properly
+  ([#27398][27398])
+- Add missing resource strings for `Get-WinEvent` ([#27397][27397]) (Thanks @MartinGC94!)
+- Improve `Get-WinEvent -ListLog` exception handling ([#27395][27395]) (Thanks @MartinGC94!)
+- Update `MaxVisitCount` and `MaxHashtableKeyCount` if `VisitorSafeValueContext` indicates
+  `SkipLimitCheck` is true for `Import-PowerShellDataFile`
+- Correct handling of explicit `-<SwitchParameter>:$false` parameter values for the following
+  cmdlets:
+  - `ConvertFrom-Csv`, `ConvertTo-Csv`, `Export-Csv`, and `Import-Csv` ([#26719][26719]) (Thanks
+    @yotsuda!)
+  - `Get-Random` ([#26457][26457]) (Thanks @yotsuda!)
+  - `Get-SecureRandom` ([#26460][26460]) (Thanks @yotsuda!)
+  - `Get-TimeZone` ([#26463][26463]) (Thanks @yotsuda!)
+  - `Get-Uptime` ([#26141][26141]) (Thanks @logiclrd!)
+  - `New-Guid` ([#26140][26140]) (Thanks @logiclrd!)
+  - `New-PSSession` ([#26469][26469]) (Thanks @yotsuda!)
+  - `Split-Path` ([#26474][26474]) (Thanks @yotsuda!)
+  - `Test-Connection` ([#26479][26479]) (Thanks @yotsuda!)
+  - `Where-Object` ([#26485][26485]) (Thanks @yotsuda!)
+- Add `-ExcludeProperty` parameter to `Format-*` cmdlets ([#26514][26514]) (Thanks @yotsuda!)
+- Add `-Extension` parameter to `Join-Path` cmdlet ([#26482][26482]) (Thanks @yotsuda!)
+- Make `Export-Csv` `-Append` and `-NoHeader` mutually exclusive ([#26472][26472]) (Thanks
+  @yotsuda!)
+- Mark `-NoTypeInformation` as obsolete no-op and evaluate `-IncludeTypeInformation` on by value on
+  Csv cmdlets ([#26719][26719]) (Thanks @yotsuda!)
+- Add `SubjectAlternativeName` property to the `Signature` object returned from
+  `Get-AuthenticodeSignature` ([#26252][26252])
+- Add property and event for debug attach ([#25788][25788]) (Thanks @jborean93!)
+- Add `$PSApplicationOutputEncoding` variable ([#21219][21219]) (Thanks @jborean93!)
+- Add `ToRegex` method to `WildcardPattern` class ([#26515][26515]) (Thanks @yotsuda!)
+- Update PowerShell Profile DSC resource manifests to allow null for content ([#26929][26929])
+- DSC v3 resource for PowerShell Profile ([#26157][26157])
+- Dynamically evaluate width of `LastWriteTime` for formatting output on Unix ([#24624][24624])
+  (Thanks @MathiasMagnus!)
+- Fix formatting to properly handle the `Reset` VT sequences that appear in the middle of a string
+  ([#26424][26424])
+- Fix `Invoke-RestMethod` to support read-only files in multipart form data ([#26454][26454])
+  (Thanks @yotsuda!)
+- Fix memory leak in `GetFileShares` ([#25896][25896]) (Thanks @xtqqczze!)
+- Fix **NOTES** section formatting in comment-based help ([#26512][26512]) (Thanks @yotsuda!)
+- Fix `Test-Json` false positive errors when using `oneOf` or `anyOf` in schema ([#26618][26618])
+  (Thanks @yotsuda!)
+- Fix the CLR internal error and null ref exception when running `Show-Command` with PowerShell API
+  ([#26669][26669])
+- Handle null reference exception in `CsvCommands.cs`: `ConvertPSObjectToCSV` ([#26144][26144])
+  (Thanks @mikkas456!)
+- Improve `ValidateLength` error message consistency and refactor validation tests ([#25806][25806])
+  (Thanks @jorgeasaurus!)
+- Support **TargetObject** position in `ParserErrors` ([#26649][26649]) (Thanks @jborean93!)
+- Add verbose message to `Get-Service` when properties cannot be returned ([#27109][27109]) (Thanks
+  @reabr!)
+- Fix `Remove-Item` confirmation message to use provider path instead ([#27123][27123]) (Thanks
+  @scuzqy!)
+- PSStyle: validate background index against `BackgroundColorMap` ([#27106][27106]) (Thanks
+  @cuiweixie!)
+
+## Engine improvements
+
+- Tolerate IO/JSON errors reading the per-user `powershell.config.json` ([#27373][27373])
+- Improve remote prompt handling for `PSCredential` and `SecureString` arrays ([#28007][28007])
+- Improve CAB extraction path handling ([#28009][28009])
+- Handle MSIX installation specially when prepending to PATH ([#27782][27782])
+- Call `CodeGeneration.EscapeSingleQuotedStringContent` API in SyncCurrentLocationHandler
+  ([#27874][27874])
+- Improve PowerShell Remoting Argument Validation ([#27870][27870])
+- Improve validation for data fragments for PSRP frame headers ([#27871][27871])
+- Add the xsd validation back for CIM cmdlets ([#27869][27869])
+- Fix PATH caching in CommandDiscovery code ([#27809][27809])
+- Fix `FileOnlyEntry` crashing on older versions of Windows ([#27880][27880])
+- Add support for new WLDP setting `EnableFileOnlyEntry` ([#26752][26752])
+- Fix the dot-sourcing behavior of `pwsh -file` for advanced-function scripts ([#27727][27727])
+- Fix progress bar rendering with double-width Unicode characters ([#26185][26185]) (Thanks
+  @yotsuda!)
+- Update PowerShell telemetry to respect the diagnostics and feedback setting on Windows
+  ([#27328][27328])
+- Fix up default value for parameters with the `in` modifier ([#26785][26785]) (Thanks @jborean93!)
+- Fix `WSManInstance` COM interface with `ResourceURI` ([#26692][26692]) (Thanks @jborean93!)
+- Refactor the module path construction code to make it more robust and easier to maintain
+  ([#26565][26565])
+- Fix checks for local user config file paths ([#26269][26269])
+- Delay update notification for one week to ensure all packages become available ([#27095][27095])
+- Disable AMSI content logging in release ([#26235][26235]) (Thanks @xtqqczze!)
+- Add property and event for debug attach ([#25788][25788]) (Thanks @jborean93!)
+- Enable usage in AppContainers ([#27266][27266])
+
+## Experimental features
+
+PowerShell 7.7 includes the following experimental features.
+
+- [PSLoadAssemblyFromNativeCode][01] - Load assemblies from native code
+- [PSSerializeJSONLongEnumAsNumber][03] - `ConvertTo-Json` now treats large enums as numbers
+- [PSProfileDSCResource][02] - Add DSC v3 resource for PowerShell Profiles
+
+<!-- end of content -->
+<!-- reference links -->
+[01]: ../learn/experimental-features.md#psloadassemblyfromnativecode
+[02]: ../learn/experimental-features.md#psprofiledscresource
+[03]: ../learn/experimental-features.md#psserializejsonlongenumasnumber
+[04]: https://github.com/PowerShell/PowerShell/blob/master/CHANGELOG/preview.md
+
+[21219]: https://github.com/PowerShell/PowerShell/pull/21219
+[24624]: https://github.com/PowerShell/PowerShell/pull/24624
+[25557]: https://github.com/PowerShell/PowerShell/pull/25557
+[25788]: https://github.com/PowerShell/PowerShell/pull/25788
+[25806]: https://github.com/PowerShell/PowerShell/pull/25806
+[25896]: https://github.com/PowerShell/PowerShell/pull/25896
+[26140]: https://github.com/PowerShell/PowerShell/pull/26140
+[26141]: https://github.com/PowerShell/PowerShell/pull/26141
+[26144]: https://github.com/PowerShell/PowerShell/pull/26144
+[26157]: https://github.com/PowerShell/PowerShell/pull/26157
+[26185]: https://github.com/PowerShell/PowerShell/pull/26185
+[26235]: https://github.com/PowerShell/PowerShell/pull/26235
+[26252]: https://github.com/PowerShell/PowerShell/pull/26252
+[26269]: https://github.com/PowerShell/PowerShell/pull/26269
+[26424]: https://github.com/PowerShell/PowerShell/pull/26424
+[26454]: https://github.com/PowerShell/PowerShell/pull/26454
+[26457]: https://github.com/PowerShell/PowerShell/pull/26457
+[26460]: https://github.com/PowerShell/PowerShell/pull/26460
+[26463]: https://github.com/PowerShell/PowerShell/pull/26463
+[26469]: https://github.com/PowerShell/PowerShell/pull/26469
+[26472]: https://github.com/PowerShell/PowerShell/pull/26472
+[26474]: https://github.com/PowerShell/PowerShell/pull/26474
+[26479]: https://github.com/PowerShell/PowerShell/pull/26479
+[26482]: https://github.com/PowerShell/PowerShell/pull/26482
+[26483]: https://github.com/PowerShell/PowerShell/pull/26483
+[26485]: https://github.com/PowerShell/PowerShell/pull/26485
+[26512]: https://github.com/PowerShell/PowerShell/pull/26512
+[26514]: https://github.com/PowerShell/PowerShell/pull/26514
+[26515]: https://github.com/PowerShell/PowerShell/pull/26515
+[26552]: https://github.com/PowerShell/PowerShell/pull/26552
+[26565]: https://github.com/PowerShell/PowerShell/pull/26565
+[26618]: https://github.com/PowerShell/PowerShell/pull/26618
+[26649]: https://github.com/PowerShell/PowerShell/pull/26649
+[26668]: https://github.com/PowerShell/PowerShell/pull/26668
+[26669]: https://github.com/PowerShell/PowerShell/pull/26669
+[26692]: https://github.com/PowerShell/PowerShell/pull/26692
+[26719]: https://github.com/PowerShell/PowerShell/pull/26719
+[26752]: https://github.com/PowerShell/PowerShell/pull/26752
+[26785]: https://github.com/PowerShell/PowerShell/pull/26785
+[26929]: https://github.com/PowerShell/PowerShell/pull/26929
+[27033]: https://github.com/PowerShell/PowerShell/pull/27033
+[27095]: https://github.com/PowerShell/PowerShell/pull/27095
+[27106]: https://github.com/PowerShell/PowerShell/pull/27106
+[27109]: https://github.com/PowerShell/PowerShell/pull/27109
+[27123]: https://github.com/PowerShell/PowerShell/pull/27123
+[27266]: https://github.com/PowerShell/PowerShell/pull/27266
+[27328]: https://github.com/PowerShell/PowerShell/pull/27328
+[27373]: https://github.com/PowerShell/PowerShell/pull/27373
+[27395]: https://github.com/PowerShell/PowerShell/pull/27395
+[27397]: https://github.com/PowerShell/PowerShell/pull/27397
+[27398]: https://github.com/PowerShell/PowerShell/pull/27398
+[27549]: https://github.com/PowerShell/PowerShell/pull/27549
+[27727]: https://github.com/PowerShell/PowerShell/pull/27727
+[27782]: https://github.com/PowerShell/PowerShell/pull/27782
+[27809]: https://github.com/PowerShell/PowerShell/pull/27809
+[27857]: https://github.com/PowerShell/PowerShell/pull/27857
+[27869]: https://github.com/PowerShell/PowerShell/pull/27869
+[27870]: https://github.com/PowerShell/PowerShell/pull/27870
+[27871]: https://github.com/PowerShell/PowerShell/pull/27871
+[27872]: https://github.com/PowerShell/PowerShell/pull/27872
+[27873]: https://github.com/PowerShell/PowerShell/pull/27873
+[27874]: https://github.com/PowerShell/PowerShell/pull/27874
+[27880]: https://github.com/PowerShell/PowerShell/pull/27880
+[28006]: https://github.com/PowerShell/PowerShell/pull/28006
+[28007]: https://github.com/PowerShell/PowerShell/pull/28007
+[28008]: https://github.com/PowerShell/PowerShell/pull/28008
+[28009]: https://github.com/PowerShell/PowerShell/pull/28009
+[28018]: https://github.com/PowerShell/PowerShell/pull/28018
+[28020]: https://github.com/PowerShell/PowerShell/pull/28020

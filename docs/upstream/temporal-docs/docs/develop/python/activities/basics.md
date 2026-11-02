@@ -1,0 +1,146 @@
+---
+id: basics
+title: Activity basics
+sidebar_label: Activity basics
+description: Define an Activity with the activity.defn decorator, pass a single dataclass parameter, return serializable data, and set a custom Activity Type.
+toc_max_heading_level: 4
+tags:
+  - Activities
+  - Python SDK
+  - Temporal SDKs
+---
+
+## Develop a basic Activity {/* #develop-activities */}
+
+One of the primary things that Workflows do is orchestrate the execution of Activities. An Activity is a normal function
+or method execution that's intended to execute a single, well-defined action (either short or long-running), such as
+querying a database, calling a third-party API, or transcoding a media file. An Activity can interact with the world outside
+the Temporal Platform or use a Temporal Client to interact with a Temporal Service. For the Workflow to be able to
+execute the Activity, we must define the [Activity Definition](/activity-definition).
+
+Standalone Activities are Activities that run independently, without being orchestrated by a Workflow. Instead of starting an Activity from within a Workflow Definition, you start a Standalone Activity directly from a Temporal Client.
+
+The way you write the Activity and register it with a Worker is identical to [Workflow Activities](/develop/python/activities/basics). The only difference is that you execute a Standalone Activity directly from your Temporal Client. See [Standalone Activities](/develop/python/activities/standalone-activities-quickstart).
+
+You can develop an Activity Definition by using the `@activity.defn` decorator. Register the function as an Activity
+with a custom name through a decorator argument, for example `@activity.defn(name="your_activity")`.
+
+:::note
+
+The Temporal Python SDK supports multiple ways of implementing an Activity:
+
+- Asynchronously using [`asyncio`](https://docs.python.org/3/library/asyncio.html)
+- Synchronously multithreaded using
+  [`concurrent.futures.ThreadPoolExecutor`](https://docs.python.org/3/library/concurrent.futures.html#threadpoolexecutor)
+- Synchronously multiprocess using
+  [`concurrent.futures.ProcessPoolExecutor`](https://docs.python.org/3/library/concurrent.futures.html#processpoolexecutor)
+  and
+  [`multiprocessing.managers.SyncManager`](https://docs.python.org/3/library/multiprocessing.html#multiprocessing.managers.SyncManager)
+
+Blocking the async event loop in Python would turn your asynchronous program into a synchronous program that executes
+serially, defeating the entire purpose of using `asyncio`. This can also lead to potential deadlock, and unpredictable
+behavior that causes tasks to be unable to execute. Debugging these issues can be difficult and time consuming, as
+locating the source of the blocking call might not always be immediately obvious.
+
+Due to this, consider not making blocking calls from within an asynchronous Activity, or use an async safe library to
+perform these actions. If you must use a blocking library, consider using a synchronous Activity instead.
+
+:::
+
+<!--SNIPSTART python-activity-basics-activity-->
+[python-sandbox/activities/activity_basics/your_activities.py](https://github.com/temporalio/documentation-sdk-code-examples/blob/main/python-sandbox/activities/activity_basics/your_activities.py)
+```py
+from temporalio import activity
+from activity_basics.your_dataobject import YourParams
+
+
+@activity.defn(name="your_activity")
+async def your_activity(input: YourParams) -> str:
+    return f"{input.greeting}, {input.name}!"
+```
+<!--SNIPEND-->
+
+### Define Activity parameters {/* #activity-parameters */}
+
+There is no explicit limit to the total number of parameters that an [Activity Definition](/activity-definition) may
+support. However, there is a limit to the total size of the data that ends up encoded into a gRPC message Payload.
+
+A single argument is limited to a maximum size of 2 MB. And the total size of a gRPC message, which includes all the
+arguments, is limited to a maximum of 4 MB.
+
+Also, keep in mind that all Payload data is recorded in the
+[Workflow Execution Event History](/workflow-execution/event#event-history) and large Event Histories can affect Worker
+performance. This is because the entire Event History could be transferred to a Worker Process with a
+[Workflow Task](/tasks#workflow-task).
+
+{/* TODO link to gRPC limit section when available */}
+
+Some SDKs require that you pass context objects, others do not. When it comes to your application data—that is, data
+that is serialized and encoded into a Payload—we recommend that you use a single object as an argument that wraps the
+application data passed to Activities. This is so that you can change what data is passed to the Activity without
+breaking a function or method signature.
+
+Activity parameters are the function parameters of the function decorated with `@activity.defn`. These can be any data
+type Temporal can convert, including dataclasses when properly type-annotated. Technically this can be multiple
+parameters, but Temporal strongly encourages a single dataclass parameter containing all input fields.
+
+<!--SNIPSTART python-activity-basics-activity {"highlightedLines": "2,6"}-->
+[python-sandbox/activities/activity_basics/your_activities.py](https://github.com/temporalio/documentation-sdk-code-examples/blob/main/python-sandbox/activities/activity_basics/your_activities.py)
+```py {2,6}
+from temporalio import activity
+from activity_basics.your_dataobject import YourParams
+
+
+@activity.defn(name="your_activity")
+async def your_activity(input: YourParams) -> str:
+    return f"{input.greeting}, {input.name}!"
+```
+<!--SNIPEND-->
+
+### Define Activity return values {/* #activity-return-values */}
+
+All data returned from an Activity must be serializable.
+
+Activity return values are subject to payload size limits in Temporal. The default payload size limit is 2MB, and there
+is a hard limit of 4MB for any gRPC message size in the Event History transaction
+([see Cloud limits here](/evaluate/cloud/limits#per-message-grpc-limit)). Keep in mind that all return
+values are recorded in a [Workflow Execution Event History](/workflow-execution/event#event-history).
+
+An Activity Execution can return inputs and other Activity values.
+
+The following example defines an Activity that takes an object as input and returns a string.
+
+<!--SNIPSTART python-activity-basics-activity {"highlightedLines": "6,7"}-->
+[python-sandbox/activities/activity_basics/your_activities.py](https://github.com/temporalio/documentation-sdk-code-examples/blob/main/python-sandbox/activities/activity_basics/your_activities.py)
+```py {6,7}
+from temporalio import activity
+from activity_basics.your_dataobject import YourParams
+
+
+@activity.defn(name="your_activity")
+async def your_activity(input: YourParams) -> str:
+    return f"{input.greeting}, {input.name}!"
+```
+<!--SNIPEND-->
+
+### Customize your Activity Type {/* #activity-type */}
+
+Activities have a Type that are referred to as the Activity name. The following examples set a custom name for
+your Activity Type.
+
+You can customize the Activity name with a custom name in the decorator argument. For example,
+`@activity.defn(name="your-activity")`. If the name parameter is not specified, the Activity name defaults to the
+function name.
+
+<!--SNIPSTART python-activity-basics-activity {"highlightedLines": "5"}-->
+[python-sandbox/activities/activity_basics/your_activities.py](https://github.com/temporalio/documentation-sdk-code-examples/blob/main/python-sandbox/activities/activity_basics/your_activities.py)
+```py {5}
+from temporalio import activity
+from activity_basics.your_dataobject import YourParams
+
+
+@activity.defn(name="your_activity")
+async def your_activity(input: YourParams) -> str:
+    return f"{input.greeting}, {input.name}!"
+```
+<!--SNIPEND-->

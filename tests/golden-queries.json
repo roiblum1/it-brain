@@ -101,6 +101,50 @@
     {
       "query": "server-scan MCP read-only mcp.enabled",
       "expect": "mcp/servers/server-scan.md"
+    },
+    {
+      "query": "Optional field required missing populate_by_name alias model_dump",
+      "expect": "knowledge/python/pydantic-v2-models-fields-coercion-strict-extra-config.md"
+    },
+    {
+      "query": "SettingsError error parsing value for field EnvSettingsSource NoDecode",
+      "expect": "knowledge/python/pydantic-settings-env-prefix-dotenv-secrets-precedence-nodecode.md"
+    },
+    {
+      "query": "pydantic_data_converter old payload decode replay add required field",
+      "expect": "knowledge/python/pydantic-with-temporal-data-converter-sandbox-model-evolution.md"
+    },
+    {
+      "query": "union_tag_invalid discriminator tagged union",
+      "expect": "knowledge/python/pydantic-typeadapter-discriminated-unions-generics-performance.md"
+    },
+    {
+      "query": "parse_obj model_validate orm_mode from_attributes root_validator",
+      "expect": "knowledge/python/pydantic-v1-to-v2-migration-pitfalls.md"
+    },
+    {
+      "query": "try catch not catching error ErrorAction Stop non-terminating",
+      "expect": "knowledge/powercli/powershell-essentials-objects-pipeline-errors-for-infra-engineers.md"
+    },
+    {
+      "query": "Get-View Filter regex Property slow vCenter ExtensionData",
+      "expect": "knowledge/powercli/powercli-object-model-get-view-extensiondata-performance-at-scale.md"
+    },
+    {
+      "query": "InvalidCertificateAction internal CA Connect-VIServer DefaultVIServerMode Multiple",
+      "expect": "knowledge/powercli/powercli-connect-viserver-certificates-multiple-vcenters.md"
+    },
+    {
+      "query": "SecretManagement SecretStore VISecret vCenter credential",
+      "expect": "knowledge/powercli/powercli-credentials-secretmanagement-never-plaintext.md"
+    },
+    {
+      "query": "MTV warm migration CBT ChangeTrackingEnabled RDM snapshots",
+      "expect": "knowledge/powercli/powercli-mtv-migration-prep-vmware-to-kubevirt-cbt-tools-inventory.md"
+    },
+    {
+      "query": "temporal-mcp read-only get_task_queues pollers TEMPORAL_MCP_CONFIG",
+      "expect": "mcp/servers/temporal.md"
     }
   ]
 }

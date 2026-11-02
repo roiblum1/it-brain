@@ -2,7 +2,12 @@
 """Run a third-party MCP server from the archive shipped inside this plugin (air gap: nothing to download).
 
     launch.py <server> [args…]        # what .mcp.json calls
+    launch.py --needs-file VAR <server> [args…]   # optional server: run it only if $VAR names an existing file
     launch.py --check                 # show, per server, which binary would run on this machine
+
+An optional server that is not configured yet (its config file is missing) starts as a tiny built-in MCP server
+with one tool, `how_to_configure`, instead of failing — so engineers who don't use it see no error, and Claude can
+tell those who do what to set.
 
 Order: $TEAM_BRAIN_MCP_<SERVER>_BIN if set → the archive in vendor/<server>/ for this OS/CPU (sha256 checked
 against vendor/manifest.json, unpacked once into the cache) → the binary on PATH. Stdlib only.
@@ -63,9 +68,48 @@ def resolve(name):
              f"TEAM_BRAIN_MCP_{name.upper()}_BIN.")
 
 
+def not_configured(name, var):
+    """Minimal stdio MCP server (JSON-RPC, one message per line) that only explains how to configure `name`."""
+    text = (f"The {name} MCP server is not configured on this machine: set {var} to the path of its config file "
+            f"and restart Claude Code. Setup and an example config: mcp/servers/{name}.md in the brain repo.")
+    tool = {"name": "how_to_configure", "description": f"{name} MCP is not configured here — call for setup steps.",
+            "inputSchema": {"type": "object", "properties": {}, "additionalProperties": False}}
+    for line in sys.stdin:
+        try:
+            msg = json.loads(line)
+        except ValueError:
+            continue
+        if "id" not in msg:
+            continue  # notification
+        method, result = msg.get("method"), None
+        if method == "initialize":
+            result = {"protocolVersion": (msg.get("params") or {}).get("protocolVersion", "2025-06-18"),
+                      "capabilities": {"tools": {}}, "serverInfo": {"name": f"{name}-not-configured", "version": "0"},
+                      "instructions": text}
+        elif method == "tools/list":
+            result = {"tools": [tool]}
+        elif method == "tools/call":
+            result = {"content": [{"type": "text", "text": text}]}
+        elif method == "ping":
+            result = {}
+        reply = {"jsonrpc": "2.0", "id": msg["id"]}
+        if result is None:
+            reply["error"] = {"code": -32601, "message": f"method not found: {method}"}
+        else:
+            reply["result"] = result
+        sys.stdout.write(json.dumps(reply) + "\n")
+        sys.stdout.flush()
+
+
 def main():
     if len(sys.argv) < 2:
         sys.exit(__doc__)
+    if sys.argv[1] == "--needs-file":
+        var, name = sys.argv[2], sys.argv[3]
+        cfg = os.environ.get(var, "")
+        if not cfg or not os.path.isfile(os.path.expanduser(cfg)):
+            return not_configured(name, var)
+        sys.argv = [sys.argv[0], name, *sys.argv[4:]]
     if sys.argv[1] == "--check":
         manifest = json.loads((VENDOR / "manifest.json").read_text())
         for name in manifest:

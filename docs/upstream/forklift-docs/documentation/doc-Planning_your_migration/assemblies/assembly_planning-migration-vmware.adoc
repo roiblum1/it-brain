@@ -1,0 +1,88 @@
+
+ifdef::context[:parent-context: {context}]
+
+:_mod-docs-content-type: ASSEMBLY
+
+[id="assembly_planning-migration-vmware_{context}"]
+
+= Planning a migration of virtual machines from VMware vSphere
+
+//:context: planning-vmware
+
+[role="_abstract"]
+Create a VMware vSphere migration plan by setting up network maps, configuring source and destination providers with migration networks, and defining the migration plan in the {project-first} UI.
+
+:context: vmware
+
+include::../modules/proc_creating-form-based-network-maps-ui-vmware.adoc[leveloffset=+1]
+
+include::../modules/proc_creating-yaml-based-network-maps-ui-vmware.adoc[leveloffset=+1]
+
+include::../modules/proc_creating-form-based-storage-maps-ui-vmware.adoc[leveloffset=+1]
+
+include::../modules/proc_creating-yaml-based-storage-maps-ui-vmware.adoc[leveloffset=+1]
+
+include::../modules/con_about-storage-copy-offload.adoc[leveloffset=+1]
+
+include::../modules/con_how-storage-copy-offload-works.adoc[leveloffset=+2]
+
+include::../modules/ref_sco-supported-storage-providers.adoc[leveloffset=+2]
+
+include::../modules/proc_storage-copy-offload-steps.adoc[leveloffset=+2]
+
+include::../modules/con_copy-methods-sco.adoc[leveloffset=+2]
+
+include::../modules/con_sco-ssh-advantages.adoc[leveloffset=+2]
+
+include::../modules/proc_storage-copy-offload-vib-set-up.adoc[leveloffset=+2]
+
+include::../modules/con_storage-copy-offload-general-ssh-set-up.adoc[leveloffset=+2]
+
+include::../modules/con_ssh-notes-and-security.adoc[leveloffset=+2]
+
+include::../modules/proc_storage-copy-offload-auto-ssh-set-up.adoc[leveloffset=+2]
+
+include::../modules/proc_storage-copy-offload-manual-ssh-set-up.adoc[leveloffset=+2]
+
+include::../modules/proc_storage-copy-offload-ui.adoc[leveloffset=+2]
+
+include::../modules/proc_adding-source-provider-vmware.adoc[leveloffset=+1]
+
+include::../modules/proc_selecting-migration-network-for-vmware-source-provider.adoc[leveloffset=+1]
+
+:context: dest_vmware
+
+include::../modules/proc_adding-virt-destination-provider.adoc[leveloffset=+1]
+
+include::../modules/proc_selecting-migration-network-for-virt-provider.adoc[leveloffset=+1]
+
+:context: vmware
+
+include::../modules/proc_creating-plan-wizard-vmware.adoc[leveloffset=+1]
+
+include::../modules/proc_configuring-plan-settings-vmware.adoc[leveloffset=+1]
+
+include::../modules/ref_pvc-name-template-variables-vmware.adoc[leveloffset=+2]
+
+include::../modules/ref_network-name-template-variables-vmware.adoc[leveloffset=+2]
+
+include::../modules/ref_volume-name-template-variables-vmware.adoc[leveloffset=+2]
+
+:!vmware:
+
+include::../modules/con_about-deep-inspection.adoc[leveloffset=+1]
+
+include::../modules/ref_deep-inspection-validation-results.adoc[leveloffset=+1]
+
+include::../modules/con_migration-of-luks-encrypted-disks.adoc[leveloffset=+1]
+
+include::../modules/proc_enabling-nbde-with-clevis.adoc[leveloffset=+1]
+
+include::../modules/con_about-scheduling-importer-pods.adoc[leveloffset=+1]
+
+ifdef::parent-context[:context: {parent-context}]
+ifndef::parent-context[:!context:]
+
+
+
+

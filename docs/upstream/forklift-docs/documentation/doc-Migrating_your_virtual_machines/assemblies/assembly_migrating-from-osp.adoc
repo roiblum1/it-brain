@@ -1,0 +1,40 @@
+ifdef::context[:parent-context: {context}]
+
+:_mod-docs-content-type: ASSEMBLY
+
+[id="assembly_migrating-from-osp_{context}"]
+
+= Migrating from {osp}
+
+//:context: migrating-osp
+
+[role="_abstract"]
+Run your {osp} migration plan from the MTV UI or from the command-line.
+
+== Prerequisites
+
+* You have planned your migration from {osp}.
+
+:context: ostack
+:ostack:
+
+include::../modules/proc_running-migration-plan.adoc[leveloffset=+1]
+
+include::../modules/ref_migration-plan-options-ui.adoc[leveloffset=+2]
+
+include::../modules/proc_canceling-migration-ui.adoc[leveloffset=+2]
+
+include::../modules/proc_migrating-vms-cli-ostack.adoc[leveloffset=+1]
+
+include::../modules/con_canceling-migration-cli.adoc[leveloffset=+2]
+
+include::../modules/proc_canceling-migration-cli-entire.adoc[leveloffset=+3]
+
+include::../modules/proc_canceling-migration-cli-specific.adoc[leveloffset=+3]
+
+:ostack!:
+
+ifdef::parent-context[:context: {parent-context}]
+ifndef::parent-context[:!context:]
+
+

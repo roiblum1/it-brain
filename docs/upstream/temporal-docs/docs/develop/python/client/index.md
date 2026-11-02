@@ -1,0 +1,25 @@
+---
+id: index
+title: Client
+slug: /develop/python/client
+sidebar_label: Client
+description:
+  Connect a Temporal Client, start Workflow Executions, and get Workflow results with the Temporal Python SDK.
+toc_max_heading_level: 4
+tags:
+  - Temporal Client
+  - Python SDK
+  - Temporal SDKs
+---
+
+import * as Components from '@site/src/components';
+
+<NoZoom>
+
+![Python SDK Banner](/img/assets/banner-python-temporal.png)
+
+</NoZoom>
+
+## Temporal Client
+
+- [Temporal Client](/develop/python/client/temporal-client)

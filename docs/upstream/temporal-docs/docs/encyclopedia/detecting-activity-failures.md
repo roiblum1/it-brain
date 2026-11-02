@@ -1,0 +1,290 @@
+---
+id: detecting-activity-failures
+title: Detecting Activity failures
+description: Understand Activity Execution timeouts in Temporal; Schedule-To-Start, Start-To-Close, Schedule-To-Close, and Activity Heartbeats, for effective Workflow management.
+toc_max_heading_level: 4
+tags:
+  - Concepts
+  - Activities
+  - Failures
+  - Timeouts
+---
+
+import { RelatedReadContainer, RelatedReadItem, CaptionedImage } from '@site/src/components';
+
+Temporal detects different kinds of Activity Execution failures — for both Workflow Activities and
+[Standalone Activities](/standalone-activity) — through the following timeouts:
+
+- [Schedule-To-Start Timeout](#schedule-to-start-timeout)
+- [Start-To-Close Timeout](#start-to-close-timeout)
+- [Schedule-To-Close Timeout](#schedule-to-close-timeout)
+- [Activity Heartbeats](#activity-heartbeat)
+
+## Schedule-To-Start Timeout {/* #schedule-to-start-timeout */}
+
+**What is a Schedule-To-Start Timeout in Temporal?**
+
+A Schedule-To-Start Timeout is the maximum amount of time that is allowed from when an [Activity Task](/tasks#activity-task) is scheduled (that is, placed in a Task Queue) to when a [Worker](/workers#worker) starts (that is, picks up from the Task Queue) that Activity Task.
+In other words, it's a limit for how long an Activity Task can be enqueued.
+
+<RelatedReadContainer>
+  <RelatedReadItem path="/develop/dotnet/activities/timeouts" text="Set a Schedule-To-Start Timeout using the .NET SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/go/activities/timeouts" text="Set a Schedule-To-Start Timeout using the Go SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/java/activities/timeouts" text="Set a Schedule-To-Start Timeout using the Java SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/php/activities/timeouts#activity-timeouts" text="Set a Schedule-To-Start Timeout using the PHP SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/python/activities/timeouts" text="Set a Schedule-To-Start Timeout using the Python SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/ruby/activities/timeouts" text="Set a Schedule-To-Start Timeout using the Ruby SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/rust/activities/timeouts" text="Set a Schedule-To-Start Timeout using the Rust SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/typescript/activities/timeouts" text="Set a Schedule-To-Start Timeout using the TypeScript SDK" archetype="feature-guide" />
+</RelatedReadContainer>
+
+The moment that the Task is picked by the Worker, from the Task Queue, is considered to be the start of the Activity Task Execution for the purposes of the Schedule-To-Start Timeout and associated metrics.
+This definition of "Start" avoids issues that a clock difference between the Temporal Service and a Worker might create.
+
+<CaptionedImage
+    src="/diagrams/schedule-to-start-timeout.svg"
+    title="Schedule-To-Start Timeout period" />
+
+"Schedule" in Schedule-To-Start and Schedule-To-Close have different frequency guarantees.
+
+The Schedule-To-Start Timeout is enforced for each Activity Task, whereas the Schedule-To-Close Timeout is enforced once per Activity Execution.
+Thus, "Schedule" in Schedule-To-Start refers to the scheduling moment of _every_ Activity Task in the sequence of Activity Tasks that make up the Activity Execution, while
+"Schedule" in Schedule-To-Close refers to the _first_ Activity Task in that sequence.
+
+An Activity Execution can be composed of multiple Activity Task Executions, with each Task representing a single attempt or retry. Each time you start an Activity — as a step in a Workflow or as a Standalone Activity — that call represents a single logical Activity Execution.
+
+If that Activity fails (for example, due to a timeout or error) and a Retry Policy is in place, Temporal will schedule another attempt to execute the same Activity. Each attempt is called an Activity Task Execution.
+
+A [Retry Policy](/encyclopedia/retry-policies) attached to an Activity Execution retries an Activity Task.
+
+<CaptionedImage
+    src="/diagrams/schedule-to-start-timeout-with-retry.svg"
+    title="Start-To-Close Timeout period with retries" />
+
+This timeout has two primary use cases:
+
+1. Detect whether an individual Worker has crashed.
+2. Detect whether the fleet of Workers polling the Task Queue is not able to keep up with the rate of Activity Tasks.
+
+**The default Schedule-To-Start Timeout is ∞ (infinity).**
+
+If this timeout is used, we recommend setting this timeout to the maximum time a Workflow Execution is willing to wait for an Activity Execution in the presence of all possible Worker outages, and have a concrete plan in place to reroute Activity Tasks to a different Task Queue.
+This timeout is non-retryable by design. It **does not** trigger any retries regardless of the Retry Policy, as a retry would place the Activity Task back into the same Task Queue.
+
+In most cases, we recommend monitoring the `temporal_activity_schedule_to_start_latency` metric to know when Workers slow down picking up Activity Tasks, instead of setting this timeout.
+
+## Start-To-Close Timeout {/* #start-to-close-timeout */}
+
+**What is a Start-To-Close Timeout in Temporal?**
+
+A Start-To-Close Timeout is the maximum time allowed for a single [Activity Task Execution](/tasks#activity-task-execution).
+
+<RelatedReadContainer>
+  <RelatedReadItem path="/develop/dotnet/activities/timeouts" text="Set a Start-To-Close Timeout using the .NET SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/go/activities/timeouts" text="Set a Start-To-Close Timeout using the Go SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/java/activities/timeouts" text="Set a Start-To-Close Timeout using the Java SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/php/activities/timeouts#activity-timeouts" text="Set a Start-To-Close Timeout using the PHP SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/python/activities/timeouts" text="Set a Start-To-Close Timeout using the Python SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/ruby/activities/timeouts" text="Set a Start-To-Close Timeout using the Ruby SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/rust/activities/timeouts" text="Set a Start-To-Close Timeout using the Rust SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/typescript/activities/timeouts" text="Set a Start-To-Close Timeout using the TypeScript SDK" archetype="feature-guide" />
+</RelatedReadContainer>
+
+**The Start-To-Close Timeout has no default value of its own.**
+If you set only the [Schedule-To-Close Timeout](#schedule-to-close-timeout), the Temporal Service uses that value as the Start-To-Close Timeout.
+If you set neither timeout, the Temporal Service rejects the Activity.
+For a Workflow Activity, the Workflow Task fails with a [Bad Schedule Activity Attributes](/references/workflow-task-errors#bad-schedule-activity-attributes) error.
+
+We recommend always setting this timeout; however, make sure that Start-To-Close Timeout is always set to be longer than the maximum possible time for the Activity Execution to complete.
+For long running Activity Executions, we recommend also using [Activity Heartbeats](#activity-heartbeat) and [Heartbeat Timeouts](#heartbeat-timeout).
+
+:::tip
+
+We strongly recommend setting a Start-To-Close Timeout.
+
+The Temporal Server doesn't detect failures when a Worker loses communication with the Server or crashes.
+Therefore, the Temporal Server relies on the Start-To-Close Timeout to force Activity retries.
+
+:::
+
+The main use case for the Start-To-Close timeout is to detect when a Worker crashes after it has started executing an Activity Task.
+
+<CaptionedImage
+    src="/diagrams/start-to-close-timeout.svg"
+    title="Start-To-Close Timeout period" />
+
+A [Retry Policy](/encyclopedia/retry-policies) attached to an Activity Execution retries an Activity Task Execution.
+Thus, the Start-To-Close Timeout is applied to each Activity Task Execution within an Activity Execution.
+
+If the first Activity Task Execution returns an error the first time, then the full Activity Execution might look like this:
+
+<CaptionedImage
+    src="/diagrams/start-to-close-timeout-with-retry.svg"
+    title="Start-To-Close Timeout period with retries" />
+
+If this timeout is reached, the following actions occur:
+
+- For a Workflow Activity, an [ActivityTaskTimedOut](/references/events#activitytasktimedout) Event is written to the
+  Workflow Execution's mutable state. A [Standalone Activity](/standalone-activity) has no Workflow Execution, so this
+  isn't recorded the same way — see [Activity Execution](/activity-execution#standalone-activity-executions) for what
+  Standalone Activities provide instead.
+- If a Retry Policy dictates a retry, the Temporal Service schedules another Activity Task.
+  - For a Workflow Activity, the attempt count increments by 1 in the Workflow Execution's mutable state.
+  - The Start-To-Close Timeout timer is reset.
+
+## Schedule-To-Close Timeout {/* #schedule-to-close-timeout */}
+
+**What is a Schedule-To-Close Timeout in Temporal?**
+
+A Schedule-To-Close Timeout is the maximum amount of time allowed for the overall [Activity Execution](/activity-execution), from when the first [Activity Task](/tasks#activity-task) is scheduled to when the last Activity Task, in the chain of Activity Tasks that make up the Activity Execution, reaches a Closed status.
+
+<RelatedReadContainer>
+  <RelatedReadItem path="/develop/dotnet/activities/timeouts" text="Set a Schedule-To-Close Timeout using the .NET SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/go/activities/timeouts" text="Set a Schedule-To-Close Timeout using the Go SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/java/activities/timeouts" text="Set a Schedule-To-Close Timeout using the Java SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/php/activities/timeouts#activity-timeouts" text="Set a Schedule-To-Close Timeout using the PHP SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/python/activities/timeouts" text="Set a Schedule-To-Close Timeout using the Python SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/ruby/activities/timeouts" text="Set a Schedule-To-Close Timeout using the Ruby SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/rust/activities/timeouts" text="Set a Schedule-To-Close Timeout using the Rust SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/typescript/activities/timeouts" text="Set a Schedule-To-Close Timeout using the TypeScript SDK" archetype="feature-guide" />
+</RelatedReadContainer>
+
+<CaptionedImage
+    src="/diagrams/schedule-to-close-timeout.svg"
+    title="Schedule-To-Close Timeout period" />
+
+Example Schedule-To-Close Timeout period for an Activity Execution that has a chain Activity Task Executions:
+
+<CaptionedImage
+    src="/diagrams/schedule-to-close-timeout-with-retry.svg"
+    title="Schedule-To-Close Timeout period with a retry" />
+
+**The default Schedule-To-Close Timeout is ∞ (infinity).**
+
+An Activity Execution must have either this timeout (Schedule-To-Close) or [Start-To-Close](#start-to-close-timeout) set.
+This timeout can be used to control the overall duration of an Activity Execution in the face of failures (repeated Activity Task Executions), without altering the Maximum Attempts field of the Retry Policy.
+
+:::tip
+
+We strongly recommend setting a Start-To-Close Timeout.
+
+The Temporal Server doesn't detect failures when a Worker loses communication with the Server or crashes.
+Therefore, the Temporal Server relies on the Start-To-Close Timeout to force Activity retries.
+
+:::
+
+## Activity Heartbeat {/* #activity-heartbeat */}
+
+**What is an Activity Heartbeat in Temporal?**
+
+An Activity Heartbeat is a ping from the Worker that is executing the Activity to the Temporal Service.
+Each ping informs the Temporal Service that the Activity Execution is making progress and the Worker has not crashed.
+
+<RelatedReadContainer>
+  <RelatedReadItem path="/develop/dotnet/activities/timeouts#activity-heartbeats" text="Heartbeat an Activity using the .NET SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/go/activities/timeouts#activity-heartbeats" text="Heartbeat an Activity using the Go SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/java/activities/timeouts#activity-heartbeats" text="Heartbeat an Activity using the Java SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/php/activities/timeouts#activity-heartbeats" text="Heartbeat an Activity using the PHP SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/python/activities/timeouts#activity-heartbeats" text="Heartbeat an Activity using the Python SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/ruby/activities/timeouts#activity-heartbeats" text="Heartbeat an Activity using the Ruby SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/rust/activities/timeouts#activity-heartbeats" text="Heartbeat an Activity using the Rust SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/typescript/activities/timeouts#activity-heartbeat-timeout" text="Heartbeat an Activity using the TypeScript SDK" archetype="feature-guide" />
+</RelatedReadContainer>
+
+Activity Heartbeats work in conjunction with a [Heartbeat Timeout](#heartbeat-timeout).
+
+Activity Heartbeats are implemented within the Activity Definition.
+Custom progress information can be included in the Heartbeat which can then be used by the Activity Execution should a retry occur.
+
+An Activity Heartbeat can be recorded as often as needed (for example, once a minute or every loop iteration).
+It is often a good practice to Heartbeat on anything but the shortest Activity Execution.
+Temporal SDKs control the rate at which Heartbeats are sent to the Temporal Service.
+
+Heartbeating is not required from [Local Activities](/local-activity), and does nothing.
+
+For _long-running_ Activities, we recommend using a relatively short Heartbeat Timeout and a frequent Heartbeat.
+That way if a Worker fails it can be handled in a timely manner.
+
+A Heartbeat can include an application layer payload that can be used to _save_ Activity Execution progress.
+If an [Activity Task Execution](/tasks#activity-task-execution) times out due to a missed Heartbeat, the next Activity Task can access and continue with that payload.
+
+Activity Cancellations are delivered to Activities from the Temporal Service when they Heartbeat. Activities that don't Heartbeat can't receive a Cancellation.
+Heartbeat throttling may lead to Cancellation getting delivered later than expected.
+
+### Throttling
+
+Heartbeats may not always be sent to the Temporal Service—they may be throttled by the Worker.
+The throttle interval is the smaller of the following:
+
+- If `heartbeatTimeout` is provided, `heartbeatTimeout * 0.8`; otherwise, `defaultHeartbeatThrottleInterval`
+- `maxHeartbeatThrottleInterval`
+
+`defaultHeartbeatThrottleInterval` is 30 seconds by default, and `maxHeartbeatThrottleInterval` is 60 seconds by default.
+Each can be set in Worker options.
+
+Throttling is implemented as follows:
+
+- After sending a Heartbeat, the Worker sets a timer for the throttle interval.
+- The Worker stops sending Heartbeats, but continues receiving Heartbeats from the Activity and remembers the most recent one.
+- When the timer fires, the Worker:
+  - Sends the most recent Heartbeat.
+  - Sets the timer again.
+
+Throttling allows the Worker to reduce network traffic and load on the Temporal Service by suppressing Heartbeats that aren’t necessary to prevent a Heartbeat Timeout.
+Throttling does not apply to the final Heartbeat message in the case of Activity Failure.
+If an Activity fails just after recording progress information in a Heartbeat message, that progress information will be available during the next retry attempt, provided that the Worker itself did not crash before delivering it to the Temporal Service.
+
+### Which Activities should Heartbeat?
+
+Heartbeating is best thought about not in terms of time, but in terms of "How do you know you are making progress?"
+For short-term operations, progress updates are not a requirement.
+However, checking the progress and status of Activity Executions that run over long periods is almost always useful.
+
+Consider the following when setting Activity Heartbeats:
+
+- Your underlying task must be able to report definite progress.
+  Note that the caller cannot read this progress information while the Activity is still executing (or it would have to store it in Event History).
+  You can report progress to external sources if you need it exposed to the user.
+
+- Your Activity Execution is long-running, and you need to verify whether the Worker that is processing your Activity is still alive and has not run out of memory or silently crashed.
+
+For example, the following scenarios are suitable for Heartbeating:
+
+- Reading a large file from Amazon S3.
+- Running a ML training job on some local GPUs.
+
+And the following scenarios are not suitable for Heartbeating:
+
+- Making a quick API call.
+- Reading a small file from disk.
+
+### Heartbeat Timeout {/* #heartbeat-timeout */}
+
+**What is a Heartbeat Timeout in Temporal?**
+
+A Heartbeat Timeout is the maximum time between [Activity Heartbeats](#activity-heartbeat).
+
+<RelatedReadContainer>
+  <RelatedReadItem path="/develop/dotnet/activities/timeouts#heartbeat-timeout" text="Set a Heartbeat Timeout using the .NET SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/go/activities/timeouts#activity-heartbeats" text="Set a Heartbeat Timeout using the Go SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/java/activities/timeouts#heartbeat-timeout" text="Set a Heartbeat Timeout using the Java SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/php/activities/timeouts#heartbeat-timeout" text="Set a Heartbeat Timeout using the PHP SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/python/activities/timeouts#heartbeat-timeout" text="Set a Heartbeat Timeout using the Python SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/ruby/activities/timeouts#heartbeat-timeout" text="Set a Heartbeat Timeout using the Ruby SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/rust/activities/timeouts#heartbeat-timeout" text="Set a Heartbeat Timeout using the Rust SDK" archetype="feature-guide" />
+  <RelatedReadItem path="/develop/typescript/activities/timeouts#activity-heartbeat-timeout" text="Set a Heartbeat Timeout using the TypeScript SDK" archetype="feature-guide" />
+</RelatedReadContainer>
+
+<CaptionedImage
+    src="/diagrams/heartbeat-timeout.svg"
+    title="Heartbeat Timeout periods" />
+
+If this timeout is reached, the Activity Task fails and a retry occurs if a [Retry Policy](/encyclopedia/retry-policies) dictates it.
+
+#### What a Heartbeat Timeout of `0s` means {/* #heartbeat-timeout-zero */}
+
+`0s` means the Heartbeat Timeout is disabled. No Heartbeat timer is started, so the Activity never fails for missing a Heartbeat. It does not mean an unbounded timeout, and it does not mean the Activity times out immediately.
+
+`0s` is also the normalized value the Temporal Service stores when you leave the Heartbeat Timeout unset. An unset Heartbeat Timeout and an explicit `0s` are therefore indistinguishable once the Activity is scheduled: both are reported as `0s` and both behave as disabled.
+
+The Heartbeat Timeout is also capped at the [Start-To-Close Timeout](#start-to-close-timeout). Setting a Heartbeat Timeout longer than the Start-To-Close Timeout stores the Start-To-Close Timeout instead.

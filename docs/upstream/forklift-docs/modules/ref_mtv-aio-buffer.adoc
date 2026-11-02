@@ -1,0 +1,42 @@
+// Module included in the following assemblies:
+//
+// * documentation/doc-Migrating_your_virtual_machines/assemblies/assembly_mtv-performance-recommendations.adoc
+
+:_mod-docs-content-type: REFERENCE
+[id="ref_mtv-aio-buffer_{context}"]
+= Increasing AIO sizes and buffer counts for NBD transport mode
+
+[role="_abstract"]
+You can change Network Block Device (NBD) transport network file copy (NFC) parameters to increase migration performance when you use Asynchronous Input/Output (AIO) buffering with the {project-first}.
+
+For information about configuring AIO buffering, see link:{mtv-mig}assembly_advanced-migration-options_mtv[Advanced migration options].
+
+[WARNING]
+====
+Using AIO buffering is only suitable for cold migration use cases.
+
+Remove AIO buffer configuration before initializing warm migrations. For more details, see xref:proc_mtv-remove-aio-buffer_mtv[Removing AIO buffer configuration].
+====
+
+[id="mtv-aio-buffer-key-findings_{context}"]
+== Key findings
+
+* The best migration performance was achieved by migrating multiple (10) virtual machines (VMs) on a single ESXi host with the following values:
+** `VixDiskLib.nfcAio.Session.BufSizeIn64KB=16`
+** `vixDiskLib.nfcAio.Session.BufCount=4`
+
+* The following improvements were noted when using AIO buffer settings (asynchronous buffer counts):
+** Migration time was reduced by *31.1%*, from 0:24:32 to 0:16:54.
+** Read rate was increased from 347.83 MB/s to 504.93 MB/s.
+
+* There was no significant improvement observed when using AIO buffer settings with a single VM.
+
+* There was no significant improvement observed when using AIO buffer settings with multiple VMs from multiple hosts.
+
+[id="mtv-aio-buffer-key-requirements_{context}"]
+== Key requirements for support for AIO sizes and buffer counts
+
+Support is based upon tests performed using the following versions:
+
+* vSphere 7.0.3
+* VDDK 7.0.3

@@ -1,8 +1,8 @@
 # it-brain (grown from team-brain) — instructions for Claude
 
-> **it-brain branch.** This branch turns team-brain into one brain for three teams — **ocp** (OpenShift Container
-> Platform), **storage** and **network** — plus our platform tools (server-scan, Temporal / Redbull Workflows) and
-> data platforms. Architecture: `docs/it-brain/ARCHITECTURE.md`; teams and areas: `teams.json`
+> **it-brain branch.** This branch turns team-brain into one brain for four teams — **ocp** (OpenShift Container
+> Platform), **storage**, **network** and **virtualization** (KubeVirt, VMware + PowerCLI, Nutanix) — plus our
+> platform tools (server-scan, Temporal / Redbull Workflows, Pydantic) and data platforms. Architecture: `docs/it-brain/ARCHITECTURE.md`; teams and areas: `teams.json`
 > (`python3 scripts/brain.py teams`). Everything below still applies, to every team.
 
 This repository is the platform team's long-term memory for running ~100 air-gapped OpenShift clusters
@@ -63,7 +63,7 @@ maintenance guide is `README.md` (not imported here on purpose — it is long; r
 | What happened during an outage/degradation | `incidents/<yyyy>/<yyyy-mm-dd>-<slug>.md` (needs `severity`, `status`, `clusters`, `started`) | `templates/incident.md` |
 | Something unsure / unsorted / needs a human to judge | `inbox/<yyyy-mm-dd>-<slug>.md` (`type: inbox`) | — |
 | The seam between two teams (who provides what; a symptom on one side caused on the other) | `interfaces/<a>-<b>-<topic>.md` (`type: interface`, `teams: [a, b]`) | `templates/interface.md` |
-| A new or changed MCP server | `mcp/servers/<name>.md` (`type: mcp`) + `plugins/team-brain/.mcp.json` | — |
+| A new or changed MCP server | `mcp/servers/<name>.md` (`type: mcp`) + `plugins/team-brain/.mcp.json` (optional servers start through `launch.py --needs-file <VAR>`) | — |
 | A new offline doc source | `mcp/sources.json` **and** `deploy/openshift/shared-sources.json` (keep in sync) + a row in `knowledge/meta/doc-sources-catalog.md` | — |
 
 Areas are defined **only** in `teams.json` (owner team, consulted teams, domain, description) — run
@@ -77,8 +77,11 @@ are `[lists]`. Empty directories aren't tracked: a new area folder needs a file.
 
 - `teams.json` → `.gitlab/CODEOWNERS` (generated: `brain.py codeowners`): the owning team approves pages in its areas;
   *consulted* teams are @-mentioned in the MR. Interface pages need an approval from every team in `teams:`.
-- A session may carry `IT_BRAIN_TEAM=ocp|storage|network`: look in that team's areas first, but never limit search.
-- Cross-team problems: read the matching `interfaces/` page before guessing which side is at fault.
+- A session may carry `IT_BRAIN_TEAM=ocp|storage|network|virtualization`: look in that team's areas first, but never
+  limit search.
+- Cross-team problems: call the team-knowledge `route` tool (or `python3 scripts/brain.py route "<problem>"`) first,
+  read the interface page it names, use skill `team-brain:it-triage`. When `route` misses an area, add the words to
+  that area's `keywords` in `teams.json` and a case to `tests/routing.json` (CI check `route`).
 - The graph: `python3 scripts/brain_graph.py graph` regenerates `graphify-out/graph.json` (CI checks it; `brain-git.sh
   submit` runs it); `brain_graph.py obsidian --out <dir>` builds an Obsidian vault; `brain_graph.py stats` lists
   pages with no links — cite related pages by path so they join the graph (`docs/it-brain/GRAPH.md`).

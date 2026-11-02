@@ -3,7 +3,8 @@ from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
 
-from .sources import GitRepo, Source, SourceError
+from . import route as _route
+from .sources import GitRepo, MarkdownDir, Source, SourceError
 
 MAX_READ_CHARS = 40_000
 
@@ -72,6 +73,21 @@ class Toolbox:
                         "max_chars": {"type": "integer", "minimum": 1000, "maximum": MAX_READ_CHARS, "default": 20000},
                     },
                     "required": ["source", "id"],
+                    "additionalProperties": False,
+                },
+            },
+            {
+                "name": "route",
+                "description": "Which areas, teams and cross-team interface pages a problem touches (it-brain). "
+                               "Call it FIRST for any problem that may involve more than one system — e.g. "
+                               "'PVC stuck on OpenShift with PowerFlex', 'VM live migration fails on Trident', "
+                               "'firewall blocks cluster egress'. Returns the areas (with owner team), the "
+                               "interface pages to read first and what to search next. Never limits search.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {"question": {"type": "string", "description": "The problem in the user's words, "
+                                                                                  "with product names and the error."}},
+                    "required": ["question"],
                     "additionalProperties": False,
                 },
             },
@@ -182,6 +198,14 @@ class Toolbox:
         return s
 
     # ---------------------------------------------------------------------------- tools
+    def t_route(self, question: str) -> str:
+        brain = self.sources.get("brain")
+        if not isinstance(brain, MarkdownDir) or not (brain.root / "teams.json").is_file():
+            raise ToolError("route needs the `brain` source with a teams.json (it-brain); use `search` instead")
+        import json
+        names = {k: v.get("name", k) for k, v in json.loads((brain.root / "teams.json").read_text())["teams"].items()}
+        return _route.render(_route.route(brain.root, question), names)
+
     def t_list_sources(self) -> str:
         futs = {n: self.pool.submit(s.available) for n, s in self.sources.items()}
         lines = ["| source | kind | status | description |", "|---|---|---|---|"]
