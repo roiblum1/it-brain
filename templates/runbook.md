@@ -1,7 +1,8 @@
 ---
 title: <Verb phrase: Replace a failed control-plane node on a bare-metal cluster>
 type: runbook
-area: <area>
+area: <a key of teams.json → areas; python3 scripts/brain.py teams lists them>
+teams: []   # optional: other teams this concerns (keys of teams.json → teams)
 tags: []
 applies_to: []
 confidence: observed

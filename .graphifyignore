@@ -1,0 +1,11 @@
+# Keep `/graphify .` fast and offline-friendly: skip vendored docs, binaries, lockfiles and generated files.
+# The brain's own graph does not need graphify's LLM pass at all: `python3 scripts/brain_graph.py graph`
+# writes graphify-out/graph.json deterministically (docs/it-brain/GRAPH.md).
+docs/upstream/
+plugins/team-brain/mcp-servers/vendor/
+plugins/team-brain/third_party/
+graphify-out/
+INDEX.md
+*.lock
+*.tar.gz
+*.zip

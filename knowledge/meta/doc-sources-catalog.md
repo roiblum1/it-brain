@@ -5,7 +5,7 @@ area: meta
 tags: [sources, team-knowledge, refs, catalog]
 applies_to: []
 confidence: observed
-last_verified: 2026-10-06
+last_verified: 2026-11-02
 owners: [platform-team]
 source: claude-session
 ---
@@ -45,6 +45,7 @@ upstream source disagree, RHOKP/KCS wins for what we run**; upstream tells you h
 | `argocd-docs`, `argo-cd` | gitops | Argo CD docs / source | `stable` docs; tag of installed Argo CD for source |
 | `gitops-day1-platform-config`, `gitops-day2-prod`, `cluster-navigator` | gitops | our own repos: day1 values/versions, day2 ARCHITECTURE.md and charts, Navigator. **Disabled until the real GitLab remotes are set** (`GITOPS_DAY1_REMOTE`, `GITOPS_DAY2_REMOTE`, `NAVIGATOR_REMOTE`) | `main`; version of a cluster = day1 `mastertag` |
 | `brain` | all | **our** quirks, runbooks, incidents — read first | — |
+| *planned (it-brain)* | storage, network, virtualization, workflow, data | NetApp / Trident, Dell CSM, Ceph, Rook / ODF, Velero / OADP, SMB CSI, ACI CNI, Palo Alto pan.dev, vSphere / Nutanix CSI, Temporal, Prefect, Airflow, Spark, ECK, Solr, MongoDB docs; our `server-scan` repo; licensed vendor manuals as *vendor-drop*. Not enabled yet — repos, paths, licences and status in `docs/it-brain/SOURCES-PLAN.md` | — |
 
 What each snapshot actually is (repo, ref, commit, newest upstream release at sync time): `docs/upstream/VERSIONS.md`
 (generated). Snapshots are refreshed automatically on GitHub — see `README.md`, "Automatic doc refresh".

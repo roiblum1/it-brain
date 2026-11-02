@@ -6,7 +6,7 @@
     BASE_REF=origin/main python3 scripts/ci_checks.py     # also enforce the plugin version bump
     BRAIN_DENYLIST_FILE=/path/denylist.txt python3 ...    # real site/region/cluster names (never committed)
 
-Checks: validate, index, json, sources, parity, frontmatter, leaks, upstream, mcpbin, syntax, version, smoke.
+Checks: validate, index, graph, teams, json, sources, parity, frontmatter, leaks, upstream, mcpbin, syntax, version, smoke.
 Exit code 1 if any check fails.
 """
 from __future__ import annotations
@@ -34,6 +34,10 @@ RFC1918 = re.compile(r"\b(?:10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{
 INTERNAL_HOST = re.compile(r"\b[a-z0-9][a-z0-9.-]*\.internal\b")
 REAL_CLUSTER = re.compile(r"\bocp4-(?:prod|prep|test)-(?!<)[a-z0-9][a-z0-9-]*")
 APPLIES_OK = re.compile(r"^(?:ocp-4\.\d+|k8s-1\.\d+|mce-2\.\d+|acm-2\.\d+|vsphere-\d+|sno|hosted-cp|upi|standalone|[a-z][a-z0-9.-]*)$")
+# storage identifiers that point at one real host/array (placeholders: <iqn>, <nqn>, <wwn>)
+IQN = re.compile(r"\biqn\.\d{4}-\d{2}\.[a-z0-9-]+\.[a-z0-9.-]+")
+NQN = re.compile(r"\bnqn\.\d{4}-\d{2}\.[a-z0-9.-]+:[^\s`'\"]+")
+WWN = re.compile(r"\b(?:[0-9a-fA-F]{2}:){7}[0-9a-fA-F]{2}\b")
 ALLOW_LEAK = "ci:allow-leak"
 
 results: list[tuple[str, bool, str]] = []
@@ -88,6 +92,47 @@ def check_index():
     p = run([sys.executable, "scripts/brain.py", "index", "--check"])
     record("index", [] if p.returncode == 0 else ["INDEX.md is stale: run `python3 scripts/brain.py index` and commit"],
            p.stdout.strip())
+
+
+def check_graph():
+    p = run([sys.executable, "scripts/brain_graph.py", "graph", "--check"])
+    record("graph", [] if p.returncode == 0 else
+           ["graphify-out/graph.json is stale: run `python3 scripts/brain_graph.py graph` and commit"], p.stdout.strip())
+
+
+def check_teams():
+    """teams.json is consistent, every area has a folder with a tracked file, every content folder is an area,
+    and .gitlab/CODEOWNERS is generated from the current registry."""
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import brain  # noqa: E402
+    reg = brain.REGISTRY
+    errs = []
+    for a, spec in reg["areas"].items():
+        if spec.get("owner") != "all" and spec.get("owner") not in reg["teams"]:
+            errs.append(f"teams.json: area {a}: owner {spec.get('owner')!r} is not a team")
+        for c in spec.get("consulted", []):
+            if c not in reg["teams"]:
+                errs.append(f"teams.json: area {a}: consulted team {c!r} is not a team")
+        if not spec.get("description"):
+            errs.append(f"teams.json: area {a}: missing description")
+        if spec.get("domain") not in reg.get("domains", {}):
+            errs.append(f"teams.json: area {a}: domain {spec.get('domain')!r} is not in 'domains'")
+    for t, spec in reg["teams"].items():
+        for k in ("name", "codeowners", "serves"):
+            if not spec.get(k):
+                errs.append(f"teams.json: team {t}: missing {k!r}")
+    files = [str(f.relative_to(ROOT)) for f in tracked_files()]
+    for a in reg["areas"]:
+        if not any(f.startswith(f"knowledge/{a}/") for f in files):
+            errs.append(f"area {a}: no tracked file under knowledge/{a}/ (add its README.md charter)")
+    for top in ("knowledge", "runbooks"):
+        for d in sorted({f.split("/")[1] for f in files if f.startswith(top + "/") and f.count("/") >= 2}):
+            if d not in reg["areas"]:
+                errs.append(f"{top}/{d}/ is not an area in teams.json")
+    p = run([sys.executable, "scripts/brain.py", "codeowners", "--check"])
+    if p.returncode:
+        errs.append(".gitlab/CODEOWNERS is stale: run `python3 scripts/brain.py codeowners` and commit")
+    record("teams", errs, f"{len(reg['teams'])} teams, {len(reg['areas'])} areas")
 
 
 def check_json():
@@ -165,7 +210,7 @@ def check_frontmatter():
     errs = []
     for f in text_files():
         rel = str(f.relative_to(ROOT))
-        if f.suffix != ".md" or not rel.startswith(("knowledge/", "runbooks/", "incidents/", "inbox/", "mcp/servers/")):
+        if f.suffix != ".md" or not rel.startswith(("knowledge/", "runbooks/", "interfaces/", "incidents/", "inbox/", "mcp/servers/")):
             continue
         fm = brain.parse_frontmatter(f.read_text(encoding="utf-8"))
         if not fm:
@@ -201,6 +246,9 @@ def check_leaks():
             for h in INTERNAL_HOST.findall(line):
                 if h not in HOST_ALLOW:
                     errs.append(f"{rel}:{i}: internal hostname {h!r} not in the placeholder allowlist (scripts/ci_checks.py HOST_ALLOW)")
+            for label, rx in (("iSCSI IQN", IQN), ("NVMe NQN", NQN), ("Fibre Channel WWN", WWN)):
+                if rx.search(line):
+                    errs.append(f"{rel}:{i}: looks like a real {label}: use the <iqn>/<nqn>/<wwn> placeholder")
             if REAL_CLUSTER.search(line):
                 errs.append(f"{rel}:{i}: looks like a real cluster name (ocp4-<env>-<name>…): use <cluster>/<mce>/<site> placeholders")
             for k, rx in enumerate(deny, 1):
@@ -304,7 +352,7 @@ def check_smoke():
     record("smoke", errs, f"{len(gq['queries'])} golden queries + link graph via the real server")
 
 
-CHECKS = {"validate": check_validate, "index": check_index, "json": check_json, "sources": check_sources,
+CHECKS = {"validate": check_validate, "index": check_index, "graph": check_graph, "teams": check_teams, "json": check_json, "sources": check_sources,
           "parity": check_parity, "frontmatter": check_frontmatter, "leaks": check_leaks,
           "upstream": check_upstream, "mcpbin": check_mcpbin, "syntax": check_syntax, "version": check_version, "smoke": check_smoke}
 

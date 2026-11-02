@@ -9,6 +9,7 @@
       "include": [
         "knowledge/**",
         "runbooks/**",
+        "interfaces/**",
         "incidents/**",
         "inbox/**",
         "mcp/servers/**"

@@ -1,3 +1,9 @@
 __pycache__/
 *.pyc
 .DS_Store
+# graph: graph.json is committed (CI checks it); graphify's own outputs are local
+graphify-out/*
+!graphify-out/graph.json
+# Obsidian: settings in .obsidian/app.json are shared, the rest is personal
+.obsidian/*
+!.obsidian/app.json

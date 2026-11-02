@@ -36,7 +36,10 @@ Write **only inside `$WT`** (never in `$BRAIN` directly — that's the engineer'
 ## 3. Write it
 
 Destination (see `$WT/CLAUDE.md`):
-- confident + clear area → `knowledge/<area>/<topic>.md` or `runbooks/<area>/<task>.md`
+- confident + clear area → `knowledge/<area>/<topic>.md` or `runbooks/<area>/<task>.md` (areas and their owning
+  team: `$WT/teams.json`; each `knowledge/<area>/README.md` says what belongs there)
+- about the seam between two teams (who provides what, a symptom on one side caused on the other) → update the
+  matching `interfaces/<page>.md` (`type: interface`, `teams: [..]`) instead of writing it into one area
 - unsure, partial, or needs human judgement → `inbox/<yyyy-mm-dd>-<slug>.md`
 
 Start from `$WT/templates/knowledge.md` or `$WT/templates/runbook.md`. Required frontmatter is in

@@ -1,7 +1,8 @@
 ---
 title: <yyyy-mm-dd> <short description of user impact>
 type: incident
-area: <area>
+area: <a key of teams.json → areas; python3 scripts/brain.py teams lists them>
+teams: []   # optional: other teams this concerns (keys of teams.json → teams)
 tags: []
 applies_to: []
 confidence: observed

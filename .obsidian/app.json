@@ -1,0 +1,11 @@
+{
+  "userIgnoreFilters": [
+    "docs/upstream/",
+    "plugins/team-brain/mcp-servers/vendor/",
+    "graphify-out/",
+    "INDEX.md"
+  ],
+  "alwaysUpdateLinks": false,
+  "newFileLocation": "folder",
+  "newFileFolderPath": "inbox"
+}

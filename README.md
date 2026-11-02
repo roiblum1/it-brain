@@ -1,4 +1,21 @@
-# team-brain
+# team-brain → it-brain
+
+> **This branch (`claude/it-brain-multi-team-n7n6kg`) is it-brain**: the same offline brain, grown to serve the
+> **OpenShift (ocp)**, **storage** and **network** teams — NetApp ONTAP / Trident, Dell PowerMax / PowerFlex /
+> PowerScale, Ceph S3, ODF, SMB/CIFS, OADP, Commvault, Cisco ACI, Palo Alto, VMware, Nutanix — plus our platform
+> tools (**server-scan**, **Temporal / Redbull Workflows**) and data/workflow platforms (Prefect, Airflow, Spark,
+> ECK / Elastic, Solr, MongoDB, on Kubernetes and VMs). Not merged into team-brain's `main`.
+>
+> | Start here | |
+> |---|---|
+> | Architecture | [`docs/it-brain/ARCHITECTURE.md`](docs/it-brain/ARCHITECTURE.md) |
+> | Teams: who owns and reviews what | [`docs/it-brain/TEAMS.md`](docs/it-brain/TEAMS.md), [`teams.json`](teams.json) |
+> | Cross-team contracts | [`interfaces/`](interfaces/README.md) |
+> | Graph (graphify) and Obsidian vault | [`docs/it-brain/GRAPH.md`](docs/it-brain/GRAPH.md) |
+> | Offline vendor sources, live tools | [`docs/it-brain/SOURCES-PLAN.md`](docs/it-brain/SOURCES-PLAN.md), [`docs/it-brain/TOOLS-PLAN.md`](docs/it-brain/TOOLS-PLAN.md) |
+> | Phases and decisions needed | [`docs/it-brain/ROADMAP.md`](docs/it-brain/ROADMAP.md) |
+>
+> The rest of this README describes the machinery, which it-brain keeps unchanged.
 
 The shared, versioned memory of the platform team: what we know about our Kubernetes/OpenShift fleet,
 how we fix things, what broke and why — plus the tools (skills, hooks and MCP servers) that let Claude Code
@@ -47,7 +64,11 @@ model, no database and no `pip install`.
 
 | Path | What lives there | Who writes |
 |---|---|---|
-| `knowledge/<area>/` | Curated knowledge: how *our* clusters behave, quirks, decisions, gotchas | Humans + Claude (via MR) |
+| `teams.json` | it-brain registry: teams, areas (owner, consulted, domain), placeholder vocabulary | Humans |
+| `knowledge/<area>/` | Curated knowledge: how *our* clusters behave, quirks, decisions, gotchas; `README.md` = the area's charter | Humans + Claude (via MR) |
+| `interfaces/` | Cross-team contracts (`type: interface`, approved by every team in `teams:`) | Humans + Claude (via MR) |
+| `.gitlab/CODEOWNERS` | Generated from `teams.json` (never edit by hand) | `scripts/brain.py codeowners` |
+| `graphify-out/graph.json` | The brain as a graph for graphify / Obsidian (generated, never edit) | `scripts/brain_graph.py graph` |
 | `runbooks/<area>/` | Step-by-step procedures | Humans + Claude (via MR) |
 | `incidents/YYYY/` | Postmortems, one file per incident | Humans + Claude (via MR) |
 | `inbox/` | Raw learnings Claude captured, waiting to be curated | Claude |
@@ -62,8 +83,10 @@ model, no database and no `pip install`.
 | `.gitlab-ci.yml`, `.github/workflows/` | CI definitions (the GitLab one is the real pipeline) | Humans |
 | `INDEX.md` | Generated table of contents (never edit by hand) | `scripts/brain.py index` |
 
-Areas used by `knowledge/` and `runbooks/`: `openshift`, `kubernetes`, `hypershift`, `baremetal`, `vsphere`,
-`networking`, `storage`, `gpu`, `observability`, `registry-mirroring`, `gitops`, `security`, `meta`.
+Areas used by `knowledge/` and `runbooks/` are defined in `teams.json` (`python3 scripts/brain.py teams`): the
+original OCP areas plus `netapp-ontap`, `trident`, `dell-powermax`, `dell-powerflex`, `dell-powerscale`, `ceph`, `odf`,
+`smb-cifs`, `commvault`, `oadp`, `cisco-aci`, `palo-alto`, `vmware`, `nutanix`, `server-scan`, `temporal`, `prefect`,
+`airflow`, `spark`, `elastic`, `solr`, `mongodb`.
 
 ## Offline knowledge: the team-knowledge MCP server
 
@@ -218,7 +241,11 @@ Daily commands:
 ```bash
 python3 scripts/brain.py validate           # frontmatter + secret scan + links
 python3 scripts/brain.py index              # regenerate INDEX.md  (index --check fails if stale)
-python3 scripts/brain.py stale --days 180   # pages whose last_verified is old
+python3 scripts/brain.py stale --days 180   # pages whose last_verified is old (--team storage: one team's share)
+python3 scripts/brain.py teams              # areas → owner / consulted team / domain
+python3 scripts/brain.py codeowners         # regenerate .gitlab/CODEOWNERS from teams.json
+python3 scripts/brain_graph.py graph        # regenerate graphify-out/graph.json  (graph --check fails if stale)
+python3 scripts/brain_graph.py obsidian --out ~/it-brain-vault   # browse the brain in Obsidian
 python3 scripts/ci_checks.py                # everything CI runs (add BASE_REF=origin/main for the version-bump check)
 python3 plugins/team-brain/mcp-servers/team-knowledge/server.py --check   # which sources are reachable
 python3 plugins/team-brain/mcp-servers/team-knowledge/server.py --call search '{"query":"NodePool stuck Updating","version":"4.20"}'
@@ -232,11 +259,13 @@ and `.github/workflows/ci.yml` (the GitHub mirror). It fails the merge request i
 | Check | What it enforces |
 |---|---|
 | `validate` / `index` | frontmatter schema, secret patterns, links; **warnings count as errors**; `INDEX.md` is current |
+| `graph` | `graphify-out/graph.json` is current |
+| `teams` | `teams.json` is consistent (owners, consulted, domains), every area has a charter folder, every folder is an area, CODEOWNERS is current |
 | `json`, `syntax` | every JSON file parses; Python/shell scripts compile |
 | `sources` | each source has its required keys; enabled sources that read this repo match real files |
 | `parity` | `mcp/sources.json` and `deploy/openshift/shared-sources.json` list the same sources with the same `enabled` flags |
 | `frontmatter` | `applies_to` tokens are well-formed, `area` is known, `last_verified` isn't in the future |
-| `leaks` | private IPs, `.internal` hostnames outside the placeholder allowlist, real-looking `ocp4-<env>-<name>` names, and (if configured) your **denylist** |
+| `leaks` | private IPs, `.internal` hostnames outside the placeholder allowlist, real-looking `ocp4-<env>-<name>` names, iSCSI IQNs / NVMe NQNs / FC WWNs, and (if configured) your **denylist** |
 | `upstream` | each `docs/upstream/<name>` has `.upstream` metadata and documentation files |
 | `version` | on merge requests: skills/hooks/`mcp-servers/`/`.mcp.json` changes must come with a `plugin.json` update (needs `BASE_REF`) |
 | `mcpbin` | every vendored MCP server archive is present and matches the sha256 in `vendor/manifest.json` |

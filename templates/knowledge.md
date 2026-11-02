@@ -1,7 +1,8 @@
 ---
 title: <Sentence an engineer would grep for during an outage>
 type: knowledge
-area: <openshift|kubernetes|hypershift|baremetal|vsphere|networking|storage|gpu|observability|registry-mirroring|gitops|security>
+area: <a key of teams.json → areas; python3 scripts/brain.py teams lists them>
+teams: []   # optional: other teams this concerns (keys of teams.json → teams)
 tags: []
 applies_to: []   # ranges of fleet versions, e.g. [ocp-4.16, ocp-4.20, ocp-4.22]; see knowledge/meta/fleet-versions.md
 confidence: observed

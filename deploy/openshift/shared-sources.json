@@ -19,6 +19,7 @@
       "code_include": [
         "knowledge/**",
         "runbooks/**",
+        "interfaces/**",
         "incidents/**",
         "inbox/**"
       ]

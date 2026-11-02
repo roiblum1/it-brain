@@ -1,4 +1,9 @@
-# team-brain — instructions for Claude
+# it-brain (grown from team-brain) — instructions for Claude
+
+> **it-brain branch.** This branch turns team-brain into one brain for three teams — **ocp** (OpenShift Container
+> Platform), **storage** and **network** — plus our platform tools (server-scan, Temporal / Redbull Workflows) and
+> data platforms. Architecture: `docs/it-brain/ARCHITECTURE.md`; teams and areas: `teams.json`
+> (`python3 scripts/brain.py teams`). Everything below still applies, to every team.
 
 This repository is the platform team's long-term memory for running ~100 air-gapped OpenShift clusters
 (bare metal via Metal3 + vSphere, HyperShift hosted control planes, GPU nodes, AKO load balancing).
@@ -25,6 +30,10 @@ maintenance guide is `README.md` (not imported here on purpose — it is long; r
   patterns (private keys, pull-secret auth, kubeconfig `*-data`, `sha256~`/JWT/`glpat-`/AKIA, `password=`) —
   it does **not** catch BMC creds in prose, IPs, customer names or location names, so review those yourself.
   `# brain:allow-secret` at the end of a line suppresses one hit.
+- **Storage and network identifiers are classified too.** Array / ONTAP cluster names and serials, SVMs, WWNs,
+  IQNs, NQNs, ACI tenants / EPGs / BDs, firewall names, device groups, zones and rule names, vCenter / Prism names,
+  iDRAC addresses → the placeholders in `teams.json` → `placeholders` (`<array>`, `<svm>`, `<wwn>`, `<iqn>`, `<epg>`,
+  `<fw>`, `<idrac>` …). CI's leak scan catches IQN/NQN/WWN shapes; validate catches PAN-OS API keys; names are on you.
 - **Search before you write.** `grep -ril <term> knowledge runbooks incidents inbox` (or the `brain` source of
   the MCP `search`). If a page already covers it, update it and bump `last_verified` instead of adding another.
 - **Facts carry scope and confidence.** Say which versions/hardware/cluster type a claim applies to, and set
@@ -41,8 +50,9 @@ maintenance guide is `README.md` (not imported here on purpose — it is long; r
   is whatever the last `oc login` left — and name the cluster and object when you propose a change. Lasting
   changes belong in the day1/day2 repos (Argo reverts manual edits). Never copy a Secret value, token or log
   line with credentials into a page or commit (details: `mcp/servers/kubernetes.md`).
-- **Don't edit generated files:** `docs/upstream/**` (regenerate with the sync scripts) and `INDEX.md`
-  (`python3 scripts/brain.py index`; `index --check` fails if stale).
+- **Don't edit generated files:** `docs/upstream/**` (regenerate with the sync scripts), `INDEX.md`
+  (`python3 scripts/brain.py index`; `index --check` fails if stale), `.gitlab/CODEOWNERS` (`brain.py codeowners`)
+  and `graphify-out/graph.json` (`python3 scripts/brain_graph.py graph`).
 
 ## Where things go
 
@@ -52,14 +62,28 @@ maintenance guide is `README.md` (not imported here on purpose — it is long; r
 | A repeatable procedure with commands | `runbooks/<area>/<task>.md` | `templates/runbook.md` |
 | What happened during an outage/degradation | `incidents/<yyyy>/<yyyy-mm-dd>-<slug>.md` (needs `severity`, `status`, `clusters`, `started`) | `templates/incident.md` |
 | Something unsure / unsorted / needs a human to judge | `inbox/<yyyy-mm-dd>-<slug>.md` (`type: inbox`) | — |
+| The seam between two teams (who provides what; a symptom on one side caused on the other) | `interfaces/<a>-<b>-<topic>.md` (`type: interface`, `teams: [a, b]`) | `templates/interface.md` |
 | A new or changed MCP server | `mcp/servers/<name>.md` (`type: mcp`) + `plugins/team-brain/.mcp.json` | — |
 | A new offline doc source | `mcp/sources.json` **and** `deploy/openshift/shared-sources.json` (keep in sync) + a row in `knowledge/meta/doc-sources-catalog.md` | — |
 
-Areas: `openshift`, `kubernetes`, `hypershift`, `baremetal`, `vsphere`, `networking`, `storage`, `gpu`,
-`observability`, `registry-mirroring`, `gitops`, `security`, `meta` (repo/tooling pages). An unknown area is
-only a validate *warning*; when you add one, update `AREAS` in `scripts/brain.py` too. The folder determines
-`type` (validate enforces it). The frontmatter parser is a flat YAML subset: no multiline or nested values;
-`tags`, `applies_to`, `owners` are `[lists]`. Empty directories aren't tracked: a new area folder needs a file.
+Areas are defined **only** in `teams.json` (owner team, consulted teams, domain, description) — run
+`python3 scripts/brain.py teams` for the list; each `knowledge/<area>/README.md` is that area's charter (what belongs
+there, what goes elsewhere, sources, redaction). Adding an area = a `teams.json` entry + its charter, then
+`brain.py codeowners` (CI's `teams` check enforces all three). The folder determines `type` (validate enforces it).
+The frontmatter parser is a flat YAML subset: no multiline or nested values; `tags`, `applies_to`, `owners`, `teams`
+are `[lists]`. Empty directories aren't tracked: a new area folder needs a file.
+
+## Teams, ownership and the graph
+
+- `teams.json` → `.gitlab/CODEOWNERS` (generated: `brain.py codeowners`): the owning team approves pages in its areas;
+  *consulted* teams are @-mentioned in the MR. Interface pages need an approval from every team in `teams:`.
+- A session may carry `IT_BRAIN_TEAM=ocp|storage|network`: look in that team's areas first, but never limit search.
+- Cross-team problems: read the matching `interfaces/` page before guessing which side is at fault.
+- The graph: `python3 scripts/brain_graph.py graph` regenerates `graphify-out/graph.json` (CI checks it; `brain-git.sh
+  submit` runs it); `brain_graph.py obsidian --out <dir>` builds an Obsidian vault; `brain_graph.py stats` lists
+  pages with no links — cite related pages by path so they join the graph (`docs/it-brain/GRAPH.md`).
+- Our own tools: server-scan (bare-metal platform, `knowledge/server-scan/README.md`) and Temporal / Redbull Workflows
+  (`knowledge/temporal/README.md`) are documented from their code and docs; write what you learn about them there.
 
 ## The fleet in five lines (so you ask the right questions)
 

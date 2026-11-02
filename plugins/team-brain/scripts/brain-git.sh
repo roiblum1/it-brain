@@ -39,6 +39,8 @@ case "$cmd" in
     branch="$(git rev-parse --abbrev-ref HEAD)"
     [ "$branch" != "main" ] || die "refusing to commit on main"
     python3 scripts/brain.py index >/dev/null
+    python3 scripts/brain.py codeowners >/dev/null
+    python3 scripts/brain_graph.py graph >/dev/null
     python3 scripts/brain.py validate || die "validation failed — fix the files above, then submit again"
     git add -A
     git diff --cached --quiet && die "nothing to commit"

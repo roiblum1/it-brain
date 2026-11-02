@@ -33,6 +33,34 @@
     {
       "query": "NCCL hang InfiniBand RDMA multi-node vLLM LWS kernel tuning hugepages",
       "expect": "knowledge/gpu/inference-hpc-doc-map.md"
+    },
+    {
+      "query": "Trident PVC Pending export policy access denied by server",
+      "expect": "interfaces/ocp-storage-netapp-trident.md"
+    },
+    {
+      "query": "firewall flows EgressIP SNAT Palo Alto new cluster",
+      "expect": "interfaces/ocp-network-palo-alto-flows.md"
+    },
+    {
+      "query": "ACI endpoint learning GARP VIP bridge domain",
+      "expect": "interfaces/ocp-network-aci-fabric.md"
+    },
+    {
+      "query": "jumbo frames MTU multipath storage VLAN large I/O hangs",
+      "expect": "interfaces/storage-network-data-paths.md"
+    },
+    {
+      "query": "s3ForcePathStyle x509 unknown authority bucket BackupStorageLocation",
+      "expect": "interfaces/ocp-storage-object-s3.md"
+    },
+    {
+      "query": "who backs up what OADP Commvault array snapshots",
+      "expect": "interfaces/ocp-storage-backup.md"
+    },
+    {
+      "query": "PowerMax Unisphere reverse proxy SDC PowerFlex csi-isilon",
+      "expect": "interfaces/ocp-storage-dell-csm.md"
     }
   ]
 }
