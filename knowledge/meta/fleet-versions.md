@@ -5,7 +5,7 @@ area: meta
 tags: [versions, fleet, refs, ocp, kubernetes]
 applies_to: [ocp-4.16, ocp-4.20, ocp-4.22]
 confidence: observed
-last_verified: 2026-10-03
+last_verified: 2026-11-02
 owners: [platform-team]
 source: claude-session
 ---
@@ -28,6 +28,20 @@ a version. When the fleet moves (e.g. to 4.24), add a row and an `applies_to` to
 - MCE for a hub: `oc get multiclusterengine -o jsonpath='{.items[0].status.currentVersion}'`
 - CAPI vendored in a HyperShift branch: `search_code repo=hypershift ref=release-4.NN path="go.mod" pattern="sigs.k8s.io/cluster-api "`
 - Kubernetes for a cluster: `oc version` (Server Version → Kubernetes Version)
+
+## Upgrade ladder (day1 `upgrade/ladder.yaml`, used by the upgrade-cluster workflow)
+
+Read from the Redbull Workflows docs on 2026-11-02 (`knowledge/temporal/upgrade-cluster-workflow.md`); the workflow
+itself has only run on a sandbox fleet — **observed, not verified on our clusters**.
+
+| Rung | Kind | Note |
+|---|---|---|
+| 4.15.41 → 4.16.55 → 4.17.58 → 4.18.56 → 4.19.53 → 4.20.44 → 4.21.40 | all `must` | checked against Red Hat's update graph on 2026-10-31 |
+| 4.21 → 4.22 | — | **no rung**: those edges are only in `candidate-4.22`, so 4.22 clusters can only take 4.22 z-streams through the workflow |
+
+- `maxWorkerSkew: 2` (HyperShift itself allows 3).
+- Admin-ack gate `ack-4.19-admissionregistration-v1beta1-api-removals-in-4.20` applies from 4.19.15.
+- Sandbox MCE in the docs' examples: 2.17.3 (not a fleet fact).
 
 ## How to pick a ref (applies to every `git_repo` source)
 

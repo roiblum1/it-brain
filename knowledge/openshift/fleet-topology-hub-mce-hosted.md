@@ -5,7 +5,7 @@ area: openshift
 tags: [architecture, topology, hub, mce, hypershift, argocd, navigator, temporal, upi]
 applies_to: [ocp-4.16, ocp-4.20, ocp-4.22, hosted-cp]
 confidence: observed
-last_verified: 2026-10-03
+last_verified: 2026-11-02
 owners: [platform-team]
 source: gitops-day2-prod/ARCHITECTURE.md, gitops-day1/platform-config README, ClickCluster-navigator README
 ---
@@ -45,7 +45,7 @@ names are classified and are **never written in this repo** — pages use `<regi
 | Component | Role | Notes |
 |---|---|---|
 | Cluster Navigator | Web UI + API listing clusters by site: console URL, segments (CIDR), load balancer IP (resolved via DNS), CSV/Excel export, availability probes | Syncs `HC`/`MCE` segment types from **Segments Manager** read-only every 5 min; manual entries must be named `ocp4-*`; file-based storage, file lock for multi-replica |
-| Temporal server | Runs the provisioning/automation workflows | The day1 repo's `allocate_segment.py` calls a workflows/orchestrator API on push; assumed to be Temporal-backed — **hypothesis, verify** |
+| Temporal server | Runs the provisioning/automation workflows (the Redbull Workflows orchestrator) | allocate-segment is a Temporal workflow whose "brain" runs on the hub — confirmed from the orchestrator's docs (observed, 2026-11-02): `knowledge/temporal/redbull-workflows-orchestrator-architecture.md`, `knowledge/temporal/allocate-segment-workflow.md` |
 | Argo CD (day2) | Renders the `groups → mces → clusters → operators → deploy` ApplicationSet chain | See `knowledge/gitops/day2-sites-tree-discovery-and-version-layers.md` |
 | Argo CD "upi" | Deploys charts to standalone UPI clusters | The only Argo with UPI cluster secrets |
 
@@ -72,8 +72,11 @@ Version-specific refs for HyperShift/CAPI/etc. follow `knowledge/meta/fleet-vers
 
 - Is there one hub for all regions or one per region? (day2 docs describe a single `prod-hub`.)
 - How `<region>` maps to `<site>` in the repos (docs and trees use `<site>`).
-- Whether Temporal is what the allocate-segment workflow actually runs on.
+- ~~Whether Temporal is what the allocate-segment workflow actually runs on.~~ Yes (2026-11-02, from the orchestrator docs).
+- MCE name shape: this page says `ocp4-<env>-mce-<site>-<letter>`; the Redbull Workflows docs' examples use
+  `ocp4-mce-<site>-NN` and accept `mce_cluster` with or without the `ocp4-` prefix. Check one real MCE and fix whichever is wrong.
 
 ## History
 
 - 2026-10-03: created from the platform team's description plus the day1/day2/Navigator repo docs.
+- 2026-11-02: Temporal confirmed for allocate-segment (orchestrator docs); MCE name-shape discrepancy noted

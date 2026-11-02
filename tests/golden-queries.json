@@ -61,6 +61,46 @@
     {
       "query": "PowerMax Unisphere reverse proxy SDC PowerFlex csi-isilon",
       "expect": "interfaces/ocp-storage-dell-csm.md"
+    },
+    {
+      "query": "run stuck RUNNING ApplicationError non_retryable_error_types",
+      "expect": "knowledge/temporal/temporal-python-sdk-rules-that-cost-us-time.md"
+    },
+    {
+      "query": "allocate-segment dhcp_values vlanId ClusterValuesConflictError",
+      "expect": "knowledge/temporal/allocate-segment-workflow.md"
+    },
+    {
+      "query": "install-server Agent never appeared rollback bond NPAR",
+      "expect": "knowledge/temporal/install-server-workflow.md"
+    },
+    {
+      "query": "PostDelete hook release-segment failed Job DHCP scope",
+      "expect": "knowledge/temporal/release-segment-workflow.md"
+    },
+    {
+      "query": "server-lifecycle-activity per MCE queue schedule-to-start brain limb",
+      "expect": "knowledge/temporal/redbull-workflows-orchestrator-architecture.md"
+    },
+    {
+      "query": "servers available reservation lock two MCEs install-server",
+      "expect": "knowledge/server-scan/server-scan-available-servers-and-install-reservation-lock.md"
+    },
+    {
+      "query": "nodes-status INSTALLED_TO_INVENTORY agents job cluster membership",
+      "expect": "knowledge/server-scan/server-scan-cluster-membership-nodes-status-jobs.md"
+    },
+    {
+      "query": "iDRAC reset all UNKNOWN disks NICs OpenManage",
+      "expect": "knowledge/server-scan/server-scan-dell-ome-redfish-collection-and-idrac-reset.md"
+    },
+    {
+      "query": "server-scan personal token ssk auditor viewer",
+      "expect": "knowledge/server-scan/server-scan-rest-api-endpoints-filters-auth-tokens.md"
+    },
+    {
+      "query": "server-scan MCP read-only mcp.enabled",
+      "expect": "mcp/servers/server-scan.md"
     }
   ]
 }

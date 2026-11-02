@@ -67,7 +67,7 @@ python3 scripts/brain_graph.py obsidian --out ~/it-brain-vault   # rebuild any t
 
 Open the folder in Obsidian (*Open folder as vault*) and start at `HOME.md`. The vault:
 
-- holds every brain page with repo-path references rewritten to `[[wikilinks]]` — the graph view shows real page links;
+- holds every brain page with repo-path references rewritten to Obsidian wikilinks — the graph view shows real page links;
 - has hub notes `_hubs/teams/<team>`, `_hubs/areas/<area>`, `_hubs/domains/<domain>`, and every page ends with a link to its area hub;
 - tags each page `area/<a>`, `domain/<d>`, `team/<owner>`, and colours the graph by domain (`.obsidian/graph.json`);
 - leaves out `docs/upstream` (thousands of vendor pages), which is what keeps it fast.

@@ -761,6 +761,40 @@
         "**/*.adoc",
         "**/*.txt"
       ]
+    },
+    {
+      "name": "server-scan",
+      "kind": "git_repo",
+      "enabled": false,
+      "description": "team-redbull/server-scan: our bare-metal inventory and management platform — docs, ADRs, Helm charts, API and collector code (full mirror; disabled until mirrored into GitLab)",
+      "path": "${TEAM_KNOWLEDGE_SOURCES:-~/.cache/team-brain/sources}/server-scan.git",
+      "remote": "${GIT_MIRROR_BASE:-https://gitlab.internal/mirrors}/team-redbull/server-scan.git",
+      "web_url": "${GIT_MIRROR_WEB:-https://gitlab.internal/mirrors}/team-redbull/server-scan",
+      "default_ref": "main",
+      "docs": [
+        "README.md",
+        "CLAUDE.md",
+        "docs/**/*.md",
+        "deploy/README.md",
+        "deploy/helm/*/README.md",
+        ".claude/skills/**/*.md",
+        ".claude/rules/*.md"
+      ],
+      "code_include": [
+        "backend/app/**",
+        "tools/**",
+        "deploy/helm/**",
+        "frontend/src/**",
+        ".env.example"
+      ],
+      "code_exclude": [
+        "**/static/docs/**",
+        "**/*.tgz",
+        "uv.lock",
+        "pylock.toml",
+        "requirements.txt",
+        "frontend/package-lock.json"
+      ]
     }
   ]
 }
