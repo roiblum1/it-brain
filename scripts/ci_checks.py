@@ -298,6 +298,8 @@ def check_mcpbin():
     mcp = json.loads((ROOT / "plugins/team-brain/.mcp.json").read_text(encoding="utf-8"))["mcpServers"]
     for name, spec in mcp.items():
         args = spec.get("args", [])
+        if args and args[0].endswith("launch.py") and len(args) > 3 and args[1] == "--needs-file":
+            args = [args[0], *args[3:]]  # optional server: launch.py --needs-file VAR <server> …
         if args and args[0].endswith("launch.py") and (len(args) < 2 or args[1] not in manifest):
             errs.append(f".mcp.json: server {name} runs launch.py {args[1:2]} which is not in vendor/manifest.json")
     n = 0

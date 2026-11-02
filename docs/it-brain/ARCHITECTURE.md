@@ -139,7 +139,7 @@ symptoms seen on one side and usually caused on the other, escalation, and open 
 `templates/interface.md`. Validation requires `teams:` with at least two teams; CODEOWNERS lets any team approve
 `interfaces/`, and the MR rule (`docs/it-brain/TEAMS.md`) is that every team in `teams:` approves.
 
-Drafts on this branch (all `hypothesis`, to be filled in by the teams):
+Drafts on this branch (all `hypothesis`, to be filled in by the teams) — 10:
 
 - `interfaces/ocp-storage-netapp-trident.md` — ONTAP volumes for OpenShift through Trident
 - `interfaces/ocp-storage-dell-csm.md` — PowerMax / PowerFlex / PowerScale through Dell CSM
@@ -148,6 +148,9 @@ Drafts on this branch (all `hypothesis`, to be filled in by the teams):
 - `interfaces/ocp-network-aci-fabric.md` — what a cluster needs from ACI
 - `interfaces/ocp-network-palo-alto-flows.md` — firewall flows a cluster needs
 - `interfaces/storage-network-data-paths.md` — node → fabric → array data paths
+- `interfaces/virtualization-storage-kubevirt-vm-disks.md` — what KubeVirt VM disks need from arrays / CSI
+- `interfaces/virtualization-network-kubevirt-vm-networks.md` — VLANs, MAC/IP, migration traffic for VM networks
+- `interfaces/ocp-virtualization-kubevirt-platform.md` — who owns the CNV operator, nodes, upgrades, capacity
 
 Our own platform tools get the same treatment as vendors: `knowledge/server-scan/` (the bare-metal platform) and
 `knowledge/temporal/` (Temporal and the Redbull Workflows orchestrator, whose `provision-dell-server` workflow lists

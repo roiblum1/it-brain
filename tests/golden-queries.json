@@ -145,6 +145,26 @@
     {
       "query": "temporal-mcp read-only get_task_queues pollers TEMPORAL_MCP_CONFIG",
       "expect": "mcp/servers/temporal.md"
+    },
+    {
+      "query": "DisksNotLiveMigratable InterfaceNotLiveMigratable masquerade live migration",
+      "expect": "knowledge/kubevirt/kubevirt-live-migration-requirements-limits-policies-failures.md"
+    },
+    {
+      "query": "VMCannotBeEvicted drain blocked evictionStrategy LiveMigrate",
+      "expect": "knowledge/kubevirt/kubevirt-node-drain-eviction-strategy-and-pdbs.md"
+    },
+    {
+      "query": "localnet vlanID allowPersistentIPs NetworkAttachmentDefinition VM",
+      "expect": "knowledge/kubevirt/kubevirt-networking-masquerade-bridge-multus-localnet-sriov.md"
+    },
+    {
+      "query": "warm migration CBT VDDK port 902 MTV",
+      "expect": "knowledge/kubevirt/kubevirt-mtv-forklift-migrating-vms-from-vmware.md"
+    },
+    {
+      "query": "outdatedLauncherImage workloadUpdateStrategy",
+      "expect": "knowledge/kubevirt/kubevirt-upgrades-hco-workload-updates-outdated-launchers.md"
     }
   ]
 }

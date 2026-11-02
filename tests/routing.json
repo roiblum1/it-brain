@@ -102,6 +102,30 @@
         "openshift"
       ],
       "interface": "interfaces/ocp-storage-backup.md"
+    },
+    {
+      "question": "KubeVirt VM disk on PowerFlex cannot live migrate, PVC is RWO block",
+      "areas": [
+        "kubevirt",
+        "dell-powerflex"
+      ],
+      "teams": [
+        "virtualization",
+        "storage"
+      ],
+      "interface": "interfaces/virtualization-storage-kubevirt-vm-disks.md"
+    },
+    {
+      "question": "VM on a localnet secondary network has no connectivity, VLAN on the ACI EPG",
+      "areas": [
+        "kubevirt",
+        "cisco-aci"
+      ],
+      "teams": [
+        "virtualization",
+        "network"
+      ],
+      "interface": "interfaces/virtualization-network-kubevirt-vm-networks.md"
     }
   ]
 }
