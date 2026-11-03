@@ -72,6 +72,7 @@ Important Limitations
 Review the following limitations before deployment:
 
 * **Firmware reset on BMC-controlled platforms** — NVIDIA DGX/HGX GB200 NVL72, B200, and B300 systems require additional configuration so that firmware updates apply without a reboot loop. See :ref:`fw-reset-external-bmc`.
+* **Cold reboot for NIC configuration on HGX Rubin NVL8 (Fractal)** — ConnectX-9 firmware configuration changes can remain pending after a warm reboot, even with explicit firmware reset enabled. A manual BMC chassis power cycle is required to activate the pending configuration on affected systems. See :ref:`fractal-nic-config-power-cycle`.
 * **Precompiled DOCA-OFED driver containers are currently unsigned.**
 * **Precompiled DOCA-OFED kernel-flavor support** — Only the Ubuntu ``generic`` kernel flavor is GA. The ``nvidia``, ``aws``, ``azure``, and ``oracle`` flavors are Tech Preview.
 * For per-release known issues, see the :doc:`release-notes`.
@@ -199,37 +200,37 @@ The following NVIDIA Data Center systems have been tested and validated with **N
      - x86
      - NVIDIA Blackwell
      - BlueField-3 SuperNIC (NIC mode) / ConnectX-7
-     - Ubuntu 24.04 (x86) 
-     - GA. Firmware reset required (see :ref:`fw-reset-external-bmc`)
+     - Ubuntu 24.04 (x86) - DGX OS
+     - GA. Firmware reset required (see :ref:`fw-reset-external-bmc`), Ubuntu is the recommended OS for optimized performance
    * - NVIDIA DGX/HGX B300
      - x86
      - NVIDIA Blackwell
      - ConnectX-8 SuperNIC
-     - Ubuntu 24.04 (x86) 
-     - GA. Firmware reset required (see :ref:`fw-reset-external-bmc`)
+     - Ubuntu 24.04 (x86) - DGX OS
+     - GA. Firmware reset required (see :ref:`fw-reset-external-bmc`), Ubuntu is the recommended OS for optimized performance
    * - NVIDIA DGX/HGX GB200 NVL72
      - Arm (NVIDIA Grace)
      - NVIDIA Blackwell
      - ConnectX-7
-     - Ubuntu 24.04 (Arm64) 
+     - Ubuntu 24.04 (Arm64) - DGX OS
      - GA. Firmware reset required (see :ref:`fw-reset-external-bmc`)
    * - NVIDIA DGX/HGX GB300 NVL72
      - Arm (NVIDIA Grace)
      - NVIDIA Blackwell
      - ConnectX-8
-     - Ubuntu 24.04 (Arm64)
+     - Ubuntu 24.04 (Arm64) - DGX OS
      - GA. Firmware reset required (see :ref:`fw-reset-external-bmc`)
    * - NVIDIA DGX GB300 Workstation
      - Arm (NVIDIA Grace)
      - NVIDIA Blackwell
      - ConnectX-8 SuperNIC
-     - Ubuntu 24.04, 22.04 (Arm64)
+     - Ubuntu 24.04, 22.04 (Arm64) - DGX OS
      - GA (RoCE only, without InfiniBand)
    * - NVIDIA Vera Rubin NVL72
      - Arm (NVIDIA Vera)
      - NVIDIA Rubin
      - ConnectX-9 SuperNIC
-     - Ubuntu 24.04, 22.04 (Arm64)
+     - Ubuntu 24.04, 22.04 (Arm64) - DGX OS
      - Tech Preview — system validation is in progress. Uses ConnectX-9 SuperNIC, which is generally available for RoCE and InfiniBand workloads; see `Supported NVIDIA Network Adapters`_. Firmware reset required (see :ref:`fw-reset-external-bmc`)
 
 .. _supported-deployment-options:

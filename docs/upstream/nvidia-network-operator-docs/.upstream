@@ -1,7 +1,7 @@
 repo: Mellanox/network-operator-docs
 ref: main
-commit: c68c6027ceee7b0cdf59eec8c76fefb8b068b7d6
+commit: 4d43d36cca0c13166bdc56b5800fabb07a2005fc
 latest_tag: v26.4.0
 paths: docs
 files: 72
-synced: 2026-11-01T10:24:47Z
+synced: 2026-11-03T07:58:47Z
