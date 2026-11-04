@@ -1,7 +1,7 @@
 repo: LMCache/LMCache
 ref: dev
-commit: e0ef91d286e498d07e1da227ef48b2b46b223d1e
+commit: 05a71ecf5eb98e73da9d0301224b5efa4dcec631
 latest_tag: v0.5.6
 paths: docs/source, docs/design, examples, operator/README.md, operator/DESIGN.md, operator/config/samples, README.md
-files: 474
-synced: 2026-11-03T07:57:57Z
+files: 475
+synced: 2026-11-04T11:07:40Z

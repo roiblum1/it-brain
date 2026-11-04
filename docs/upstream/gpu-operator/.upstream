@@ -1,7 +1,7 @@
 repo: NVIDIA/gpu-operator
 ref: main
-commit: 3e1873a25ef46219f9b2db6f19a0b90818729586
-latest_tag: v26.7.1
+commit: 774a9571d8f9d56b498f872878b52d14d499833c
+latest_tag: v26.7.2
 paths: README.md, docs
 files: 2
-synced: 2026-10-03T09:37:32Z
+synced: 2026-11-04T11:07:59Z
