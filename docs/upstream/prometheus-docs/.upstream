@@ -1,7 +1,7 @@
 repo: prometheus/docs
 ref: main
-commit: bf977977d5f8d90923929577842d6d0c13bb5295
+commit: cc0672badce86173b9afaa95a59904576bcd6d6a
 latest_tag: 
 paths: docs
 files: 70
-synced: 2026-10-30T09:57:24Z
+synced: 2026-11-05T11:08:05Z

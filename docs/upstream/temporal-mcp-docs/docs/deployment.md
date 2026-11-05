@@ -63,7 +63,8 @@ These are independent trust relationships:
    endpoint.
 2. **Expose the MCP endpoint over HTTPS.** Choose an internal hostname and
    configure TLS in Temporal MCP or an approved colocated proxy. Do not expose
-   plain HTTP on the network.
+   plain HTTP on the network. A load balancer's health check can use
+   `/healthz`, which answers 200 without a token.
 3. **Add the Temporal targets.** For each namespace, configure its address,
    namespace name, and API key or mTLS certificate. Keep file-backed credentials
    in protected paths on the host and use least-privileged credentials. For
@@ -87,6 +88,39 @@ These are independent trust relationships:
    call `list_available_targets`, `check_connection`, and one read tool.
 8. **Verify access.** Confirm that users see the tools and targets assigned to
    their profiles, and review the resulting audit records.
+
+## Kubernetes
+
+The Helm chart attached to each release runs the server on Kubernetes. These
+steps replace Central deployment steps 1, 2 and 6, and its steps 7 and 8 then
+test and verify the deployment.
+
+1. **Create the Secrets.** Store the targets' API keys or client certificates
+   in Kubernetes Secrets, and the `listen_tls` certificate and key when the
+   server terminates TLS itself.
+2. **Create the config.** Start from the
+   [API-key example](../examples/http-auth-config.yaml), and configure the
+   targets, sign-in and payloads as Central deployment steps 3 to 5 describe.
+3. **Write the values file.** It maps the Secrets to the environment variables
+   and files that the config names, as
+   [examples/helm-values.yaml](../examples/helm-values.yaml) does for the
+   API-key example. `helm show values` on the chart lists every other setting.
+4. **Install the chart.** Pass it the values file and the config:
+
+   ```sh
+   helm install temporal-mcp https://github.com/temporalio/temporal-mcp/releases/download/v<version>/temporal-mcp-<version>.tgz -f values.yaml --set-file config=<path>
+   ```
+
+   `kubectl logs` shows the audit records and error logs.
+5. **Expose the MCP endpoint over HTTPS.** By default, the chart creates a
+   ClusterIP Service on the port of the config's `listen` address. Reach it
+   over HTTPS through the cluster's approved internal path, such as an internal
+   load balancer (set `service.type` and `service.annotations`) or the
+   cluster's ingress. Do not expose plain HTTP on the network. A load balancer
+   or ingress health check can use `/healthz`, which answers 200 without a
+   token.
+6. **Change the config.** Run `helm upgrade` with the same arguments and the
+   edited file. The pods restart with it.
 
 ## Access
 

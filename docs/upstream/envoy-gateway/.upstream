@@ -1,7 +1,7 @@
 repo: envoyproxy/gateway
 ref: main
-commit: 3103d038c787e3aeef4bde8cd845c0c05df79d17
+commit: 1564810c93c8f4616efdb606a284a3d0c7cc5a62
 latest_tag: v1.9.3
 paths: site/content/en/latest
 files: 140
-synced: 2026-11-03T07:57:37Z
+synced: 2026-11-05T11:07:53Z

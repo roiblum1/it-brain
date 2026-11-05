@@ -1,7 +1,7 @@
 repo: kubevirt/kubevirt
 ref: main
-commit: 47908d080eb0b846b4b291e8ea1925619c27f828
+commit: 45747645ccdba219dc8b76259028f982186dae7f
 latest_tag: v1.9.1
 paths: docs
 files: 59
-synced: 2026-11-02T21:36:15Z
+synced: 2026-11-05T11:09:13Z

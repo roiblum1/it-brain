@@ -1,7 +1,7 @@
 repo: kubernetes-sigs/gateway-api
 ref: main
-commit: b775d4ec730d55be6397f414715ddebaf13e428c
-latest_tag: v1.6.3
+commit: a52aff438a5c133b10376fbe45c4096a2b0ce8ff
+latest_tag: v1.7.0
 paths: site/content, geps
 files: 147
-synced: 2026-10-28T09:36:58Z
+synced: 2026-11-05T11:08:36Z
