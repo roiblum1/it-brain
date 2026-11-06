@@ -2,8 +2,10 @@
 # SPDX-FileCopyrightText: Copyright (c) 2025-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 title: Encoder Disaggregation
-subtitle: Separate vision encoding into a dedicated worker for independent scaling
+subtitle: Scale vision encoders separately from LLM workers
 ---
+
+![In aggregated serving, one worker does media decode, preprocessing, the vision encoder, prefill, and decode. In E/PD disaggregated serving, encoder workers do media decode, preprocessing, and the vision encoder, and send embeddings over NIXL to PD workers that run prefill and decode. A prefill worker checks the embedding cache first and calls the encoder workers only on a miss.](../../../../assets/img/encoder-disaggregation.svg)
 
 ## Overview
 
@@ -23,7 +25,7 @@ Use encoder disaggregation when:
 - You want to run the vision encoder on different hardware (e.g., smaller GPUs for encoding, larger GPUs for LLM inference)
 - Your deployment handles high volumes of multimodal requests and encoding throughput is limiting
 
-For simple deployments or development/testing, the aggregated (EPD) pattern is easier to set up.
+For simple deployments or development and testing, the aggregated pattern (EPD, one worker) is easier to set up.
 
 ## Deployment Patterns
 
@@ -43,6 +45,16 @@ For simple deployments or development/testing, the aggregated (EPD) pattern is e
     The encode worker transfers embeddings over NIXL to the prefill worker. The prefill worker then transfers the KV cache to the decode worker.
   </Card>
 </CardGroup>
+
+## Placement Options
+
+Where the encoder runs is a separate choice from whether it is disaggregated:
+
+- **Aggregated:** every GPU runs one worker that encodes, prefills, and decodes. This is the simplest setup.
+- **Colocated encoder:** every GPU runs encoder workers and a prefill and decode (PD) worker side by side, sharing the GPU through CUDA MPS. Encoding no longer queues behind prefill on the same scheduler, and you need no extra hardware.
+- **Disaggregated encoder:** encoders run on their own GPUs, which can be lower-tier hardware, and send embeddings to the PD workers over NIXL.
+
+![Three topologies. Aggregated serving runs an aggregated worker on each of four identical GPUs. Colocated encoder runs encoder workers and a PD worker on each of four identical GPUs using MPS. Disaggregated encoder runs encoder workers on two lower-tier GPUs and sends embeddings over NIXL to PD workers on four other GPUs.](../../../../assets/img/encoder-placement-options.svg)
 
 ## Launching
 
@@ -82,12 +94,12 @@ For simple deployments or development/testing, the aggregated (EPD) pattern is e
   </Tab>
 </Tabs>
 
-See the backend-specific documentation ([vLLM](../../developer-guide/knowledge-base/modular-components/backends/vllm/multimodal.md), [TRT-LLM](../../developer-guide/knowledge-base/modular-components/backends/tensorrt-llm/multimodal.md), [SGLang](../../developer-guide/knowledge-base/modular-components/backends/sglang/multimodal.md)) for full configuration details and component flags.
+See the backend-specific documentation ([vLLM](../../../developer-guide/knowledge-base/modular-components/backends/vllm/multimodal.md), [TRT-LLM](../../../developer-guide/knowledge-base/modular-components/backends/tensorrt-llm/multimodal.md), [SGLang](../../../developer-guide/knowledge-base/modular-components/backends/sglang/multimodal.md)) for full configuration details and component flags.
 
 ## Support Matrix
 
 | Backend | E/PD | E/P/D | Notes |
 |---------|------|-------|-------|
 | **vLLM** | <Badge intent="success" minimal>Yes</Badge> | <Badge intent="success" minimal>Yes</Badge> | Separate encode worker currently handles `image_url` inputs; `video_url` inputs stay on the prefill/PD path |
-| **TensorRT-LLM** | — | <Badge intent="success" minimal>Yes</Badge> | Supports image URLs (via `MultimodalEncoder`) and pre-computed embeddings (via NIXL) |
+| **TensorRT-LLM** | <Badge intent="success" minimal>Yes</Badge> | <Badge intent="success" minimal>Yes</Badge> | Supports image URLs (via `MultimodalEncoder`) and pre-computed embeddings (via NIXL) |
 | **SGLang** | <Badge intent="success" minimal>Yes</Badge> | <Badge intent="success" minimal>Yes</Badge> | NIXL for embeddings; bootstrap mechanism for P/D KV transfer |

@@ -12,39 +12,39 @@ stable upstream tag at sync time, for comparison with the version installed on a
 | `cdi-docs` | kubevirt/containerized-data-importer | main | 15b1fc5958 | v1.66.1 | 40 | 2026-11-02 |
 | `cluster-api-provider-metal3` | metal3-io/cluster-api-provider-metal3 | main | abcb79e486 | v1.14.2 | 16 | 2026-11-05 |
 | `dell-csm-docs` | dell/csm-docs | main | 47c9088682 | v1.16.3 | 462 | 2026-11-02 |
-| `dynamo` | ai-dynamo/dynamo | main | 7e9dc291b1 | v1.6.1 | 408 | 2026-11-05 |
-| `envoy` | envoyproxy/envoy | main | e06bbfbde7 | v1.40.2 | 514 | 2026-11-05 |
+| `dynamo` | ai-dynamo/dynamo | main | fa98520149 | v1.6.2 | 413 | 2026-11-06 |
+| `envoy` | envoyproxy/envoy | main | 37b20cf873 | v1.40.2 | 514 | 2026-11-06 |
 | `envoy-ai-gateway` | envoyproxy/ai-gateway | main | d52faad433 | v1.2.0 | 61 | 2026-11-05 |
-| `envoy-gateway` | envoyproxy/gateway | main | 1564810c93 | v1.9.3 | 140 | 2026-11-05 |
+| `envoy-gateway` | envoyproxy/gateway | main | 3e91fbc978 | v1.10.0 | 140 | 2026-11-06 |
 | `etcd-docs` | etcd-io/website | main | 0c82d27416 | v3.5.0 | 791 | 2026-10-30 |
 | `forklift-docs` | kubev2v/forklift-documentation | main | 3a11e610e5 | v2.11 | 514 | 2026-11-02 |
 | `gateway-api` | kubernetes-sigs/gateway-api | main | a52aff438a | v1.7.0 | 147 | 2026-11-05 |
 | `gateway-api-inference-extension` | kubernetes-sigs/gateway-api-inference-extension | main | 8ed15ee9f6 | v1.6.2 | 39 | 2026-10-03 |
 | `gpu-operator` | NVIDIA/gpu-operator | main | 774a9571d8 | v26.7.2 | 2 | 2026-11-04 |
-| `grafana-docs` | grafana/grafana | main | 3491288a37 | v13.3.0 | 772 | 2026-11-05 |
-| `hco-docs` | kubevirt/hyperconverged-cluster-operator | main | 4ad722f0a7 | v1.18.1 | 29 | 2026-11-04 |
+| `grafana-docs` | grafana/grafana | main | 1ef81197e7 | v13.3.0 | 773 | 2026-11-06 |
+| `hco-docs` | kubevirt/hyperconverged-cluster-operator | main | d42becb323 | v1.19.0 | 29 | 2026-11-06 |
 | `ip-address-manager` | metal3-io/ip-address-manager | main | 0f8965b411 | v1.14.2 | 6 | 2026-10-23 |
 | `ironic-image` | metal3-io/ironic-image | main | 5786694219 | v38.0.0 | 3 | 2026-10-03 |
 | `ironic-standalone-operator` | metal3-io/ironic-standalone-operator | main | e627d6b983 | v0.12.0 | 5 | 2026-10-28 |
 | `kserve` | kserve/kserve | master | 41defa23f4 | v0.21.0 | 521 | 2026-10-31 |
-| `kserve-website` | kserve/website | main | f1405c7703 |  | 173 | 2026-11-05 |
+| `kserve-website` | kserve/website | main | f65ccc7362 |  | 173 | 2026-11-06 |
 | `kubernetes` | kubernetes/website | release-1.35 | 8817d35886 |  | 1641 | 2026-10-02 |
-| `kubernetes-mcp-server` | containers/kubernetes-mcp-server | main | eccea2c36b | v0.1.2 | 24 | 2026-11-05 |
-| `kubevirt-docs` | kubevirt/kubevirt | main | 45747645cc | v1.9.1 | 59 | 2026-11-05 |
+| `kubernetes-mcp-server` | containers/kubernetes-mcp-server | main | d07d1d062b | v0.1.2 | 24 | 2026-11-06 |
+| `kubevirt-docs` | kubevirt/kubevirt | main | a7a1f40ec3 | v1.9.1 | 60 | 2026-11-06 |
 | `kubevirt-user-guide` | kubevirt/user-guide | main | 1060a3d5c7 |  | 98 | 2026-11-02 |
-| `kueue` | kubernetes-sigs/kueue | main | e32ad2e0ca | v0.20.4 | 264 | 2026-11-05 |
+| `kueue` | kubernetes-sigs/kueue | main | 98e096b8a1 | v0.20.5 | 264 | 2026-11-06 |
 | `linux-kernel-docs` | torvalds/linux | master | 36aad21d50 | v7.3 | 118 | 2026-10-31 |
-| `llm-d` | llm-d/llm-d | main | e941ac2dc0 | v1.0.0 | 192 | 2026-11-05 |
-| `lmcache` | LMCache/LMCache | dev | 8c6719bb99 | v0.5.6 | 475 | 2026-11-05 |
-| `lws` | kubernetes-sigs/lws | main | 4a2e1ab32c | v1.0.0 | 80 | 2026-11-03 |
+| `llm-d` | llm-d/llm-d | main | 343d9be981 | v1.0.0 | 192 | 2026-11-06 |
+| `lmcache` | LMCache/LMCache | dev | 71cc263e92 | v0.5.7 | 478 | 2026-11-06 |
+| `lws` | kubernetes-sigs/lws | main | 21e4ddab36 | v1.0.0 | 80 | 2026-11-06 |
 | `mcp-grafana` | grafana/mcp-grafana | main | a57860b54b | v2.2.0 | 50 | 2026-11-04 |
 | `metal3-docs` | metal3-io/metal3-docs | main | 3312d0fd1c |  | 145 | 2026-10-28 |
-| `mooncake` | kvcache-ai/Mooncake | main | 1ffcfd013b | v0.3.14 | 142 | 2026-11-05 |
+| `mooncake` | kvcache-ai/Mooncake | main | 0ff71517f0 | v0.3.14 | 142 | 2026-11-06 |
 | `multus-cni` | k8snetworkplumbingwg/multus-cni | master | 73190fcefa | v4.3.1 | 7 | 2026-10-09 |
 | `nccl` | NVIDIA/nccl | master | 3e46c089f4 |  | 159 | 2026-10-09 |
-| `node-feature-discovery` | kubernetes-sigs/node-feature-discovery | master | b8c0974b70 | v0.20.1 | 40 | 2026-10-29 |
+| `node-feature-discovery` | kubernetes-sigs/node-feature-discovery | master | ef6672a33a | v0.20.1 | 40 | 2026-11-06 |
 | `nvidia-cloud-native-docs` | NVIDIA/cloud-native-docs | main | f36eef3359 |  | 86 | 2026-11-04 |
-| `nvidia-network-operator-docs` | Mellanox/network-operator-docs | main | 1e25cece98 | v26.4.0 | 72 | 2026-11-04 |
+| `nvidia-network-operator-docs` | Mellanox/network-operator-docs | main | 6953b053a6 | v26.4.0 | 72 | 2026-11-06 |
 | `okp-mcp` | rhel-lightspeed/okp-mcp | main | 4505245152 |  | 6 | 2026-10-03 |
 | `openshift-runbooks` | openshift/runbooks | master | 2c377831cc |  | 291 | 2026-11-05 |
 | `ovn-kubernetes` | ovn-org/ovn-kubernetes | master | 13e6f23485 | v1.4.0 | 139 | 2026-11-04 |
@@ -52,17 +52,17 @@ stable upstream tag at sync time, for comparison with the version installed on a
 | `powercli-examples` | vmware/PowerCLI-Example-Scripts | master | 097172029b |  | 91 | 2026-11-02 |
 | `powershell-docs` | MicrosoftDocs/PowerShell-Docs | main | ebaa235784 |  | 850 | 2026-11-02 |
 | `prometheus-docs` | prometheus/docs | main | cc0672badc |  | 70 | 2026-11-05 |
-| `prometheus-operator` | prometheus-operator/prometheus-operator | main | 56ea50c77a | v0.94.2 | 43 | 2026-11-04 |
+| `prometheus-operator` | prometheus-operator/prometheus-operator | main | 2110bfd220 | v0.95.1 | 43 | 2026-11-06 |
 | `pydantic-docs` | pydantic/pydantic | main | bfa7f4f6cb | v2.14.2 | 91 | 2026-11-04 |
-| `pydantic-settings-docs` | pydantic/pydantic-settings | main | d90133c7d6 | v2.16.2 | 2 | 2026-11-02 |
-| `ray-docs` | ray-project/ray | master | f49242394f | 1.13.1 | 96 | 2026-11-05 |
+| `pydantic-settings-docs` | pydantic/pydantic-settings | main | cfbe8ad087 | v2.16.2 | 2 | 2026-11-06 |
+| `ray-docs` | ray-project/ray | master | c8c587b0c1 | 1.13.1 | 96 | 2026-11-06 |
 | `rdma-core` | linux-rdma/rdma-core | master | b63b7bfe5d | v65.0 | 190 | 2026-10-17 |
-| `sglang` | sgl-project/sglang | main | 2d5a2f51ab | v0.5.23 | 377 | 2026-11-05 |
+| `sglang` | sgl-project/sglang | main | 0faab86f78 | v0.5.23 | 378 | 2026-11-06 |
 | `sriov-network-operator` | k8snetworkplumbingwg/sriov-network-operator | master | bdfb5a6109 | v1.6.0 | 30 | 2026-11-04 |
-| `temporal-docs` | temporalio/documentation | main | 1f684c047a |  | 261 | 2026-11-05 |
+| `temporal-docs` | temporalio/documentation | main | 1ef885f3e6 |  | 261 | 2026-11-06 |
 | `temporal-mcp-docs` | temporalio/temporal-mcp | main | b0d597fcbb | v0.0.6 | 5 | 2026-11-05 |
-| `tensorrt-llm` | NVIDIA/TensorRT-LLM | main | 748dc201e8 | v1.2.1 | 167 | 2026-11-05 |
+| `tensorrt-llm` | NVIDIA/TensorRT-LLM | main | 682a2b700f | v1.2.1 | 167 | 2026-11-06 |
 | `trident-docs` | NetAppDocs/trident | main | 2423ba6424 |  | 122 | 2026-11-05 |
 | `tuned` | redhat-performance/tuned | master | 278644ed96 | v2.28.0 | 31 | 2026-10-03 |
 | `ucx` | openucx/ucx | master | 6aa2cf12e8 | v1.22.0 | 15 | 2026-10-21 |
-| `vllm` | vllm-project/vllm | main | 2f8c840032 | v0.33.0 | 270 | 2026-11-05 |
+| `vllm` | vllm-project/vllm | main | 1c8ecd744d | v0.33.0 | 270 | 2026-11-06 |

@@ -11,7 +11,7 @@ Two input classes are already covered without installing anything:
 
 - **VP8 and VP9 video** decode through the in-tree FFmpeg when frontend
   decoding is enabled on vLLM, or SGLang on CUDA.
-- **H.264 and H.265 video** decode on the GPU through NVDEC on supported backend paths. NVDEC needs a GPU with a video decode engine and a container granted the `video` driver capability. See [Video Decode GPU Requirements](video-decode-gpu-requirements.md) for the hardware and capability matrix.
+- **H.264 and H.265 video** decode on the GPU through NVDEC on supported backend paths. NVDEC needs a GPU with a video decode engine and a container granted the `video` driver capability. See [Video Decode GPU Requirements](../video-understanding/video-decoding.md) for the hardware and capability matrix.
 
 Without frontend decoding, the backend worker owns VP8/VP9 decoding. Follow the
 [same-version replacement procedure](#notes-and-limits) for vLLM video; other
@@ -23,8 +23,7 @@ additional decoder package also covers:
 
 Each backend decodes such input through a specific Python package whose wheel bundles its own FFmpeg, so the support is added with a plain `pip install` — no image rebuild. **Nothing installs automatically.** There is no environment switch and no startup hook: an operator runs the install as a deliberate, visible step, so a deployment that broadens the image's codec surface says so in its Dockerfile, pod spec, or runbook.
 
-> [!NOTE]
-> This affects **input decoding** only. Generated video **output** is unaffected and always uses VP9.
+<Note>This affects **input decoding** only. Generated video **output** is unaffected and always uses VP9.</Note>
 
 ## What each backend needs
 

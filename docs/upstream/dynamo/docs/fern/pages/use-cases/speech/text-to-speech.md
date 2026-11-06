@@ -1,11 +1,16 @@
 ---
 # SPDX-FileCopyrightText: Copyright (c) 2025-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
-title: Text-to-Audio
+title: Text-to-Speech
 subtitle: Synthesize speech with vLLM-Omni through the /v1/audio/speech endpoint
 ---
 
-Text-to-audio (TTS) generation runs a vLLM-Omni worker with `--output-modalities audio`. See the [Diffusion Overview](../overview.md) for installation and shared configuration.
+Text-to-speech (TTS) runs a vLLM-Omni worker with `--output-modalities audio` and serves the OpenAI-compatible `/v1/audio/speech` endpoint. To use TTS as the last stage of a voice agent, see [Voice Pipelines](voice-pipelines.md).
+
+<Note>
+Before you begin, set up vLLM-Omni as described in
+[Voice Pipelines › Set up the backend](voice-pipelines.md#set-up-the-backend).
+</Note>
 
 ## Tested Models
 
@@ -70,9 +75,15 @@ curl -X POST http://localhost:8000/v1/audio/speech \
 </Tab>
 <Tab title="VoiceDesign (describe a voice)">
 
+Launch the VoiceDesign model:
+
 ```bash
 bash examples/backends/vllm/launch/agg_omni_audio.sh --model Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign
+```
 
+In another terminal, describe the voice in `instructions`:
+
+```bash
 curl -X POST http://localhost:8000/v1/audio/speech \
   -H "Content-Type: application/json" \
   -d '{
@@ -81,6 +92,34 @@ curl -X POST http://localhost:8000/v1/audio/speech \
     "instructions": "A warm, friendly female voice with a gentle tone"
   }' --output voicedesign.wav
 ```
+
+</Tab>
+<Tab title="Base (voice cloning)">
+
+Clone a voice from a reference recording with the Qwen3-TTS Base task. Launch a
+Base checkpoint such as `Qwen/Qwen3-TTS-12Hz-1.7B-Base`:
+
+```bash
+bash examples/backends/vllm/launch/agg_omni_audio.sh --model Qwen/Qwen3-TTS-12Hz-1.7B-Base
+```
+
+In another terminal, pass the reference audio as a URL or base64 data URI, and
+optionally its exact transcript. This example encodes a local recording,
+`reference-voice.wav`, as a data URI. Set `REF_TEXT` to the words spoken in it:
+
+```bash
+REF_TEXT="The exact words spoken in reference-voice.wav."
+base64 < reference-voice.wav | tr -d '\n' |
+jq -Rs \
+  --arg input "This sentence is spoken in the reference voice." \
+  --arg ref_text "$REF_TEXT" \
+  '{input: $input, task_type: "Base", ref_audio: ("data:audio/wav;base64," + .), ref_text: $ref_text}' |
+curl -X POST http://localhost:8000/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d @- --output cloned.wav
+```
+
+Sending `ref_audio` or `ref_text` without `task_type` also selects the Base task.
 
 </Tab>
 <Tab title="Audex (guided speech)">
@@ -110,7 +149,7 @@ The `/v1/audio/speech` endpoint follows the [vLLM-Omni](https://docs.vllm.ai/pro
 <ParamField path="model" type="string" default="auto-detected">
   TTS model name.
 </ParamField>
-<ParamField path="voice" type="string" default="Vivian">
+<ParamField path="voice" type="string" default="vivian">
   Speaker name (e.g., vivian, ryan). Validated against model config.
 </ParamField>
 <ParamField path="response_format" type="wav | mp3 | pcm | flac | aac | opus" default="wav">
@@ -143,10 +182,19 @@ The `/v1/audio/speech` endpoint follows the [vLLM-Omni](https://docs.vllm.ai/pro
 
 Available voices and languages are loaded dynamically from the model's `config.json` at startup. Nemotron Audex builds its own prompt and accepts only `input`, `model`, `response_format`, `speed`, `max_new_tokens`, and `nvext.cfg_scale`; speech models additionally tolerate `voice` when it is omitted or `default`, while an Audex TTA deployment rejects `voice` outright. Other non-Qwen3-TTS audio models (e.g., MiMo-Audio) use a generic text prompt and ignore TTS-specific parameters.
 
-> [!NOTE]
-> Audio streaming (`stream: true`) and the Base task (voice cloning) are not yet supported.
+## Streaming
+
+There is no `stream` request field. The frontend streams audio to the client as
+it is generated (a chunked HTTP response) when all of these hold:
+
+- `response_format` is `wav` (the default) or `pcm`.
+- `speed` is omitted or `1.0`.
+- The audio is returned in the response body rather than as a URL.
+
+Other formats, speed adjustment, and URL delivery return one complete file
+after generation finishes.
 
 ## See Also
 
-- [Diffusion Overview](../overview.md)
-- [vLLM-Omni Configuration reference](../../../reference/backends/vllm-omni-configuration.mdx)
+- [Voice Pipelines](voice-pipelines.md)
+- [vLLM-Omni Configuration reference](../../reference/backends/vllm-omni-configuration.mdx)

@@ -2,15 +2,16 @@
 # SPDX-FileCopyrightText: Copyright (c) 2025-2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
 title: Embedding Cache
-subtitle: Cache vision encoder embeddings to skip re-encoding repeated multimodal content
+subtitle: Skip the vision encoder for images and clips it has already encoded
 ---
 
 ## Overview
 
 The embedding cache (or encoder cache) is a CPU-side LRU cache that stores vision encoder outputs. When the same multimodal content, such as an image or video, appears in multiple requests, the cached embedding is reused instead of running the vision encoder again. This reduces GPU load on the encoder and lowers latency for repeated content.
 
-> [!IMPORTANT]
-> Embedding cache is separate from the KV cache, which reuses attention key/value state after prefill to skip prefill and go straight to decode. For KV cache reuse and routing, see [Multimodal KV Routing](multimodal-kv-routing.md).
+<Info>
+Embedding cache is separate from the KV cache, which reuses attention key/value state after prefill to skip prefill and go straight to decode. For KV cache reuse and routing, see [Multimodal KV Routing](./multimodal-kv-routing.md).
+</Info>
 
 ## When to Use
 
@@ -59,13 +60,14 @@ If your workload consists entirely of unique multimodal content, the cache provi
 
 Set `--multimodal-embedding-cache-capacity-gb` based on your expected working set of unique multimodal content. A larger cache holds more embeddings but consumes more host memory.
 
-> [!NOTE]
-> If one image URL can return different content for different sessions, enable
-> session-scoped caching as described in [Multimodal Model Serving](overview.md#session-scoping).
-> Dynamo then partitions its image embedding caches by affinity scope and
-> bypasses them when a request has no valid scope.
+<Note>
+If one image URL can return different content for different sessions, enable
+session-scoped caching as described in [Shared image cache](./shared-image-cache.md).
+Dynamo then partitions its image embedding caches by affinity scope and
+bypasses them when a request has no valid scope.
+</Note>
 
-See the backend-specific documentation ([vLLM](../../developer-guide/knowledge-base/modular-components/backends/vllm/multimodal.md#embedding-cache), [TRT-LLM](../../developer-guide/knowledge-base/modular-components/backends/tensorrt-llm/multimodal.md#embedding-cache)) for more details.
+See the backend-specific documentation ([vLLM](../../../developer-guide/knowledge-base/modular-components/backends/vllm/multimodal.md#embedding-cache), [TRT-LLM](../../../developer-guide/knowledge-base/modular-components/backends/tensorrt-llm/multimodal.md#embedding-cache)) for more details.
 
 ## How It Works
 
@@ -73,15 +75,7 @@ In vLLM/TRT-LLM disaggregated flows, the prefill worker owns the CPU-side LRU ca
 
 In SGLang E/PD, the encode worker owns the cache and skips re-encoding on cache hits before forwarding the cached image or video embeddings downstream.
 
-```mermaid
-flowchart LR
-    req[Request] --> check{CPU cache hit?}
-    check -. hit .-> use[Use cached embedding]
-    check -- miss --> E[Encode Worker]
-    E -- embeddings via NIXL --> save[Save to cache]
-    save --> engine[Inference Engine]
-    use --> engine
-```
+![An image seen before is a hit in the CPU embedding cache and the encode worker is skipped. A new image is a miss: the encode worker runs the vision encoder, sends embeddings over NIXL, and they are saved to the cache before reaching the inference engine.](../../../../assets/img/embedding-cache.svg)
 
 ## Support Matrix
 
