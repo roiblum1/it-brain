@@ -286,7 +286,9 @@ Standard library type: [`decimal.Decimal`][].
 <h4>Validation</h4>
 
 * [`Decimal`][decimal.Decimal] instances are validated as is.
-* Any value accepted by the [`Decimal`][decimal.Decimal] constructor.
+* Strings, integers and three-element tuples are validated using the [`Decimal`][decimal.Decimal] constructor.
+* Floats are converted to strings before being passed to the [`Decimal`][decimal.Decimal] constructor.
+* Boolean values are rejected.
 
 <h4>Constraints</h4>
 
@@ -756,12 +758,12 @@ their [value][enum.Enum.value].
 <h3>Example</h3>
 
 ```python
-from enum import Enum, IntEnum
+from enum import IntEnum, StrEnum
 
 from pydantic import BaseModel, ValidationError
 
 
-class FruitEnum(str, Enum):
+class FruitEnum(StrEnum):
     PEAR = 'pear'
     BANANA = 'banana'
 
