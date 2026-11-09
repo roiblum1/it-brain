@@ -32,7 +32,7 @@ Configuring Autopilot with Portworx on a Kubernetes cluster includes the followi
 
 ### Configure Metrics Collection​
 
-Portworx Enterprise requires you to Enable Prometheus or Enable Datadog to allow the agents to collect Portworx metrics.
+Portworx Enterprise requires you to Enable Prometheus, Enable Datadog, or Enable Azure Monitor to allow the agents to collect Portworx metrics.
 
 #### Enable Prometheus​
 
@@ -310,6 +310,107 @@ note
 - For most use cases, `portworx-api` metrics would be enough for AutopilotRule. It is recommended to remove the annotations from the above manifest for Autopilot and Stork components if you choose not to utilize them.
 
 - You may choose the `metrics:` field to filter the metrics being scraped by the Datadog agent. Using `*` will cause a surge in metrics and spike costs for the Datadog instance. You are advised to only whitelist metrics which will be used in AutopilotRules.
+
+#### Enable Azure Monitor​
+
+Autopilot can query Portworx metrics from Azure Monitor Managed Prometheus. Azure Monitor requires OAuth 2.0 client credentials authentication. Autopilot fetches a short-lived access token from Microsoft Entra ID using the client credentials that you provide, attaches it to every query as a Bearer token, and refreshes it before it expires.
+
+Before you begin, ensure that:
+
+- You have the tenant ID, client ID, and client secret of the Microsoft Entra application that Autopilot uses to authenticate.
+
+- You have assigned the Monitoring Data Reader role on the Azure Monitor workspace to the Microsoft Entra application. Autopilot only queries metrics, so you do not need the Monitoring Metrics Publisher role, which is used for metric ingestion.
+
+To enable Azure Monitor for Autopilot, perform the following steps:
+
+-
+Create a Kubernetes Secret with the Microsoft Entra application credentials. Replace the namespace, secret name, and key values as required.
+
+```
+
+apiVersion: v1
+
+kind: Secret
+
+metadata:
+
+  name: autopilot-prom-azure
+
+  namespace: portworx
+
+type: Opaque
+
+stringData:
+
+  auth.token_url: "https://login.microsoftonline.com/<tenant-id>/oauth2/v2.0/token"
+
+  auth.client_id: "<azure-app-client-id>"
+
+  auth.client_secret: "<azure-app-client-secret>"
+
+  auth.scope: "https://prometheus.monitor.azure.com/.default"
+
+```
+
+The following table describes the keys in the Secret:
+
+KeyRequiredDescription
+
+`auth.token_url`YesMicrosoft Entra ID v2.0 token endpoint that Autopilot uses to fetch the access token. Use `https://login.microsoftonline.com/<tenant-id>/oauth2/v2.0/token`.
+
+`auth.client_id`YesClient ID of the Microsoft Entra application.
+
+`auth.client_secret`YesClient secret of the Microsoft Entra application.
+
+`auth.scope`YesScope of the access token. For Azure Monitor, use `https://prometheus.monitor.azure.com/.default`.
+
+`auth.resource`NoResource that the token is issued for. It is optional with the v2.0 endpoint.
+
+important
+
+Use the v2.0 token endpoint (`/oauth2/v2.0/token`). Autopilot cannot parse the token response from the v1 endpoint (`/oauth2/token`), and the token fetch fails.
+
+-
+Update the StorageCluster specification to add Azure Monitor as a Prometheus provider. Set `url` to the query endpoint of your Azure Monitor workspace, and `secretName` and `secretNamespace` to the Secret that you created.
+
+```
+
+kind: StorageCluster
+
+spec:
+
+  autopilot:
+
+    enabled: true
+
+    providers:
+
+      - name: azure-monitor
+
+        type: prometheus
+
+        params:
+
+          url: https://<workspace>.<region>.prometheus.monitor.azure.com
+
+          secretName: autopilot-prom-azure
+
+          secretNamespace: portworx
+
+```
+
+note
+
+Autopilot supports only one provider of each type. If a provider of type `prometheus` already exists, replace it with the Azure Monitor provider details instead of adding another one.
+
+-
+Apply the updated StorageCluster specification and wait for Autopilot to roll out.
+
+After Autopilot starts, it fetches an access token and refreshes it in the background. To rotate the client secret, update the Secret. Autopilot picks up the change at its next token refresh, and you do not need to restart the Autopilot deployment.
+
+note
+
+Autopilot logs only the HTTP status code and the OAuth 2.0 error code when a token request fails. Check the Autopilot logs if queries fail with `401` or `403` errors.
 
 ### Enable Autopilot with Portworx​
 

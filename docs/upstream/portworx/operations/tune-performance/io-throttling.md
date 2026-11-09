@@ -6,7 +6,7 @@ Application I/O Control | Portworx Enterprise Documentation
 
 Portworx volumes are created from a common storage pool and share their available IOPS (input/output operations per second) and bandwidth (measured in MBps) between all other provisioned Portworx volumes. If an application's volumes start consuming too many resources, it can become a "noisy neighbor" and reduce the I/O and network bandwidth available to other volumes in the pool.
 
-Portworx Application I/O Control lets you control the IOPS or bandwidth usage of individual volumes in your cluster. You can configure the throttling through a StorageClass, which prevents applications from using excessive bandwidth. To automatically control the IOPS or bandwidth usage of individual volumes in your cluster, you can enable [Dynamic Application I/O Control with Autopilot]Dynamic App I/O Control with Autopilot.
+Portworx Application I/O Control lets you control the IOPS or bandwidth usage of individual volumes in your cluster. You can configure the throttling through a StorageClass, which prevents applications from using excessive bandwidth. To automatically control the IOPS or bandwidth usage of individual volumes in your cluster, you can enable Dynamic App I/O Control with Autopilot.
 
 To control I/O on existing volumes, you can use the `pxctl volume update` command.
 
@@ -200,7 +200,7 @@ pxctl volume update --max_iops off,off <volname/volid>
 
 - Application I/O Control is only available on systems with properly mounted and configured `cgroup v1` or `cgroup v2`. This feature manages I/O performance for containers based on cgroup configurations.
 
-- Application I/O Control is not supported for FlashArray Direct Access (FADA), FlashBlade Direct Access (FBDA), and NFS Proxy volumes.
+- Application I/O Control is not supported for FlashBlade Direct Access (FBDA) and NFS Proxy volumes.
 
 - I/O throttling for sharedv4 volumes does not work on hosts using `cgroup v2` because NFS kernel threads operate outside of cgroup slices.
 

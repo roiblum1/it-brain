@@ -415,15 +415,31 @@ See [Golden Images in Heterogeneous Clusters](`#golden-images-in-heterogeneous-c
 **Graduation Status**: GA
 
 ### deployObservabilityController Feature Gate
-Add the `deployObservabilityController` feature gate to deploy the
-`virt-observability-controller` as a standalone operand managed by HCO. The
-controller is responsible for managing KubeVirt core PrometheusRules and
-exposing KubeVirt-specific metrics.
+When this feature gate is enabled, KubeVirt metrics, alerts, and recording
+rules are published. This is the default.
 
-When enabled, HCO creates a ServiceAccount, ClusterRole, ClusterRoleBinding,
-and Deployment for the observability controller in the HCO namespace. The
-controller's TLS configuration (minimum TLS version and cipher suites) is
-inherited from the `spec.security.tlsSecurityProfile` setting.
+When this feature gate is disabled, those metrics, alerts, and recording
+rules stop being published.
+
+```yaml
+spec:
+  featureGates:
+  - name: deployObservabilityController
+    state: Disabled
+```
+
+**Note**: This feature is in Tech Preview.
+
+**Default**: `Enabled`
+
+**Graduation Status**: Beta
+
+### observeVMStat Feature Gate
+When enabled, the release date of each guest device driver is added to the
+`kubevirt_vmi_guest_device_driver_timestamp_seconds` metric, with one sample
+per device. Compare it with `kubevirt_guest_device_driver_latest_version_info`,
+which lists the driver versions shipped for this cluster, to find guests
+running outdated VirtIO drivers. Query either series from the metrics console.
 
 ```yaml
 apiVersion: hco.kubevirt.io/v1
@@ -432,18 +448,7 @@ metadata:
   name: kubevirt-hyperconverged
 spec:
   featureGates:
-  - name: deployObservabilityController
-```
-
-To disable the controller after it has been enabled, set the feature gate
-state to `Disabled`. HCO will remove all resources associated with the
-observability controller:
-
-```yaml
-spec:
-  featureGates:
-  - name: deployObservabilityController
-    state: Disabled
+  - name: observeVMStat
 ```
 
 **Note**: This feature is in Developer Preview.
@@ -1010,6 +1015,36 @@ metadata:
 spec:
   virtualization:
     vmStateStorageClass: "rook-cephfs"
+```
+
+### SMBIOS Configuration
+
+Use `spec.virtualization.smbios.family` to set the SMBIOS Type 1 family string that virtual machines report to their
+guest operating systems. This provides cluster-specific information, such as an environment identifier, without changing
+individual virtual machine specifications or adding guest-side logic.
+
+The `family` value overrides the family field in the cluster's SMBIOS deployment defaults. Other SMBIOS fields, such as
+manufacturer, product, SKU, and version, keep their existing values. The value must contain at least one character. If
+`family` is not set, HCO leaves the SMBIOS configuration unchanged.
+
+Existing virtual machines report the SMBIOS data with which they were launched. Restart a virtual machine after
+changing this field if its guest must observe the new value.
+
+> **Caution**
+>
+> Some vendor drivers match hardware identifiers that include the SMBIOS family. Validate the value before changing it
+> on clusters that use passthrough or GPU devices.
+
+Example
+```yaml
+apiVersion: hco.kubevirt.io/v1
+kind: HyperConverged
+metadata:
+  name: kubevirt-hyperconverged
+spec:
+  virtualization:
+    smbios:
+      family: "production-cluster"
 ```
 
 ### Auto CPU limits
@@ -1881,9 +1916,10 @@ spec:
 ```
 
 ## Observability Configurations
-The `spec.observability` section allows filtering which metrics, alerts, and
-recording rules the observability controller exposes. This section is only
-relevant when the `deployObservabilityController` feature gate is enabled.
+The `spec.observability` section filters which metrics, alerts, and recording
+rules are published. It has no effect when the
+[`deployObservabilityController` feature gate](#deployobservabilitycontroller-feature-gate)
+is disabled.
 
 Each allowlist field accepts:
 - Not set or empty — allow all items

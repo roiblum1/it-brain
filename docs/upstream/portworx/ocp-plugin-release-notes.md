@@ -4,6 +4,34 @@ Source: https://docs.portworx.com/portworx-enterprise/ocp-plugin-release-notes (
 
 Portworx OpenShift Dynamic Plugin Release Notes | Portworx Enterprise Documentation
 
+## 2.4.0​
+
+October 29, 2026
+
+### New Features​
+
+View Kube Datastore in OpenShift clusters
+ The OpenShift Dynamic Plugin now lets you view Kube Datastore (KDS) details in OpenShift clusters. The new Kube Datastore tab on the Portworx dashboard lists each Datastore with its storage backend, capacity, storage pools, and virtual machines. You can now view per-KDS details page (Overview, Virtual Machines, Pools, and Volumes tabs, with capacity and write-performance charts) and the Top Datastore by usage on cluster overview. For more information, see Monitor Portworx Clusters on Openshift.
+
+### Improvements​
+
+Improvement NumberImprovement Description
+
+PWX-59449Improved the visibility of Pool status on the OpenShift console dashboard. For more information, see Monitor Portworx Clusters on Openshift.
+
+### Fixes​
+
+Issue NumberIssue DescriptionSeverity
+
+PWX-57366The OpenShift Dynamic Plugin's Kube Datastores Volumes view could show an incorrect replica count for migration child volumes by using the `repl` label instead of the current physical replica count.
+
+User Impact: Users could see an inaccurate replica count for a migrated volume, for example, 3 instead of 1, when inspecting the volume in the UI.
+
+Resolution: The replica count shown in the UI now uses `ha_level`, the authoritative current replica count, rather than the potentially stale `repl` label.
+
+Components: IX-OCP-UI, IX-OCP-Backend
+Affected Versions: 2.3.0Minor
+
 ## 2.3.0​
 
 August 03, 2026

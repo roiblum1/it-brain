@@ -687,11 +687,21 @@ Global Storage Pool
 
 ### Automatic decommission of storageless nodes​
 
-Storageless nodes that are initialized and added to the cluster may not be needed once they complete their tasks (such as in a scheduler workflow). If they are taken offline or destroyed, the cluster will still retain the nodes and mark them as offline.
+Storageless nodes that have been initialized and added to the cluster might no longer be needed after they complete their tasks, such as those in a scheduler workflow. If these nodes are taken offline or destroyed, the cluster retains the nodes and marks them as offline.
 
-If eventually a majority of such nodes exist, the cluster won't have a quorum of nodes that are online. The solution is to run cluster delete commands and remove such nodes. This gets more laborious with more such nodes or an increased frequency of such nodes added and taken down.
+If these offline nodes eventually make up the majority of nodes in the cluster, the cluster loses quorum. To resolve this issue, run cluster delete commands to remove these nodes. This process becomes more time-consuming as the number of nodes or the frequency at which nodes are added and removed increases.
 
-To help with this, Portworx waits until a grace period of 48 hours has passed. After this period, offline nodes with no storage will be removed from the cluster. There is no CLI command needed to turn on or trigger this feature.
+To address this issue, Portworx automatically decommissions storageless nodes that have been offline for longer than the configured auto-decommission timeout. The default timeout is 20 minutes. You don't need to run a CLI command to turn on or trigger this feature.
+
+To change the timeout, run the following command. Replace `<minutes>` with the new timeout value in minutes. The value must be greater than 0:
+
+```
+
+pxctl cluster options update --auto-decommission-timeout <minutes>
+
+```
+
+To view the current value, run `pxctl cluster options list` and check the Auto decommission timeout (minutes) field.
 
 ## Remove Portworx installation from the node​
 

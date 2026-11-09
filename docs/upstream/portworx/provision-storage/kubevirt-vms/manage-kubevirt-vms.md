@@ -34,13 +34,19 @@ If you are running Portworx Enterprise version 3.4.0 or later with Portworx Oper
 
 You can control the creation of these StorageClasses using the `spec.csi.kubeVirtStorageClasses` section in the `StorageCluster` custom resource.
 
+note
+
+The default `px-rwx-file-kubevirt` StorageClass doesn't explicitly set `sharedv4_svc_type`. For KubeVirt VMs, Portworx recommends using sharedv4 service volumes (`sharedv4_svc_type: ClusterIP`), because failover is seamless only with service volumes. To use them, create your own StorageClass by following the steps in this section.
+
 If a StorageClass doesn't already exist, create one by following these steps.
 
-To ensure PVCs are compatible with KubeVirt virtual machines, they must be configured with the `ReadWriteMany` access mode and use NFS version 3.0 with `nolock` mount option as shown below in the `sharedv4_mount_options` parameter. To meet these requirements, create PVCs from the StorageClass with the following parameters configured:
+To ensure PVCs are compatible with KubeVirt virtual machines, they must use the `ReadWriteMany` access mode and NFS version 3.0 with the `nolock` mount option, which you set in the `sharedv4_mount_options` parameter. To meet these requirements, create PVCs from a StorageClass with the following parameters:
 
 - `sharedv4: "true"`
 
 - `sharedv4_mount_options: vers=3.0,nolock`
+
+- `sharedv4_svc_type: "ClusterIP"`: Recommended. Omit this parameter if your `StorageCluster` specifies different network interfaces for `dataInterface` and `mgmtInterface`.
 
 -
 Create the `px-kubevirt-sc.yaml` file:
@@ -64,6 +70,8 @@ parameters:
   sharedv4: "true"
 
   sharedv4_mount_options: vers=3.0,nolock
+
+  sharedv4_svc_type: "ClusterIP" # Omit if dataInterface and mgmtInterface use different interfaces.
 
 volumeBindingMode: WaitForFirstConsumer
 

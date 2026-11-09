@@ -36,6 +36,8 @@ important
 
 - If you override the default PodDisruptionBudget, ensure that the `storage-pdb-min-available` value is greater than or equal to OCP's MCP `maxUnavailable`.
 
+- During an upgrade, Portworx pods are deleted and re-created on the nodes selected for upgrade to apply the spec changes. The `spec.updateStrategy` field in the StorageCluster resource controls how nodes are upgraded. By default, the update strategy is RollingUpdate, and the `maxUnavailable` field specifies the maximum number of nodes that can be unavailable at a time. The default value of `maxUnavailable` is 1. This is expected behavior, and you might see pod deletion events in the Kubernetes audit logs. You don't need to take any action.
+
 ## Prerequisites​
 
 For smart upgrades, ensure the following prerequisites are met:

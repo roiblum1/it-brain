@@ -6,6 +6,12 @@ Upgrade Portworx Marketplace Deployment | Portworx Enterprise Documentation
 
 ## Upgrade or reconfigure Portworx using AWS Marketplace​
 
+note
+
+During an upgrade, Portworx pods are deleted and re-created on each node to apply the spec changes. The `spec.updateStrategy` field in the StorageCluster resource controls how nodes are upgraded. By default, the update strategy is RollingUpdate, and the `maxUnavailable` field specifies the maximum number of nodes that can be unavailable at a time. The default value of `maxUnavailable` is 1.
+
+This is expected behavior, and you might see pod deletion events in the Kubernetes audit logs. You don't need to take any action.
+
 When Portworx releases new versions, you can upgrade it through Helm. You can also reconfigure Portworx through Helm by performing upgrade operations, even if there is no new version to upgrade to. Perform the following steps to upgrade or reconfigure Portworx:
 
 -

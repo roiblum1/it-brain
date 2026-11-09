@@ -294,15 +294,27 @@ kubectl apply -f pxlibupdate-spec.yaml
 Inspect the pod log to determine success or failure of the update.
 
 -
-Run the following command to restart all Portworx pods:
+Restart Portworx on each node, one node at a time. Restarting all nodes at the same time can cause the cluster to lose quorum and result in an outage. For each node, do the following:
+
+-
+Restart Portworx on the node. Replace `<node-name>` with the name of the node:
 
 ```
 
-kubectl label nodes --all px/service=restart --overwrite
+kubectl label nodes <node-name> px/service=restart --overwrite
 
 ```
 
-Wait for a few minutes for the Portworx pods to restart. Portworx is deployed with the latest kernel version.
+-
+Check the Portworx pod on the node. Before you restart the next node, wait until the `STATUS` column shows `Running` and the `READY` column shows that all containers in the pod are ready, for example `1/1`:
+
+```
+
+kubectl get pods -n <portworx> -l name=portworx --field-selector spec.nodeName=<node-name>
+
+```
+
+Portworx is deployed with the latest kernel version.
 
 -
 Run the following command to download the correct version of the manifest that installs a DaemonSet in your cluster. Substitute `<px-version>` with the specific Portworx version you require:
@@ -325,15 +337,27 @@ kubectl apply -f pxlibupdate-spec.yaml
 Inspect the pod log to determine success or failure of the update.
 
 -
-Run the following command to restart all Portworx pods:
+Restart Portworx on each node, one node at a time. Restarting all nodes at the same time can cause the cluster to lose quorum and result in an outage. For each node, do the following:
+
+-
+Restart Portworx on the node. Replace `<node-name>` with the name of the node:
 
 ```
 
-kubectl label nodes --all px/service=restart --overwrite
+kubectl label nodes <node-name> px/service=restart --overwrite
 
 ```
 
-Wait for a few minutes for the Portworx pods to restart. You will notice that Portworx is deployed with the latest kernel version.
+-
+Check the Portworx pod on the node. Before you go to the next node, wait until the `STATUS` column shows `Running` and the `READY` column shows that all containers in the pod are ready, for example `1/1`:
+
+```
+
+kubectl get pods -n <portworx> -l name=portworx --field-selector spec.nodeName=<node-name>
+
+```
+
+Portworx is deployed with the latest kernel version.
 
 Check if the cluster has access to the mirror server URL `https://px-mirror.storage.cloud.ibm.com`. Based on the access, follow one of the following methods:
 
@@ -391,7 +415,7 @@ Verify that all `pxlibupdate` pods are running:
 
 ```
 
-kubectl get pods -n <px-namespace> -l name=px-libs-update
+kubectl get pods -n <portworx> -l name=px-libs-update
 
 ```
 
@@ -408,15 +432,27 @@ px-libs-update-qt44w   1/1     Running   0          42s
 ```
 
 -
-Run the following command to restart all Portworx pods:
+Restart Portworx on each node, one node at a time. Restarting all nodes at the same time can cause the cluster to lose quorum and result in an outage. For each node, do the following:
+
+-
+Restart Portworx on the node. Replace `<node-name>` with the name of the node:
 
 ```
 
-kubectl label nodes --all px/service=restart --overwrite
+kubectl label nodes <node-name> px/service=restart --overwrite
 
 ```
 
-Wait for a few minutes for the Portworx pods to restart. Portworx Enterprise is deployed with the latest kernel version.
+-
+Check the Portworx pod on the node. Before you go to the next node, wait until the `STATUS` column shows `Running` and the `READY` column shows that all containers in the pod are ready, for example `1/1`:
+
+```
+
+kubectl get pods -n <portworx> -l name=portworx --field-selector spec.nodeName=<node-name>
+
+```
+
+Portworx Enterprise is deployed with the latest kernel version.
 
 The DaemonSet above will update the pre-compiled module archives within the Portworx install location on the node (for example, `/opt/pwx`).
 

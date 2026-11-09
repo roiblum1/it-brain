@@ -125,7 +125,7 @@ To trim every pool on the node, run:
 
 ```
 
-pxctl service pool trim start -A
+pxctl service pool trim start -a
 
 ```
 

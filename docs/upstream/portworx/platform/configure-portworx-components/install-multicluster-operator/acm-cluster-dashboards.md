@@ -29,7 +29,7 @@ For more information, see Install Portworx MultiCluster Operator.
 
 note
 
-Only users with `cluster administrator` privileges can view the information under the Portworx option in the multicluster management view.
+Only users with `cluster administrator` privileges can view the information under the Portworx option in the multicluster management view. To give other users access, configure RBAC for them. For more information, see Role-Based Access Control for ACM Disaster Recovery.
 
 ## Clusters dashboard​
 

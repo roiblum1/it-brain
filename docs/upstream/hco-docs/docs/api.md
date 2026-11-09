@@ -33,6 +33,7 @@ This Document documents the `v1` API version's types introduced by the hyperconv
 * [PciHostDevice](#pcihostdevice)
 * [PermittedHostDevices](#permittedhostdevices)
 * [PersistentReservationConfiguration](#persistentreservationconfiguration)
+* [SMBIOSConfiguration](#smbiosconfiguration)
 * [SecurityConfig](#securityconfig)
 * [StorageConfig](#storageconfig)
 * [StorageImportConfig](#storageimportconfig)
@@ -390,6 +391,16 @@ PersistentReservationConfiguration holds the configuration for SCSI persistent r
 
 [Back to TOC](#table-of-contents)
 
+## SMBIOSConfiguration
+
+SMBIOSConfiguration holds the cluster-level SMBIOS configuration for virtual machines.
+
+| Field | Description | Scheme | Default | Required |
+| ----- | ----------- | ------ | ------- | -------- |
+| family | Family overrides the SMBIOS Type 1 family string exposed to virtual machines. Other SMBIOS values retain their cluster defaults. Some vendor drivers match hardware IDs that include the SMBIOS family; validate this value before changing it on clusters that use passthrough or GPU devices. | *string |  | false |
+
+[Back to TOC](#table-of-contents)
+
 ## SecurityConfig
 
 SecurityConfig contains all the security configurations
@@ -497,6 +508,7 @@ VirtualizationConfig contains all the virtualization configurations
 | confidentialCompute | ConfidentialCompute configures cluster-level confidential computing settings, such as TDX attestation via QGS (Quote Generation Service). | *v1.ConfidentialComputeConfiguration |  | false |
 | vmiCPUAllocationRatio | VmiCPUAllocationRatio defines, for each requested virtual CPU, how much physical CPU to request per VMI from the hosting node. The value is in fraction of a CPU thread (or core on non-hyperthreaded nodes). VMI POD CPU request = number of vCPUs * 1/vmiCPUAllocationRatio For example, a value of 1 means 1 physical CPU thread per VMI CPU thread. A value of 100 would be 1% of a physical thread allocated for each requested VMI thread. This option has no effect on VMIs that request dedicated CPUs. Defaults to 10 | *int | 10 | false |
 | autoCPULimitNamespaceLabelSelector | When set, AutoCPULimitNamespaceLabelSelector will set a CPU limit on virt-launcher for VMIs running inside namespaces that match the label selector. The CPU limit will equal the number of requested vCPUs. This setting does not apply to VMIs with dedicated CPUs. | *[metav1.LabelSelector](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.37/#labelselector-v1-meta) |  | false |
+| smbios | SMBIOS holds the cluster-level SMBIOS configuration for virtual machines. | *[SMBIOSConfiguration](#smbiosconfiguration) |  | false |
 
 [Back to TOC](#table-of-contents)
 
@@ -535,18 +547,19 @@ A feature gate may be in the following phases:
 | containerPathVolumes | ContainerPathVolumes enables the use of container paths as volumes in KubeVirt. This allows VMs to access files and directories from the virt-launcher pod's filesystem via virtiofs. | beta |
 | decentralizedLiveMigration | DecentralizedLiveMigration enables the decentralized live migration (cross-cluster migration) feature. This feature allows live migration of VirtualMachineInstances between different clusters. This feature is in Tech Preview. | beta |
 | declarativeHotplugVolumes | DeclarativeHotplugVolumes enables the use of the declarative volume hotplug feature in KubeVirt. When set to true or nil, the "DeclarativeHotplugVolumes" feature gate is enabled and the "HotplugVolumes" feature gate is not (default behavior). When set to false, the "HotplugVolumes" featuregate is enabled in KubeVirt. This feature is in Technical Preview. | beta |
+| deployObservabilityController | Publish KubeVirt metrics, alerts, and recording rules. This is enabled by default. Disable this feature gate to stop publishing them. This feature is in Tech Preview. | beta |
 | rebootPolicy | RebootPolicy enables virtual machines to be recreated when they reboot from within the guest operating system. This feature is in Tech Preview. | beta |
 | template | VirtualMachine Templates provide a native, in-cluster VM templating for KubeVirt. They allow you to define reusable VM blueprints with parameterized values that can be processed to create virtual machine. the "template" feature gate enables this feature. Note: this feature is in Tech Preview. | beta |
 | vsock | VSOCK enables the AF_VSOCK host-guest communication channel for virtual machines. When enabled, a VSOCK device can be attached to a VM by setting spec.domain.devices.autoattachVSOCK. This feature is in Tech Preview. | beta |
 | alignCPUs | Enable KubeVirt to request up to two additional dedicated CPUs in order to complete the total CPU count to an even parity when using emulator thread isolation. Note: this feature is in Developer Preview. | alpha |
 | cpusWithDRA | CPUsWithDRA allows users to have the VM's vCPUs allocated through DRA, coordinated with the DRA claims that provide its GPU and NIC. Note: this feature is in Developer Preview. | alpha |
-| deployObservabilityController | Deploy the virt-observability-controller component. When enabled, the controller exposes KubeVirt metrics and manages PrometheusRule resources independently from the KubeVirt control plane. | alpha |
 | downwardMetrics | Allow to expose a limited set of host metrics to guests. | alpha |
 | gpusWithDRA | GPUsWithDRA allows users to create VMIs with DRA provisioned GPUs specified in spec.domain.devices.gpus. This enables DRA-managed GPU resources to be attached to VMs. Note: this feature is in Developer Preview. | alpha |
 | incrementalBackup | IncrementalBackup enables changed block tracking backups and incremental backups using QEMU capabilities in KubeVirt. When enabled, this also enables the UtilityVolumes feature gate in the KubeVirt CR. Note: This feature is in Developer Preview. | alpha |
 | mDevVGPULiveMigration | MDevVGPULiveMigration enables live migration of virtual machines that use a single mediated device (mdev) vGPU. The vGPU must be declared in spec.virtualization.permittedHostDevices.mediatedDevices, and virtual machines with more than one GPU, or with a GPU that is not an mdev device, remain non-migratable. The source and target nodes must run a compatible NVIDIA Virtual GPU Manager and have a matching ECC configuration. This feature gate does not cover live migration of VFIO PCI passthrough or SR-IOV virtual function devices. Note: This feature is in Developer Preview. | alpha |
 | networkDevicesWithDRA | NetworkDevicesWithDRA allows users to create VMIs with DRA provisioned network devices specified in spec.networks with resourceClaim type. This enables DRA-managed network resources to be attached to VMs using the natural networks API. Note: this feature is in Developer Preview. | alpha |
 | objectGraph | ObjectGraph enables the ObjectGraph VM and VMI subresource in KubeVirt. This subresource returns a structured list of k8s objects that are related to the specified VM or VMI, enabling better dependency tracking. Note: This feature is in Developer Preview. | alpha |
+| observeVMStat | When enabled, the release date of each guest device driver is added to the kubevirt_vmi_guest_device_driver_timestamp_seconds metric, so guests running outdated VirtIO drivers can be found. Note: this feature is in Developer Preview. | alpha |
 | workloadEncryptionSEV | Enable AMD SEV and SEV-SNP workload encryption for confidential VMs. Note: this feature is in Developer Preview. | alpha |
 | workloadEncryptionTDX | Enable Intel TDX workload encryption for confidential VMs. Note: this feature is in Developer Preview. | alpha |
 | disableMDevConfiguration | Deprecated: This feature gate has graduated to a dedicated configuration field; use spec.virtualization.mediatedDevicesConfiguration.enabled instead. This feature gate is deprecated and will be removed in a future release. | deprecated |

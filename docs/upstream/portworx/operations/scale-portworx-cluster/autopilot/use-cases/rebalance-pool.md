@@ -81,7 +81,7 @@ The `conditions` section establishes threshold criteria dictating when the rule 
 
 - For example, if a particular pool's provisioned space is 25% lower compared to mean provisioned space across all pools in the cluster, then the condition is met.
 
-- `PoolUsageDeviationPerc` is an alias for a prometheus query that gives a storage pool's used space deviation percentage relative to other pools in the cluster.
+- `PoolUsageDeviationPerc` is an alias for a Prometheus query that gives a storage pool's used space deviation percentage relative to other pools in the cluster.
 
 - The `NotInRange` operator checks if the value of the metric is outside the range specified in the `values`.
 
@@ -93,6 +93,68 @@ The `conditions` section establishes threshold criteria dictating when the rule 
 
 -
 The `actions` section in the above specs specify what action Portworx performs when the conditions are met. The action name here is the Storage Pool rebalance action.
+
+In the example above, the rule's condition does two jobs at once: it decides when the rule fires, and it supplies the threshold Autopilot sends to Portworx for the rebalance itself. This works because each condition uses a metric Autopilot recognizes for rebalance: `PoolProvDeviationPerc` or `PoolUsageDeviationPerc`.
+
+If your rule triggers on anything else, Autopilot has no threshold to read from the condition and falls back to its default mean deviation for provisioned and used space. It records a `RebalanceUsingDefaultThresholds` warning event against the rule when this happens.
+
+To trigger a rebalance on one metric while controlling its sensitivity with another, set the thresholds directly on the action:
+
+```
+
+apiVersion: autopilot.libopenstorage.org/v1alpha1
+
+kind: AutopilotRule
+
+metadata:
+
+  name: pool-rebalance-explicit-threshold
+
+spec:
+
+  # Fires on total pool size — not a metric Autopilot can derive a threshold from.
+
+  conditions:
+
+    requiredMatches: 1
+
+    expressions:
+
+      - key: "px_pool_stats_total_bytes/(1024*1024*1024)"
+
+        operator: Gt
+
+        values:
+
+          - "100"
+
+  actions:
+
+    - name: "openstorage.io.action.storagepool/rebalance"
+
+      params:
+
+        poolProvDeviationPerc: "4"
+
+        poolUsageDeviationPerc: "4"
+
+```
+
+This rebalances at 4% deviation on pools larger than 100 GiB, even though the condition says nothing about deviation.
+
+ParameterDescription
+
+`poolProvDeviationPerc`Rebalance a pool whose provisioned space deviates from the cluster mean by more than this percentage, in either direction.
+
+`poolUsageDeviationPerc`Rebalance a pool whose used space deviates from the cluster mean by more than this percentage, in either direction.
+
+All values are non-negative integers written as strings. Note the following:
+
+- The two deviation parameters are symmetric. A single value sets the threshold in both directions, because deviation from the mean has an over- and under-loaded side.
+
+- If you set any of these two parameters, they determine every rebalance threshold and the rule's conditions are not consulted. Setting only `poolUsageDeviationPerc` therefore leaves no threshold for provisioned space, rather than taking that one from the conditions. Set both when you want both.
+
+- These parameters apply only to the rebalance action. They do not affect when the rule triggers; that is governed entirely by `spec.conditions`.
 
 The following example Autopilot rule will rebalance all storage pools which meet either of following conditions:
 
@@ -144,17 +206,75 @@ The AutopilotRule spec consists of two important sections: `conditions` and `act
 
 - The `conditions` section establishes threshold criteria dictating when the rule must perform its action. In this example, that criteria contains 2 formulas:
 
-- `100 * (px_pool_stats_provisioned_bytes/ on (pool) px_pool_stats_total_bytes) ` is a prometheus query that gives a storage pool's provisioned space percentage
+- `100 * (px_pool_stats_provisioned_bytes/ on (pool) px_pool_stats_total_bytes) ` is a Prometheus query that gives a storage pool's provisioned space percentage
 
 - The `Gt` operator checks if the value of the metric is greater than `120%`.
 
-- `100 * (px_pool_stats_used_bytes/ on (pool) px_pool_stats_total_bytes) ` is a prometheus query that gives a storage pool's used space percentage
+- `100 * (px_pool_stats_used_bytes/ on (pool) px_pool_stats_total_bytes) ` is a Prometheus query that gives a storage pool's used space percentage
 
 - The `Gt` operator checks if the value of the metric is greater than `70%`.
 
 - `requiredMatches` indicates that only one of the expressions need to match for the conditions to be considered as being met.
 
 - The `actions` section in the above specs specify what action Portworx performs when the conditions are met. The action name here is the Storage Pool rebalance action.
+
+In the example above, the rule's condition does two jobs at once: it decides when the rule fires, and it supplies the threshold Autopilot sends to Portworx for the rebalance itself. This works because each condition uses a metric Autopilot recognizes for rebalance: `PoolProvPerc`, or `PoolUsagePerc`.
+
+To trigger a rebalance on one metric while controlling its sensitivity with another, set the thresholds directly on the action:
+
+```
+
+apiVersion: autopilot.libopenstorage.org/v1alpha1
+
+kind: AutopilotRule
+
+metadata:
+
+  name: pool-rebalance-explicit-threshold
+
+spec:
+
+  # Fires on total pool size — not a metric Autopilot can derive a threshold from.
+
+  conditions:
+
+    requiredMatches: 1
+
+    expressions:
+
+      - key: "px_pool_stats_total_bytes/(1024*1024*1024)"
+
+        operator: Gt
+
+        values:
+
+          - "100"
+
+  actions:
+
+    - name: "openstorage.io.action.storagepool/rebalance"
+
+      params:
+
+        poolProvPerc: "80"
+
+        poolUsagePerc: "80"
+
+```
+
+ParameterDescription
+
+`poolProvPerc`Rebalance a pool whose provisioned space exceeds this percentage of its capacity. Not capped at 100, so values above 100 are valid for thin-provisioned pools.
+
+`poolUsagePerc`Rebalance a pool whose used space exceeds this percentage of its capacity. Must not exceed 100.
+
+All values are non-negative integers written as strings. Note the following:
+
+- The two absolute parameters set only an upper bound.
+
+- If you set any of these two parameters, they determine every rebalance threshold and the rule's conditions are not consulted.
+
+- These parameters apply only to the rebalance action. They do not affect when the rule triggers; that is governed entirely by `spec.conditions`.
 
 ## Implement the Autopilot rule​
 
@@ -395,6 +515,9 @@ Once you've created the PVCs, you can create an AutopilotRule to rebalance the p
 
 - Rebalance based on provisioned and used space absolute values
 
+-
+Set rebalance thresholds based on the trigger:
+
 ```
 
 apiVersion: autopilot.libopenstorage.org/v1alpha1
@@ -436,6 +559,49 @@ spec:
   actions:
 
     - name: "openstorage.io.action.storagepool/rebalance"
+
+```
+
+-
+Set rebalance thresholds independent of the trigger:
+
+```
+
+apiVersion: autopilot.libopenstorage.org/v1alpha1
+
+kind: AutopilotRule
+
+metadata:
+
+  name: pool-rebalance-explicit-threshold
+
+spec:
+
+  # Fires on total pool size — not a metric Autopilot can derive a threshold from.
+
+  conditions:
+
+    requiredMatches: 1
+
+    expressions:
+
+      - key: "px_pool_stats_total_bytes/(1024*1024*1024)"
+
+        operator: Gt
+
+        values:
+
+          - "100"
+
+  actions:
+
+    - name: "openstorage.io.action.storagepool/rebalance"
+
+      params:
+
+        poolProvDeviationPerc: "4"
+
+        poolUsageDeviationPerc: "4"
 
 ```
 

@@ -30,9 +30,11 @@ The following table lists the latest Portworx releases qualified and published f
 
 Portworx Enterprise ReleaseIBM CloudAzure MarketplaceAWS MarketplaceGCP MarketplaceRancher Marketplace
 
-3.7.011 September 202615 September 202618 September 202621 September 2026
+3.7.107 October 202606 October 202612 October 202609 October 202604 October 2026
 
-3.6.23 August 20265 August 202615 September 20261 August 2026
+3.7.011 September 202615 September 2026Not Available18 September 202621 September 2026
+
+3.6.23 August 20265 August 2026Not Available15 September 20261 August 2026
 
 3.6.13 June 2026Not Available18 June 2026Not Available30 May 2026
 

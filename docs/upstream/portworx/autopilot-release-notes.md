@@ -4,6 +4,67 @@ Source: https://docs.portworx.com/portworx-enterprise/autopilot-release-notes (P
 
 Portworx Autopilot Release Notes | Portworx Enterprise Documentation
 
+## 1.6.0​
+
+October 29, 2026
+
+### New Features​
+
+-
+Azure Monitor support for Autopilot
+Configure Autopilot's Prometheus provider to query Azure Monitor Managed Prometheus with credentials supplied through Kubernetes Secrets. For more information, see Configure Autopilot to use Azure Monitor.
+
+-
+New Parameters to rebalance without trigger
+ Autopilot has added support to set rebalance thresholds independent of the trigger. A rule can now trigger on any condition or schedule while independently controlling how sensitive the actual rebalance is using the parameters `poolProvDeviationPerc`, `poolUsageDeviationPerc`, `poolProvPerc` and `poolUsagePerc`. For more information, see Examples in Autopilot use cases for Rebalance action.
+
+### Improvements​
+
+Issue NumberIssue Description
+
+PWX-36651AutopilotRuleObjects now display a descriptive status message when an action is blocked in the `ActiveActionsPending` state. The message identifies which object is currently being processed by another rule and confirms that Autopilot will retry automatically. Previously, this state was silent and provided no visibility into why the action was waiting.
+
+### Fixes​
+
+Issue NumberIssue DescriptionSeverity
+
+PWX-58855When `spec.autopilot.providers` was configured with two entries of the same `type`, Autopilot silently registered only the first entry, making the second unreachable. Additionally, an `AutopilotRule` referencing a provider name not in the registry retried in a tight loop (13+ attempts in under 10 seconds). `RuleValidationFailed` events and rule status messages were re-written on every polling tick even when the error had not changed.
+
+User Impact: Duplicate provider configurations were accepted without error, making the misconfiguration invisible. Invalid provider name references generated excessive Kubernetes events and log noise. Rule status timestamps incremented on every tick.
+
+Resolution: Autopilot now rejects startup configurations that define two providers of the same type. Invalid provider name errors are reported at the regular 30-second polling cadence. Status and event writes are gated on the error message actually changing.
+
+Affected Versions: AllMinor
+
+PWX-53278When multiple AutopilotRules targeted the same storage pool, the cooldown period was enforced per rule but not across rules. After one rule completed a pool expansion and entered its cooldown, a second rule could immediately schedule another expansion on the same pool.
+
+User Impact: Storage pools could be expanded multiple times in rapid succession when targeted by more than one rule, potentially over-expanding beyond the intended size.
+
+Resolution: Autopilot now enforces a pool-level cooldown across rules. After one rule acts on a pool, other rules targeting the same pool wait until the cooldown expires before scheduling an action, and then retry. Default cooldown period is 5 minutes. AutopilotRule can override this with `spec.actionsCoolDownPeriod` (in seconds). If a rule sets it, that rule uses its own value or 5-minute default.
+
+Affected Versions: 1.5.0Minor
+
+PWX-53277When the Autopilot pod restarted while a pool expansion was in `ActiveActionsInProgress` state, the ARO skipped the `ActiveActionsTaken` state and transitioned directly to `Normal`, even when Portworx had completed the expansion while Autopilot was down.
+
+User Impact: After a pod restart, the expansion completed by Portworx while Autopilot was down had no entry in the ARO history. If the rule's conditions were still met, Autopilot could expand the pool again on the next evaluation cycle. That later expansion was recorded in the ARO, but the earlier one was missing.
+
+Resolution: Autopilot now persists the operation context in the ARO before triggering an action. After restart, it uses the stored context to verify completion status and records the `ActiveActionsTaken` transition correctly.
+
+Affected Versions: 1.3.3Minor
+
+PWX-53078When two AutopilotRules matched the same PVC, the second rule could silently take ownership of the existing ARO and continue its state machine from where the first rule left off. This caused ARO state histories to show transitions attributed to different rules mixed together on the same object.
+
+User Impact: ARO state histories showed incorrect rule names for transitions, making it difficult to audit which rule was responsible for each action.
+
+Resolution: Each ARO now belongs to exactly one rule for its entire lifecycle. When a second rule matches a PVC that is already owned by another rule, the second rule skips that PVC. Only one ARO is created per volume, and the first rule to create it retains it.
+Prefer using selectors for PVC rules, instead of blanket AutopilotRules Use label or namespace selectors, or combine conditions with `OR` in a single rule.
+
+Affected Versions: AllMinor
+
+note
+
+This release also addresses security vulnerabilities.
+
 ## 1.5.1​
 
 September 22, 2026

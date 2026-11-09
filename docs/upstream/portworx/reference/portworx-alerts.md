@@ -48,7 +48,7 @@ SvMotionDatastoreNoPermissionDRIVEALARMPX cannot update new paths since we do no
 
 SvMotionMonitoringFailureDRIVEALARMPX had a failure in recognizing vSphere Storage vMotion`px_alerts_svmotionmonitoringfailure_total`
 
-SvMotionMonitoringSuccessDRIVENOTIFYSuccessfully updated configmap with new paths after Storage vMotion`px_alerts_svmotionmonitoringsuccess_total`
+SvMotionMonitoringSuccessDRIVENOTIFYSuccessfully updated ConfigMap with new paths after Storage vMotion`px_alerts_svmotionmonitoringsuccess_total`
 
 VolumeOperationFailureAlarmVOLUMEALARMTriggered when a volume operation fails. Volume operations could be resize, cloudsnap, etc. The alert message will give more info about the specific error case.`px_alerts_volumeoperationfailurealarm_total`
 
@@ -120,7 +120,7 @@ CloudMigrationFailureVOLUMEALARMTriggered when a cloud migration operation fails
 
 CloudsnapOperationWarningVOLUMEWARNINGTriggered when a cloud snap operation encounters a problem.`px_alerts_cloudsnapoperationwarning_total`
 
-IOOperationWarningVOLUMEWARNINGIo operation warning`px_alerts_iooperationwarning_total`
+IOOperationWarningVOLUMEWARNINGIO operation warning`px_alerts_iooperationwarning_total`
 
 FilesystemCheckSuccessVOLUMENOTIFYFilesystem-Check fixed filesystem errors in volume`px_alerts_filesystemchecksuccess_total`
 
@@ -144,9 +144,9 @@ VolumeCreateWarningVOLUMEWARNINGTriggered when a volume creation encounters a no
 
 CloudMigrationCanceledVOLUMENOTIFYTriggered when a cloud migration operation is canceled.`px_alerts_cloudmigrationcanceled_total`
 
-SharedV4FailoverNotAvailableVOLUMEWARNINGTriggered when service failover is not available for a sharedv4 volume because it is not HA.px_alerts_sharedv4failovernotavailable_total
+SharedV4FailoverNotAvailableVOLUMEWARNINGTriggered when service failover is not available for a sharedv4 volume because it is not HA.`px_alerts_sharedv4failovernotavailable_total`
 
-SharedV4FailoverAvailableVOLUMENOTIFYTriggered when service failover is available for a sharedv4 volume.px_alerts_sharedv4failoveravailable_total
+SharedV4FailoverAvailableVOLUMENOTIFYTriggered when service failover is available for a sharedv4 volume.`px_alerts_sharedv4failoveravailable_total`
 
 VolumeNodiscardMntOptsValidationFailedVOLUMENOTIFYvolume discard/nodiscard mount options not configured correctly`px_alerts_volumenodiscardmntoptsvalidationfailed_total`
 
@@ -172,11 +172,11 @@ VolumeFastpathStatusInactiveVOLUMENOTIFYVolume fastpath status transitions to in
 
 VolumeDeviceExistsVOLUMEALARMTriggered when there is a stale device for a volume that requires cleanup`px_alerts_volumedeviceexists_total`
 
-LegacySharedToSharedv4ServiceMigrationStartedVOLUMENOTIFYTriggered when a legacy shared volume is picked up for migration to type sharedv4 service.px_alerts_legacysharedtosharedv4servicemigrationstarted_total
+LegacySharedToSharedv4ServiceMigrationStartedVOLUMENOTIFYTriggered when a legacy shared volume is picked up for migration to type sharedv4 service.`px_alerts_legacysharedtosharedv4servicemigrationstarted_total`
 
-LegacySharedToSharedv4ServiceMigrationSuccessVOLUMENOTIFYTriggered when a legacy shared volume has successfully migrated to type sharedv4 servicepx_alerts_legacysharedtosharedv4servicemigrationsuccess_total
+LegacySharedToSharedv4ServiceMigrationSuccessVOLUMENOTIFYTriggered when a legacy shared volume has successfully migrated to type sharedv4 service`px_alerts_legacysharedtosharedv4servicemigrationsuccess_total`
 
-LegacySharedToSharedv4ServiceMigrationPendingVOLUMEWARNINGTriggered when a legacy shared volume hasn't migrated to type sharedv4 service for too longpx_alerts_legacysharedtosharedv4servicemigrationpending_total
+LegacySharedToSharedv4ServiceMigrationPendingVOLUMEWARNINGTriggered when a legacy shared volume hasn't migrated to type sharedv4 service for too long`px_alerts_legacysharedtosharedv4servicemigrationpending_total`
 
 VolGroupOperationFailureCLUSTERALARMTriggered when a volume group operation fails.`px_alerts_volgroupoperationfailure_total`
 
@@ -292,7 +292,7 @@ ObjectstoreSuccessNODENOTIFYTriggered upon a successful object store operation.`
 
 ObjectstoreStateChangeNODENOTIFYTriggered in response to a state change.`px_alerts_objectstorestatechange_total`
 
-SharedV4SetupFailureNODEWARNINGTriggered when the creation of a sharedv4 volume fails.px_alerts_sharedv4setupfailure_total
+SharedV4SetupFailureNODEWARNINGTriggered when the creation of a sharedv4 volume fails.`px_alerts_sharedv4setupfailure_total`
 
 NodeTimestampFailureNODEALARMNode timestamp journal failure`px_alerts_nodetimestampfailure_total`
 
@@ -362,7 +362,7 @@ CallHomeFailureNODEALARMCall home failure`px_alerts_callhomefailure_total`
 
 CloudsnapSettingWarningNODEWARNINGCloudsnap setting Warning`px_alerts_cloudsnapsettingwarning_total`
 
-Sharedv4ServerHighLoadWarnNODEWARNINGSharedV4 server high load detectedpx_alerts_sharedv4serverhighloadwarn_total
+Sharedv4ServerHighLoadWarnNODEWARNINGSharedV4 server high load detected`px_alerts_sharedv4serverhighloadwarn_total`
 
 NodeAttachmentsCordonedNODENOTIFYVolume attachments are disabled on this node`px_alerts_nodeattachmentscordoned_total`
 
@@ -471,5 +471,7 @@ AutoCordonPoolSuccessPOOLNOTIFYAutoCordonPool background task has completed`px_a
 AutoCordonPoolFailedPOOLWARNINGAutoCordonPool background task has failed`px_alerts_autocordonpoolfailed_total`
 
 AutopilotActionFailedAUTOPILOTRULEOBJECTWARNINGTriggered when an Autopilot action for a rule object fails. Alerts on failures in the last 1 hour.`autopilot_action_failed_total{state="failed"}`
+
+AutopilotPrometheusAuthTokenRefreshFailedCLUSTERWARNINGTriggers when Prometheus authentication token refresh failures exceed 2 over 15 minutes.`autopilot_prom_auth_token_refresh_failures_total`
 
 In this topic:

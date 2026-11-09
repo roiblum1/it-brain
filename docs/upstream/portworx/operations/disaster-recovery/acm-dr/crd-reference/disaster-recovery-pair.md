@@ -154,7 +154,7 @@ Backup snapshot will be successful but won't be uploaded to storage location if 
 
 `spec.backupLocation.s3Config.encryptionKey`EncryptionKey is used for client-side encryption of application resource manifests (Kubernetes YAMLs) before uploading to S3.`string`
 
-`spec.backupLocation.s3Config.endpoint`Endpoint is the S3 API endpoint URL; required; set to "s3.amazonaws.com" for AWS S3, or custom URL for S3-compatible stores (MinIO, Ceph, etc.).`string`
+`spec.backupLocation.s3Config.endpoint`Endpoint is the S3 API endpoint URL; required; for AWS S3, set to `s3.amazonaws.com` without a protocol prefix; for S3-compatible stores (MinIO, Ceph, etc.), include the protocol (for example, `https://minio.example.com`).`string`
 
 `spec.backupLocation.s3Config.region`Region is the AWS region for the S3 bucket; required; set to appropriate AWS region (e.g., "us-east-1") or region for S3-compatible stores.`string`
 

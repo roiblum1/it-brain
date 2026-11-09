@@ -4,6 +4,14 @@ Source: https://docs.portworx.com/portworx-enterprise/release-notes (Portworx En
 
 Portworx Enterprise Release Notes | Portworx Enterprise Documentation
 
+## 3.7.1.1​
+
+October 27, 2026
+
+This version adds support for Flatcar Container Linux Stable up to kernel version 6.12.113-flatcar.
+
+To install or upgrade Portworx Enterprise to version 3.7.1.1, ensure that your cluster meets all system requirements and is running Operator 26.4.0 or later, Stork 26.4.2 or later, and one of the supported kernels.
+
 ## 3.7.1​
 
 September 30, 2026

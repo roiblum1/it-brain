@@ -8,7 +8,7 @@ This page provides instructions on how to upgrade Portworx using Helm.
 
 note
 
-Upgrading from previous Portworx Helm chart version to 4.0.0 is not supported.
+Upgrading from a previous Portworx Helm chart version to 4.0.0 is not supported.
 
 ## Prerequisites​
 
@@ -28,7 +28,13 @@ Upgrading from previous Portworx Helm chart version to 4.0.0 is not supported.
 
 ## Upgrade Portworx​
 
-By default, Portworx is installed in the `kube-system` namespace. If you have installed it in a different namespace, use the `-n <namespace>` flag. In this example, we will upgrade Portworx that was installed in the `portworx` namespace.
+note
+
+During an upgrade, Portworx pods are deleted and re-created on each node to apply the spec changes. The `spec.updateStrategy` field in the StorageCluster resource controls how nodes are upgraded. By default, the update strategy is RollingUpdate, and the `maxUnavailable` field specifies the maximum number of nodes that can be unavailable at a time. The default value of `maxUnavailable` is 1.
+
+This is expected behavior, and you might see pod deletion events in the Kubernetes audit logs. You don't need to take any action.
+
+By default, Portworx is installed in the `kube-system` namespace. If you have installed it in a different namespace, use the `-n <namespace>` flag. In this example, you upgrade the Portworx installation in the `portworx` namespace.
 
 -
 Download the latest Portworx Helm chart version from the `portworx/helm` repository to your local repository:
@@ -50,7 +56,7 @@ Update Complete. ⎈Happy Helming!⎈
 ```
 
 -
-If you have installed Portworx with custom configuration and need to change any configuration parameters, update your `px_install_values.yaml` file. This file contains your current configuration.
+If you installed Portworx with custom configuration and need to change any configuration parameters, update your `px_install_values.yaml` file.
 
 note
 
@@ -87,7 +93,7 @@ Your Release is named "px-release"
 
 Portworx Pods should be running on each node in your cluster.
 
-Portworx would create a unified pool of the disks attached to your Kubernetes nodes.
+Portworx creates a unified pool of the disks attached to your Kubernetes nodes.
 
 No further action should be required and you are ready to consume Portworx Volumes as part of your application data requirements.
 

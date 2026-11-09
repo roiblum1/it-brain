@@ -16,13 +16,13 @@ For simplicity, the Portworx Operator handles the component upgrades without use
 
 The Smart upgrade feature introduces a streamlined, resilient upgrade process for Portworx nodes, allowing them to be upgraded in parallel while maintaining volume quorum and without application disruption.
 
-By default, smart upgrade is disabled and `maxUnavailable` value is set to 1. This means one Portworx node is upgraded at a time.
+By default, smart upgrade is disabled and `maxUnavailable` is set to 1. This means one Portworx node is upgraded at a time.
 
-You can enable the smart upgrade by setting the `spec.updateStrategy.rollingUpdate.disruption.allow` parameter to `false` and set the maximum number of nodes that can be upgraded at a time using the `spec.updateStrategy.rollingUpdate.maxUnavailable` parameter in the StorageCluster.
+You can enable the smart upgrade by setting the `spec.updateStrategy.rollingUpdate.disruption.allow` parameter to `false` and setting the maximum number of nodes that can be upgraded at a time using the `spec.updateStrategy.rollingUpdate.maxUnavailable` parameter in the StorageCluster.
 
-The following are the key benefits of using smart upgrades:
+The following are the key benefits of using smart upgrade:
 
-- Parallel upgrades: Based on volume distribution, the Portworx Operator tries the best to select multiple nodes for concurrent upgrades, accelerating the upgrade process while eliminating downtime and application disruption.
+- Parallel upgrades: Based on volume distribution, the Portworx Operator tries to select multiple nodes for concurrent upgrades, accelerating the upgrade process while eliminating downtime and application disruption.
 
 - Volume quorum maintenance: Ensures volume quorum is maintained throughout the upgrade process.
 
@@ -32,7 +32,7 @@ The following are the key benefits of using smart upgrades:
 
 important
 
-- There will be a downtime for applications using volumes with a replication factor of 1.
+- There will be downtime for applications using volumes with a replication factor of 1.
 
 - Smart upgrade is not supported for:
 
@@ -66,7 +66,8 @@ portworx.io/misc-args: "-rt_opts wait-before-retry-period-in-secs=360"
 -
 If there are any cordoned nodes, ensure that Portworx pods have not been deleted from those nodes. It is safe to proceed with the upgrade if the Portworx pods on cordoned nodes are still running.
 
-- For smart upgrades, ensure the following prerequisites are met:
+-
+For smart upgrade, ensure the following prerequisites are met:
 
 - Required Portworx and Operator versions:
 
@@ -96,12 +97,17 @@ If you override the default PodDisruptionBudget in GKE environments, ensure that
 
 - `maxUnavailable=0`
 
+-
+During an upgrade, Portworx pods are deleted and re-created on each node to apply the spec changes. The `spec.updateStrategy` field in the StorageCluster resource controls how nodes are upgraded. By default, the update strategy is RollingUpdate, and the `maxUnavailable` field specifies the maximum number of nodes that can be unavailable at a time. The default value of `maxUnavailable` is 1.
+
+This is expected behavior, and you might see pod deletion events in the Kubernetes audit logs. You don't need to take any action.
+
 - Kubernetes
 
 - Openshift
 
 -
-Identify Your StorageCluster:
+Identify your StorageCluster:
 
 Retrieve the name of your Portworx StorageCluster within the appropriate namespace:
 
@@ -136,7 +142,7 @@ In the editor, make the following changes in the StorageCluster:
 
 - Update the `spec.image` field to your desired Portworx version.
 
-- (optional) For smart upgrade, ensure that the `spec.updateStrategy.rollingUpdate.disruption.allow` parameter is set to `false` and the maximum number of nodes that can be upgraded at a time is set using the `spec.updateStrategy.rollingUpdate.maxUnavailable` parameter.
+- (optional) For smart upgrade, ensure that the `spec.updateStrategy.rollingUpdate.disruption.allow` parameter is set to `false` and set the maximum number of nodes that can be upgraded at a time using the `spec.updateStrategy.rollingUpdate.maxUnavailable` parameter.
 
 important
 
@@ -189,7 +195,7 @@ note
 - Stork release notes
 
 -
-Verify the Upgrade:
+Verify the upgrade:
 
 Confirm the upgrade by checking the Portworx version on the nodes:
 
@@ -208,7 +214,7 @@ node-1-1   xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx   Online   <desired-version>   1
 ```
 
 -
-Identify Your StorageCluster:
+Identify your StorageCluster:
 
 Retrieve the name of your Portworx StorageCluster within the appropriate namespace:
 
@@ -243,7 +249,7 @@ In the editor, make the following changes in the StorageCluster:
 
 - Update the `spec.image` field to your desired Portworx version.
 
-- (optional) For smart upgrade, ensure that the `spec.updateStrategy.rollingUpdate.disruption.allow` parameter is set to `false` and the maximum number of nodes that can be upgraded at a time is set using the `spec.updateStrategy.rollingUpdate.maxUnavailable` parameter.
+- (optional) For smart upgrade, ensure that the `spec.updateStrategy.rollingUpdate.disruption.allow` parameter is set to `false` and set the maximum number of nodes that can be upgraded at a time using the `spec.updateStrategy.rollingUpdate.maxUnavailable` parameter.
 
 important
 
@@ -296,7 +302,7 @@ note
 - Stork release notes
 
 -
-Verify the Upgrade:
+Verify the upgrade:
 
 Confirm the upgrade by checking the Portworx version on the nodes:
 

@@ -69,8 +69,11 @@ The available options are AWS S3, Azure Storage, Google Cloud Storage, and NFS.
 
 - Region: Enter the region where the bucket resides.
 
-- Endpoint: Enter the S3-compatible endpoint URL.
-For example, https://s3.amazonaws.com. For non-AWS providers, enter the endpoint provided by the storage vendor.
+- Endpoint: Enter the S3 endpoint based on your storage type:
+
+- For AWS S3, enter only the hostname without a protocol prefix. For example, `s3.amazonaws.com`.
+
+- For S3-compatible storage such as MinIO, enter the complete URL including the protocol. For example, `https://minio.portworx.com`.
 
 - In the Authentication section, configure the authentication settings:
 

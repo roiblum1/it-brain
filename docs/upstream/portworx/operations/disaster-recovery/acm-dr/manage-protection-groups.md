@@ -39,6 +39,16 @@ The system displays the Create Protection Group page.
 
 - To manually select namespaces, select the Select from namespace list option, and choose one or more namespaces to protect from the list.
 
+note
+
+The user must have at least one of the following permissions to view namespace list:
+
+- `view` permission at the cluster set level
+
+- The OpenShift Container Platform (OCP) `view` role
+
+- `view` permission for the namespace where the `ManagedCluster` custom resource (CR) is created
+
 - To select namespaces that match specific labels, select the Use label selector option, and enter the Label Key and Label Value.
 To add more labels, click the Add more labels button.
 

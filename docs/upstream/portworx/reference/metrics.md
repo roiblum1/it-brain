@@ -188,9 +188,9 @@ NameLabelsDescription
 
 px_fafb_apis_requests_totalcluster, clusterUUID, nodeID, nodeTotal number of API requests made to all the configured FA/FB endpoints
 
-px_fafb_apis_array_requests_totalcluster, clusterUUID, nodeID, nodeTotal number of API requests made to the /arrays endpoint.
+px_fafb_apis_array_requests_totalcluster, clusterUUID, nodeID, nodeTotal number of API requests made to the /arrays endpoint
 
-px_fafb_apis_login_requests_totalcluster, clusterUUID, nodeID, nodeTotal number of API requests made to the /login endpoint.
+px_fafb_apis_login_requests_totalcluster, clusterUUID, nodeID, nodeTotal number of API requests made to the /login endpoint
 
 px_fafb_apis_controllers_requests_totalcluster, clusterUUID, nodeID, nodeTotal number of API requests made to the /controllers endpoint
 
@@ -347,7 +347,7 @@ px_nfs_pool_stats_threads_wokencluster, clusterUUID, nodeID, nodeCounts how many
 
 px_nfs_pool_stats_threads_timedoutcluster, clusterUUID, nodeID, nodeCounts how many times an nfsd thread triggered an idle timeout, i.e. was not woken to handle any incoming network packets for some time.
 
-## Node metrics  ​
+## Node metrics​
 
 NameLabelsDescription
 
@@ -840,6 +840,20 @@ autopilot_datadog_query_validation_failures_totalTotal number of Datadog query v
 autopilot_datadog_failures_totalTotal number of Datadog query failures by type
 
 autopilot_datadog_success_totalTotal number of successful Datadog queries
+
+The following Autopilot metrics are available starting with Autopilot version 1.6.0.
+
+NameDescription
+
+autopilot_object_evaluation_duration_secondsTime taken to evaluate managed objects and process their state transitions.
+
+autopilot_engine_evaluation_duration_secondsTime taken to discover and process Autopilot rules in the cluster.
+
+autopilot_prom_auth_token_refresh_totalTotal number of successful Prometheus authentication token refreshes.
+
+autopilot_prom_auth_token_refresh_failures_totalTotal number of failed Prometheus authentication token refreshes.
+
+autopilot_action_blockedBoolean that indicates if an action is blocked by another action (1: Blocked, 0: Not Blocked)
 
 ## Portworx DR and Stork metrics​
 

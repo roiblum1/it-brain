@@ -6,6 +6,12 @@ Upgrade Portworx Enterprise | Portworx Enterprise Documentation
 
 The topics below provide comprehensive instructions for upgrading Portworx Enterprise on Kubernetes and OpenShift. Choose the appropriate upgrade method based on your installation type, platform, and specific requirements. Before proceeding with any upgrade, review the Portworx Enterprise Release Notes of your target version, and also verify the compatibility of your distros and kernel with the target version (see Supported Kernels).
 
+note
+
+During an upgrade, Portworx pods are deleted and re-created on each node to apply the spec changes. The `spec.updateStrategy` field in the StorageCluster resource controls how nodes are upgraded. By default, the update strategy is RollingUpdate, and the `maxUnavailable` field specifies the maximum number of nodes that can be unavailable at a time. The default value of `maxUnavailable` is 1.
+
+This is expected behavior, and you might see pod deletion events in the Kubernetes audit logs. You don't need to take any action.
+
 ## Upgrade with Portworx Operator​
 
 Portworx Operator simplifies the installation, configuration, and management of the Portworx Enterprise within a Kubernetes cluster. To upgrade Portworx clusters using Portworx Operator, perform the following activities:

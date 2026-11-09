@@ -128,13 +128,13 @@ Red Hat OpenShift
 - OpenShift version: 4.18 (verified up to 4.18.56)
  Kubernetes version: 1.31
 
-- OpenShift version: 4.19 (verified up to 4.19.49)
- Kubernetes version: 1.32.14
+- OpenShift version: 4.19 (verified up to 4.19.51)
+ Kubernetes version: 1.32.13
 
-- OpenShift version: 4.20 (verified up to 4.20.40)
+- OpenShift version: 4.20 (verified up to 4.20.42)
  Kubernetes version: 1.33.13
 
-- OpenShift version: 4.21 (verified up to 4.21.35)
+- OpenShift version: 4.21 (verified up to 4.21.37)
  Kubernetes version: 1.34.9
 
 - OpenShift version: 4.22 (verified up to 4.22.18)

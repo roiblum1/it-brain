@@ -24,10 +24,10 @@ OpenShift ChannelOpenShift VersionKubernetes Version
 
 stable-4.184.18.561.31.14
 
-stable-4.194.19.491.32.14
+stable-4.194.19.511.32.13
 
-stable-4.204.20.401.33.13
+stable-4.204.20.421.33.13
 
-stable-4.214.21.351.34.9
+stable-4.214.21.371.34.9
 
 stable-4.224.22.181.35.8
