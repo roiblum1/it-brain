@@ -1,7 +1,7 @@
 repo: NVIDIA/nccl
 ref: master
-commit: 3e46c089f4ae4732722a419eb6096aead7e47a30
+commit: ad2d192c1f279aefcaf340f67e07880b65a1116b
 latest_tag: 
 paths: docs
-files: 159
-synced: 2026-10-09T10:30:34Z
+files: 160
+synced: 2026-11-10T11:23:21Z

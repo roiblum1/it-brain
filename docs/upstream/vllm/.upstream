@@ -1,7 +1,7 @@
 repo: vllm-project/vllm
 ref: main
-commit: 8db73f26c16afa748e9796e37d60f2e266ec281d
+commit: 3996083d37324d4df913ec133e8d993b21199030
 latest_tag: v0.33.0
 paths: docs, examples, README.md
 files: 268
-synced: 2026-11-09T11:46:00Z
+synced: 2026-11-10T11:22:47Z
