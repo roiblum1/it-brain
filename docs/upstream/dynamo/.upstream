@@ -1,7 +1,7 @@
 repo: ai-dynamo/dynamo
 ref: main
-commit: a355698d3da1bb0fbf0e1ccf0b537ce7f7e16ffb
+commit: b43cd4a9dee83bce568dc5f157f333685e0f3439
 latest_tag: v1.6.2
 paths: docs
-files: 417
-synced: 2026-11-12T11:28:05Z
+files: 420
+synced: 2026-11-13T11:12:16Z

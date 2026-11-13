@@ -112,7 +112,7 @@ Refer to [Anonymous usage statistics](../../anonymous-usage-statistics/) for the
 
   `search,datasource,incident,prometheus,loki,alerting,dashboard,folder,oncall,asserts,pyroscope,navigation,tempo,annotations,rendering,snapshot,docs`
 
-  Categories **not** in that default string are off until you add them, including: `admin`, `agento11y`, `assistant`, `elasticsearch`, `cloudwatch`, `cloudlogging`, `examples`, `sql`, `influxdb`, `quickwit`, `runpanelquery`, and `dsquery`. Pass a full comma-separated list to replace the default entirely, or use `--disable-*` flags to turn off pieces of the default set. Back-compat aliases `clickhouse`, `snowflake`, and `athena` map to `sql`; `proxied` maps to `tempo`.
+  Categories **not** in that default string are off until you add them, including: `admin`, `agento11y`, `assistant`, `elasticsearch`, `cloudwatch`, `cloudlogging`, `azuremonitor`, `examples`, `sql`, `influxdb`, `quickwit`, `runpanelquery`, and `dsquery`. Pass a full comma-separated list to replace the default entirely, or use `--disable-*` flags to turn off pieces of the default set. Back-compat aliases `clickhouse`, `snowflake`, and `athena` map to `sql`; `proxied` maps to `tempo`.
 
 - `--disable-search`: Disable search tools.
 - `--disable-datasource`: Disable datasource tools.
@@ -138,6 +138,7 @@ Refer to [Anonymous usage statistics](../../anonymous-usage-statistics/) for the
 - `--disable-snapshot`: Disable snapshot tools.
 - `--disable-cloudwatch`: Disable CloudWatch tools.
 - `--disable-cloudlogging`: Disable Google Cloud Logging tools.
+- `--disable-azuremonitor`: Disable Azure Monitor tools.
 - `--disable-examples`: Disable query examples tools.
 - `--disable-sql`: Disable SQL datasource tools (ClickHouse, Snowflake, Athena, MySQL, PostgreSQL, MSSQL, BigQuery). Aliases `--disable-clickhouse`, `--disable-snowflake`, `--disable-athena` also work.
 - `--disable-runpanelquery`: Disable run panel query tools.
@@ -231,10 +232,11 @@ The following tools are not registered when the flag is set:
 - Graphite: `query_graphite`, `query_graphite_density`
 - CloudWatch: `query_cloudwatch`, `query_cloudwatch_logs`
 - Google Cloud Logging: `query_cloud_logging`
+- Azure Monitor: `query_azure_log_analytics`, `query_azure_resource_graph`
 - Pyroscope: `query_pyroscope`
 - Panels: `run_panel_query`
 
-The `elasticsearch`, `quickwit`, `influxdb`, and `runpanelquery` categories contain nothing else, so they expose no tools at all when queries are disabled. Sibling tools such as `list_prometheus_metric_names`, `list_loki_label_values`, `describe_sql_table`, `list_cloudwatch_metrics`, and `list_cloud_logging_projects` remain available.
+The `elasticsearch`, `quickwit`, `influxdb`, `runpanelquery`, and `azuremonitor` categories contain nothing else, so they expose no tools at all when queries are disabled. Sibling tools such as `list_prometheus_metric_names`, `list_loki_label_values`, `describe_sql_table`, `list_cloudwatch_metrics`, and `list_cloud_logging_projects` remain available.
 
 The flag gates the query tools and the `grafana_api_request` POST-to-`/api/ds/query` path, but doesn't police every route to a datasource. In read-only mode, `grafana_api_request` allows POST to `/api/ds/query` only when query tools are enabled (same gate as the raw-SQL tools — blocked by `--disable-write` unless `--enable-query` overrides). `get_panel_image`, which renders a panel server-side, is unaffected.
 
@@ -251,6 +253,20 @@ The raw-SQL query tools — `query_sql` and `query_influxdb` — send the query 
 | `--disable-write --enable-query` | Registered | Registered |
 | `--disable-query` | Not registered | Not registered |
 | `--disable-query --enable-query` | Not registered | Not registered |
+
+## Restrict which Prometheus series can be read
+
+- `--prometheus-enforced-matchers`: PromQL label matchers AND-ed into every native-Prometheus query to restrict which series can be read (e.g. `environment=~"prod|staging"`). Unparseable queries are rejected.
+
+{{< admonition type="warning" >}}
+Enforcement applies only to the Prometheus query tools. Other tools can reach Prometheus metric data through paths that never touch the enforced backend, so you must also disable them for the restriction to hold:
+
+- `--disable-api`: `grafana_api_request` can query the Prometheus datasource proxy directly (full bypass).
+- `--disable-rendering`: `get_panel_image` can render unrestricted metric data. `render_grafana_app` can also use `query_datasource` to submit Prometheus queries without these matchers. `--disable-dsquery` closes the latter path only.
+- `--disable-assistant`: `ask_assistant` delegates to Grafana Assistant, which reads Prometheus server-side across all series. It is only registered when write tools are enabled, so `--disable-write` closes it too.
+
+The server logs a warning at startup naming each of these that is still enabled. `run_panel_query` is safe: it routes on the datasource's real type resolved from its UID, so a Prometheus datasource always runs through the enforced query path even if the panel or the caller declares a different `datasourceType`. Dashboard snapshots (`--disable-snapshot`) can embed panel data captured outside enforcement.
+{{< /admonition >}}
 
 ## Restrict which Loki streams can be read
 
