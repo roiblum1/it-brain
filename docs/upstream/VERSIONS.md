@@ -12,7 +12,7 @@ stable upstream tag at sync time, for comparison with the version installed on a
 | `cdi-docs` | kubevirt/containerized-data-importer | main | 15b1fc5958 | v1.66.1 | 40 | 2026-11-02 |
 | `cluster-api-provider-metal3` | metal3-io/cluster-api-provider-metal3 | main | abcb79e486 | v1.14.2 | 16 | 2026-11-05 |
 | `dell-csm-docs` | dell/csm-docs | main | 47c9088682 | v1.16.3 | 462 | 2026-11-02 |
-| `dynamo` | ai-dynamo/dynamo | main | 2cac4d767f | v1.6.2 | 420 | 2026-11-14 |
+| `dynamo` | ai-dynamo/dynamo | main | 30b146bb06 | v1.6.2 | 420 | 2026-11-15 |
 | `envoy` | envoyproxy/envoy | main | cacf8e230c | v1.40.2 | 514 | 2026-11-14 |
 | `envoy-ai-gateway` | envoyproxy/ai-gateway | main | 165733c58c | v1.2.1 | 62 | 2026-11-11 |
 | `envoy-gateway` | envoyproxy/gateway | main | a35f7eca83 | v1.10.0 | 140 | 2026-11-13 |
@@ -32,7 +32,7 @@ stable upstream tag at sync time, for comparison with the version installed on a
 | `kubernetes-mcp-server` | containers/kubernetes-mcp-server | main | 1d045c6319 | v0.1.3 | 25 | 2026-11-14 |
 | `kubevirt-docs` | kubevirt/kubevirt | main | 124c2a2e17 | v1.9.1 | 61 | 2026-11-13 |
 | `kubevirt-user-guide` | kubevirt/user-guide | main | 00756dd6ae |  | 99 | 2026-11-13 |
-| `kueue` | kubernetes-sigs/kueue | main | f48f3140e8 | v0.20.6 | 264 | 2026-11-14 |
+| `kueue` | kubernetes-sigs/kueue | main | d78346f564 | v0.20.6 | 264 | 2026-11-15 |
 | `linux-kernel-docs` | torvalds/linux | master | 36aad21d50 | v7.3 | 118 | 2026-10-31 |
 | `llm-d` | llm-d/llm-d | main | 565373b741 | v1.0.0 | 192 | 2026-11-13 |
 | `lmcache` | LMCache/LMCache | dev | bcafb03140 | v0.5.7 | 322 | 2026-11-14 |
@@ -44,7 +44,7 @@ stable upstream tag at sync time, for comparison with the version installed on a
 | `nccl` | NVIDIA/nccl | master | ad2d192c1f |  | 160 | 2026-11-10 |
 | `node-feature-discovery` | kubernetes-sigs/node-feature-discovery | master | ef6672a33a | v0.20.1 | 40 | 2026-11-06 |
 | `nvidia-cloud-native-docs` | NVIDIA/cloud-native-docs | main | d856ea69d8 |  | 86 | 2026-11-10 |
-| `nvidia-network-operator-docs` | Mellanox/network-operator-docs | main | f283768654 | v26.4.0 | 75 | 2026-11-08 |
+| `nvidia-network-operator-docs` | Mellanox/network-operator-docs | main | cb5cd3ae87 | v26.4.0 | 75 | 2026-11-15 |
 | `okp-mcp` | rhel-lightspeed/okp-mcp | main | 4505245152 |  | 6 | 2026-10-03 |
 | `openshift-runbooks` | openshift/runbooks | master | fedaf1da74 |  | 295 | 2026-11-13 |
 | `ovn-kubernetes` | ovn-org/ovn-kubernetes | master | b17ddc47ab | v1.4.0 | 139 | 2026-11-14 |
@@ -57,12 +57,12 @@ stable upstream tag at sync time, for comparison with the version installed on a
 | `pydantic-settings-docs` | pydantic/pydantic-settings | main | 4af040bf35 | v2.16.2 | 2 | 2026-11-13 |
 | `ray-docs` | ray-project/ray | master | 6873af31ef | 1.13.1 | 96 | 2026-11-11 |
 | `rdma-core` | linux-rdma/rdma-core | master | 04da5a0496 | v66.0 | 190 | 2026-11-10 |
-| `sglang` | sgl-project/sglang | main | 19af0c78a2 | v0.5.23 | 384 | 2026-11-14 |
+| `sglang` | sgl-project/sglang | main | d9ec74eb72 | v0.5.23 | 385 | 2026-11-15 |
 | `sriov-network-operator` | k8snetworkplumbingwg/sriov-network-operator | master | bdfb5a6109 | v1.6.0 | 30 | 2026-11-04 |
 | `temporal-docs` | temporalio/documentation | main | 882a9decec |  | 263 | 2026-11-14 |
 | `temporal-mcp-docs` | temporalio/temporal-mcp | main | 41a34ba154 | v0.0.6 | 5 | 2026-11-11 |
-| `tensorrt-llm` | NVIDIA/TensorRT-LLM | main | 500ee99528 | v1.2.1 | 170 | 2026-11-14 |
+| `tensorrt-llm` | NVIDIA/TensorRT-LLM | main | ef83ce2469 | v1.2.1 | 171 | 2026-11-15 |
 | `trident-docs` | NetAppDocs/trident | main | 6c36620fd5 |  | 122 | 2026-11-11 |
 | `tuned` | redhat-performance/tuned | master | 278644ed96 | v2.28.0 | 31 | 2026-10-03 |
 | `ucx` | openucx/ucx | master | 6aa2cf12e8 | v1.22.0 | 15 | 2026-10-21 |
-| `vllm` | vllm-project/vllm | main | ce72586f8a | v0.33.0 | 268 | 2026-11-14 |
+| `vllm` | vllm-project/vllm | main | 1489434bd5 | v0.33.0 | 268 | 2026-11-15 |
