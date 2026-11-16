@@ -6,11 +6,11 @@ Supported Kernels | Portworx Enterprise Documentation
 
 Portworx runs as a Docker or OCI container, available on DockerHub. Portworx has a dependency on the kernel module, which must be installed on hosts. Portworx is distributed with pre-built kernel modules for select CentOS and Ubuntu Linux distributions. If your kernel version is not listed in the table below, Portworx will attempt to download a pre-compiled kernel module from mirrors.portworx.com (if available) if it is not packaged with the Portworx container. This process may fail if the host is behind a proxy. If you already have the kernel-headers and kernel-devel packages installed, Portworx will attempt to compile its kernel modules. However, this can fail for kernel versions higher than 5.4. If you don't have these packages, you must install them before restarting Portworx.
 
-Portworx by Everpure recommends that you only upgrade to a kernel version listed on this support page. Do not upgrade to a more recent kernel version that is not listed.
-
 important
 
-Starting from release 3.1.0, Portworx Enterprise will exclusively support kernel versions 4.18 and above.
+- Portworx by Everpure recommends that you only upgrade to a kernel version listed on this support page. Do not upgrade to a more recent kernel version that is not listed.
+
+- Starting from release 3.1.0, Portworx Enterprise will exclusively support kernel versions 4.18 and above.
 
 ### End of Support Notification​
 
@@ -52,7 +52,179 @@ Portworx Enterprise supports the following Kubernetes distributions and kernels.
 
 note
 
-Portworx by Everpure will accept support requests from customers running in RHEL environments supported by SUSE, via SUSE Multi-Linux Support (MLS).
+- Some Portworx Enterprise features might not be supported on every distribution or kernel version listed on this page. For feature-specific requirements, see the documentation for each feature.
+
+- Portworx by Everpure will accept support requests from customers running in RHEL environments supported by SUSE, via SUSE Multi-Linux Support (MLS).
+
+### 3.7.2​
+
+#### Supported Distros and Kernels​
+
+- PX-StoreV1
+
+- PX-StoreV2
+
+Linux DistroKernel Version
+
+Debian 13Up to 6.12.113+deb13-amd64
+
+Debian 12Up to 6.12.113+deb12-amd64
+
+Debian 11Up to 6.1.0-0.deb11.52-amd64
+
+OEL 8 Oracle Enteprise Linux (UEK Kernels)Up to 5.15.0-325.221.6.6.el8uek
+
+OEL 8.9 Oracle Enteprise Linux (RHCK Kernels)Up to 5.15.0-325.221.6.6.el8uek
+
+OEL 8.8 Oracle Enteprise Linux (RHCK Kernels)Up to 5.15.0-325.221.6.6.el8uek
+
+OEL 9.4 Oracle Enterprise Linux (UEK Kernels)Up to 6.12.0-207.111.5.6.el9uek
+
+OEL 10 Oracle Enterprise Linux (UEK Kernels)Up to 6.12.0-207.111.5.6.el10uek
+
+Photon 5.0Up to 6.12.114-1.ph5
+
+Photon 4.0Up to 5.10.260-4.ph4
+
+RHEL 9.8Up to 5.14.0-687.61.1.el9_8
+
+RHEL 9.7Up to 5.14.0-611.55.1.el9_7
+
+RHEL 9.6Up to 5.14.0-570.152.1.el9_6
+
+RHEL 9.5Up to 5.14.0-503.40.1.el9_5
+
+RHEL 9.4Up to 5.14.0-427.158.1.el9_4
+
+RHEL 9.3Up to 5.14.0-362.24.1.el9_3
+
+RHEL 9.2Up to 5.14.0-284.200.1.el9_2
+
+RHEL 8.10Up to 4.18.0-553.180.1.el8_10
+
+RHEL 8.9Up to 4.18.0-513.24.1.el8_9
+
+RHEL 8.8Up to 4.18.0-477.104.1.el8_8
+
+RHEL 8.7Up to 4.18.0-425.19.2.el8_7
+
+RHEL 8.6Up to 4.18.0-372.193.1.el8_6
+
+Rocky 10.2Up to 6.12.0-211.67.1.el10_2
+
+Rocky 9.8Up to 5.14.0-687.61.1.el9_8
+
+Rocky 9.5Up to 5.14.0-503.14.1.el9_5
+
+Rocky 9.4Up to 5.14.0-427.22.1.el9_4
+
+Rocky 8.10Up to 4.18.0-553.180.1.el8_10
+
+SLES (SUSE Enterprise Linux) SLES15 SP7Up to 6.4.0-150700.53.87.3
+
+SLES (SUSE Enterprise Linux) SLES15 SP6Up to 6.4.0-150600.23.81.3
+
+SLES (SUSE Enterprise Linux) SLES15 SP5Up to 5.14.21-150500.55.195.1
+
+SLES (SUSE Enterprise Linux) SLES15 SP4Up to 5.14.21-150400.24.243.1
+
+SUSE Linux Micro 6.2Up to 6.12.0-160000.39.1
+
+SUSE Linux Micro 6.1Up to 6.4.0-52.1
+
+SUSE Linux Micro 6.0Up to 6.4.0-159998.54.1
+
+Ubuntu 24.04Up to 6.8.0-147-generic, Up to 6.14.0-37-generic, Up to 6.17.0-42-generic, Up to 7.0.0-42-generic
+
+Ubuntu 22.04Up to 5.15.0-194-generic, Up to 6.8.0-138-generic
+
+Ubuntu 20.04Up to 5.15.0-139-generic
+
+Cloud DistroKernel Version
+
+Amazon Linux 2023Up to 6.12.111-136.204.amzn2023.x86_64
+
+Flatcar StableUp to 6.12.113-flatcar
+
+Linux DistroKernel Version
+
+CentOS Stream 10Up to 6.12.0-279.el10
+
+CentOS Stream 9Up to 5.14.0-759.el9
+
+Debian 13Up to 6.12.113+deb13-amd64
+
+Debian 12Up to 6.12.113+deb12-amd64
+
+Debian 11Up to 6.1.0-0.deb11.52-amd64
+
+RHEL 10.2Up to 6.12.0-211.69.1.el10_2
+
+RHEL 10.1Up to 6.12.0-124.56.1.el10_1
+
+RHEL 10.0Up to 6.12.0-55.115.1.el10_0
+
+RHEL 9.8Up to 5.14.0-687.61.1.el9_8
+
+RHEL 10.0Up to 6.12.0-55.109.1.el10_0
+
+RHEL 9.8Up to 5.14.0-687.59.1.el9_8
+
+RHEL 9.7Up to 5.14.0-611.55.1.el9_7
+
+RHEL 9.6Up to 5.14.0-570.152.1.el9_6
+
+RHEL 9.5Up to 5.14.0-503.40.1.el9_5
+
+RHEL 9.4Up to 5.14.0-427.158.1.el9_4
+
+RHEL 9.3Up to 5.14.0-362.24.1.el9_3
+
+RHEL 9.2Up to 5.14.0-284.200.1.el9_2
+
+RHEL 8.10Up to 4.18.0-553.180.1.el8_10
+
+Rocky 9.5Up to 5.14.0-503.14.1.el9_5
+
+Rocky 9.4Up to 5.14.0-427.22.1.el9_4
+
+Rocky 9.8Up to 5.14.0-687.57.1.el9_8
+
+Rocky 10.2Up to 6.12.0-211.67.1.el10_2
+
+SLES (SUSE Enterprise Linux) SLES15 SP7Up to 6.4.0-150700.53.87.3
+
+SLES (SUSE Enterprise Linux) SLES15 SP6Up to 6.4.0-150600.23.81.3
+
+SLES (SUSE Enterprise Linux) SLES15 SP5Up to 5.14.21-150500.55.195.1
+
+SLES (SUSE Enterprise Linux) SLES15 SP4Up to 5.14.21-150400.24.243.1
+
+SLES (SUSE Enterprise Linux) SLES16 SP0Up to 6.12.0-160000.39.1
+
+SUSE Linux Micro 6.2Up to 6.12.0-160000.39.1
+
+SUSE Linux Micro 6.1Up to 6.4.0-52.1
+
+SUSE Linux Micro 6.0Up to 6.4.0-159998.54.1
+
+Ubuntu 24.04Up to 6.8.0-147-generic, Up to 6.14.0-37-generic, Up to 6.17.0-42-generic, Up to 7.0.0-42-generic
+
+Ubuntu 22.04Up to 5.15.0-194-generic, Up to 6.8.0-138-generic
+
+Ubuntu 20.04Up to 5.15.0-139-generic
+
+Cloud DistroKernel Version
+
+Amazon Linux 2023Up to 6.12.111-136.204.amzn2023.x86_64
+
+Flatcar Stable6.12.113-flatcar
+
+Gardener on AzureUp to 6.12.60-cloud-amd64 (OS Image: Garden Linux 1877.9), Up to 6.18.35-cloud-amd64 (OS Image: Garden Linux 2150.5.0)
+
+Gardener on GCPUp to 6.12.60-cloud-amd64 (OS Image: Garden Linux 1877.9), Up to 6.18.35-cloud-amd64 (OS Image: Garden Linux 2150.5.0)
+
+Gardener on AWSUp to 6.12.74-cloud-amd64 (OS Image: Garden Linux 1877.14), Up to 6.18.35-cloud-amd64 (OS Image: Garden Linux 2150.5.0)
 
 ### 3.7.1.1​
 
@@ -82,21 +254,21 @@ Photon 5.0Up to 6.12.103-9.ph5
 
 Photon 4.0Up to 5.10.260-2.ph4
 
-RHEL 9.8Up to 5.14.0-687.66.1.el9_8
+RHEL 9.8Up to 5.14.0-687.67.1.el9_8
 
 RHEL 9.7Up to 5.14.0-611.55.1.el9_7
 
-RHEL 9.6Up to 5.14.0-570.154.1.el9_6
+RHEL 9.6Up to 5.14.0-570.156.1.el9_6
 
 RHEL 9.5Up to 5.14.0-503.40.1.el9_5
 
-RHEL 9.4Up to 5.14.0-427.161.1.el9_4
+RHEL 9.4Up to 5.14.0-427.162.1.el9_4
 
 RHEL 9.3Up to 5.14.0-362.24.1.el9_3
 
 RHEL 9.2Up to 5.14.0-284.202.1.el9_2
 
-RHEL 8.10Up to 4.18.0-553.184.1.el8_10
+RHEL 8.10Up to 4.18.0-553.186.1.el8_10
 
 RHEL 8.9Up to 4.18.0-513.24.1.el8_9
 
@@ -126,9 +298,9 @@ SUSE Linux Micro 6.1Up to 6.4.0-50.1
 
 SUSE Linux Micro 6.0Up to 6.4.0-50.1
 
-Ubuntu 24.04Up to 6.8.0-147-generic, Up to 6.14.0-37-generic, Up to 6.17.0-42-generic, Up to 7.0.0-38-generic
+Ubuntu 24.04Up to 6.8.0-149-generic, Up to 6.14.0-37-generic, Up to 6.17.0-42-generic, Up to 7.0.0-38-generic
 
-Ubuntu 22.04Up to 5.15.0-194-generic, Up to 6.8.0-138-generic
+Ubuntu 22.04Up to 5.15.0-203-generic, Up to 6.8.0-149-generic
 
 Ubuntu 20.04Up to 5.4.0-216-generic, Up to 5.15.0-139-generic
 
@@ -158,7 +330,7 @@ RHEL 10.1Up to 6.12.0-124.56.1.el10_1
 
 RHEL 10.0Up to 6.12.0-55.117.1.el10_0
 
-RHEL 9.8Up to 5.14.0-687.66.1.el9_8
+RHEL 9.8Up to 5.14.0-687.67.1.el9_8
 
 RHEL 10.0Up to 6.12.0-55.109.1.el10_0
 
@@ -166,17 +338,17 @@ RHEL 9.8Up to 5.14.0-687.53.1.el9_8
 
 RHEL 9.7Up to 5.14.0-611.55.1.el9_7
 
-RHEL 9.6Up to 5.14.0-570.154.1.el9_6
+RHEL 9.6Up to 5.14.0-570.156.1.el9_6
 
 RHEL 9.5Up to 5.14.0-503.40.1.el9_5
 
-RHEL 9.4Up to 5.14.0-427.161.1.el9_4
+RHEL 9.4Up to 5.14.0-427.162.1.el9_4
 
 RHEL 9.3Up to 5.14.0-362.24.1.el9_3
 
 RHEL 9.2Up to 5.14.0-284.202.1.el9_2
 
-RHEL 8.10Up to 4.18.0-553.184.1.el8_10
+RHEL 8.10Up to 4.18.0-553.186.1.el8_10
 
 Rocky 9.5Up to 5.14.0-503.14.1.el9_5
 
@@ -198,9 +370,9 @@ SUSE Linux Micro 6.1Up to 6.4.0-50.1
 
 SUSE Linux Micro 6.0Up to 6.4.0-50.1
 
-Ubuntu 24.04Up to 6.8.0-147-generic, Up to 6.14.0-37-generic, Up to 6.17.0-42-generic, Up to 7.0.0-38-generic
+Ubuntu 24.04Up to 6.8.0-149-generic, Up to 6.14.0-37-generic, Up to 6.17.0-42-generic, Up to 7.0.0-38-generic
 
-Ubuntu 22.04Up to 5.15.0-194-generic, Up to 6.8.0-138-generic
+Ubuntu 22.04Up to 5.15.0-203-generic, Up to 6.8.0-149-generic
 
 Ubuntu 20.04Up to 5.4.0-216-generic, Up to 5.15.0-139-generic
 
@@ -800,21 +972,21 @@ Photon 5.0Up to 6.1.159-9.ph5
 
 Photon 4.0Up to 5.10.255-1.ph4
 
-RHEL 9.8Up to 5.14.0-687.65.1.el9_8
+RHEL 9.8Up to 5.14.0-687.66.1.el9_8
 
 RHEL 9.7Up to 5.14.0-611.55.1.el9_7
 
-RHEL 9.6Up to 5.14.0-570.154.1.el9_6
+RHEL 9.6Up to 5.14.0-570.156.1.el9_6
 
 RHEL 9.5Up to 5.14.0-503.40.1.el9_5
 
-RHEL 9.4Up to 5.14.0-427.161.1.el9_4
+RHEL 9.4Up to 5.14.0-427.162.1.el9_4
 
 RHEL 9.3Up to 5.14.0-362.24.1.el9_3
 
 RHEL 9.2Up to 5.14.0-284.202.1.el9_2
 
-RHEL 8.10Up to 4.18.0-553.184.1.el8_10
+RHEL 8.10Up to 4.18.0-553.186.1.el8_10
 
 RHEL 8.9Up to 4.18.0-513.24.1.el8_9
 
@@ -844,9 +1016,9 @@ SUSE Linux Micro 6.1Up to 6.4.0-48.1
 
 SUSE Linux Micro 6.0Up to 6.4.0-48.1
 
-Ubuntu 24.04Up to 6.8.0-147-generic, Up to 6.11.0-29-generic, Up to 6.14.0-37-generic, Up to 6.17.0-42-generic, Up to 7.0.0-42-generic
+Ubuntu 24.04Up to 6.8.0-147-generic, Up to 6.11.0-29-generic, Up to 6.14.0-37-generic, Up to 6.17.0-42-generic, Up to 7.0.0-43-generic
 
-Ubuntu 22.04Up to 5.15.0-202-generic, Up to 6.8.0-138-generic
+Ubuntu 22.04Up to 5.15.0-203-generic, Up to 6.8.0-149-generic
 
 Ubuntu 20.04Up to 5.4.0-216-generic, Up to 5.15.0-139-generic
 
@@ -880,21 +1052,21 @@ RHEL 10.1Up to 6.12.0-124.56.1.el10_1
 
 RHEL 10.0Up to 6.12.0-55.117.1.el10_0
 
-RHEL 9.8Up to 5.14.0-687.65.1.el9_8
+RHEL 9.8Up to 5.14.0-687.66.1.el9_8
 
 RHEL 9.7Up to 5.14.0-611.55.1.el9_7
 
-RHEL 9.6Up to 5.14.0-570.154.1.el9_6
+RHEL 9.6Up to 5.14.0-570.156.1.el9_6
 
 RHEL 9.5Up to 5.14.0-503.40.1.el9_5
 
-RHEL 9.4Up to 5.14.0-427.161.1.el9_4
+RHEL 9.4Up to 5.14.0-427.162.1.el9_4
 
 RHEL 9.3Up to 5.14.0-362.24.1.el9_3
 
 RHEL 9.2Up to 5.14.0-284.202.1.el9_2
 
-RHEL 8.10Up to 4.18.0-553.184.1.el8_10
+RHEL 8.10Up to 4.18.0-553.186.1.el8_10
 
 Rocky 9.5Up to 5.14.0-503.14.1.el9_5
 
@@ -914,9 +1086,9 @@ SUSE Linux Micro 6.1Up to 6.4.0-48.1
 
 SUSE Linux Micro 6.0Up to 6.4.0-48.1
 
-Ubuntu 24.04Up to 6.8.0-147-generic, Up to 6.11.0-29-generic, Up to 6.14.0-37-generic, Up to 6.17.0-42-generic, Up to 7.0.0-42-generic
+Ubuntu 24.04Up to 6.8.0-147-generic, Up to 6.11.0-29-generic, Up to 6.14.0-37-generic, Up to 6.17.0-42-generic, Up to 7.0.0-43-generic
 
-Ubuntu 22.04Up to 5.15.0-202-generic, Up to 6.8.0-138-generic, Up to 6.8.0-124-generic
+Ubuntu 22.04Up to 5.15.0-203-generic, Up to 6.8.0-149-generic, Up to 6.8.0-124-generic
 
 Ubuntu 20.04Up to 5.4.0-216-generic, Up to 5.15.0-139-generic
 

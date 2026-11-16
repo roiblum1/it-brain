@@ -4,6 +4,76 @@ Source: https://docs.portworx.com/portworx-enterprise/stork-release-notes (Portw
 
 Portworx Stork Release Notes | Portworx Enterprise Documentation
 
+## 26.5.0​
+
+November 12, 2026
+
+This release addresses security vulnerabilities and provides new features and fixes:
+
+### New Features​
+
+-
+Migrate applications and volumes from an unsecured to a secured Portworx cluster: Starting with Stork 26.5.0, you can migrate applications and volumes from a Portworx cluster without PX-Security enabled to a destination cluster with PX-Security enabled. For more information, see Migration with Stork.
+
+-
+Granular migration of KubeVirt VMs by name or label: Portworx Disaster Recovery now supports name-based selection of KubeVirt virtual machines (VMs), providing precise control over which VMs a schedule migrates. Stork automatically includes the resources that a selected VM depends on, such as its PVCs and DataVolumes, which removes the need to label each dependency.
+
+To select VMs by name, use the new `--enforce-primary-kind`, `--primary-kind`, and `--include-names` flags. To add or remove VMs on an existing schedule without rewriting it, use the new `storkctl update migrationschedule` command with the `--add-names` and `--remove-names` flags. For more information, see Migrate specific VMs with a migration schedule.
+
+### Improvements​
+
+Improvement NumberImprovement Description
+
+PWX-30984Application pods can now continue running on the same node during Portworx upgrades. You can configure this behavior by adding `disable-pod-failover:true` to the Stork arguments in the `spec.stork.args` field of the `StorageCluster` custom resource. When you configure this argument, Stork does not delete these pods or reschedule them to a different node during a Portworx upgrade.
+
+### Fixes​
+
+Issue NumberIssue DescriptionSeverity
+
+PWX-61496Stork stopped supporting directly created `ApplicationBackup`, `ApplicationRestore`, and `ApplicationBackupSchedule` objects in 26.4.1, and accepts these objects only when Portworx Backup creates them. However, `storkctl` still included commands that create these objects directly.
+
+User Impact: An object that you created by using `storkctl` failed immediately with the reason `NotSupported`.
+
+Resolution: The `storkctl` CLI no longer includes the commands that create, get, and delete application backups, application restores, and application backup schedules, or the commands that suspend and resume application backup schedules. Use Portworx Backup to create and manage these objects.
+
+Affected Versions: 26.4.1 and laterMinor
+
+PWX-59511Stork could schedule pods on a node that had already reached the Portworx limit of 1024 volume attachments (`LocalVolumeAttaches`).
+
+User Impact: Pods and virtual machines (VMs) placed on such a node stayed in the `Scheduling` state, and volume mounts failed with the error `Licensed maximum reached for 'LocalVolumeAttaches' feature (allowed 1024, requested 1025)`.
+
+Resolution: The Stork scheduler extender now filters out nodes where the existing Portworx attachments plus the new volumes of the pod would exceed the 1024 limit. Stork counts only external attachments, because Portworx does not count internal attachments toward this limit.
+
+Affected Versions: All versionsMinor
+
+PWX-57663An in-place restore of a FlashArray Direct Access (FADA) or FlashBlade Direct Access (FBDA) volume from a cloud snapshot ran for a while and then failed with a misleading backend error: `Volume name must be between 1 and 63 characters`.
+
+User Impact: The restore failed after a delay, and the error did not tell you the actual cause, which is that in-place restore is not supported for these volumes.
+
+Resolution: The in-place restore now fails immediately and returns a `not supported` message. To restore a FADA volume, restore the cloud snapshot to a new PVC.
+
+Affected Versions: 25.4.1Minor
+
+PWX-56934The warning that Stork logged when it failed to list resources did not include the resource type, namespace, or error.
+
+User Impact: You could not easily tell why a migration failed to list resources, for example, when a permission was missing.
+
+Resolution: The warning now includes the GroupVersionResource, namespace, and error.
+
+Affected Versions: 26.1.0 and laterMinor
+
+### Known issues (Errata)​
+
+Issue NumberIssue DescriptionSeverity
+
+PWX-63026After an OpenShift Virtualization storage-class migration, Stork does not create a `VolumeSnapshotSchedule` for the migrated PVCs. The OCP storage migration controller copies all source PVC annotations to the target PVC, including the `stork.libopenstorage.org/snapshot-schedule-created: "yes"` annotation that Stork sets when it creates a schedule. When Stork reconciles the migrated PVC, it reads this annotation and skips creating a new schedule, leaving the migrated PVC without snapshot protection even when the target StorageClass has a snapshot schedule policy configured.
+
+Workaround: For each affected PVC, remove the annotation so that Stork creates a `VolumeSnapshotSchedule` on its next reconcile:
+
+`kubectl annotate pvc <pvc-name> -n <namespace> stork.libopenstorage.org/snapshot-schedule-created-`
+
+Affected versions: 26.5.0 and laterMinor
+
 ## 26.4.2​
 
 September 29, 2026

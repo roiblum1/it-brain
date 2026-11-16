@@ -24,13 +24,15 @@ Volume successfully created: 913654286436616938
 
 ## Attach a volume​
 
-Attach your PX-Fast volume to the host on the same node:
+Attach your PX-Fast volume to the host:
 
 ```
 
 pxctl host attach <px-volume>
 
 ```
+
+By default, a volume uses PX-Fast only when you attach it on the node that holds its replica. If you enable remote fastpath on the cluster, the volume can also use PX-Fast when you attach it on another node. For more information, see Enable remote fastpath on the cluster.
 
 ## List volumes in your cluster​
 
@@ -58,11 +60,11 @@ Note the ID or name of one of the volume; you can use it to view details using t
 
 ## Get volume details​
 
-Run the following command to get the detailed PX-Fast setting and usage information for a volume:
+Run the following command to view the details of a volume:
 
 ```
 
-pxctl volume inspect -e <px-volume>
+pxctl volume inspect <px-volume>
 
 ```
 
@@ -86,7 +88,7 @@ Volume          	 :  909303106655754070
 
 	Status          	 :  up
 
-	State           	 :  Attached: xxxxxxxx-xxxx-xxxx-xxxx-502e658bc307 (10.13.160.65)
+	State           	 :  Attached: xxxxxxxx-xxxx-xxxx-xxxx-502e658bc307 (10.13.160.65) (fastpath active)
 
 	Last Attached   	 :  Oct 11 01:43:42 UTC 2022
 
@@ -118,45 +120,9 @@ Volume          	 :  909303106655754070
 
 	Replication Status	 :  Up
 
-	Displaying extended volume state:
-
-	Fastpath preferred	: true
-
-	Fastpath promoted	: true
-
-	Fastpath dirty   	: false
-
-	Fastpath force failover	: false
-
-	Fastpath attached	: FASTPATH_ACTIVE
-
-	Fastpath coordinator	: xxxxxxxx-xxxx-xxxx-xxxx-502e658bc307
-
-	Fastpath replicas	: 1
-
-	Fastpath replica property follows:
-
-		Replica	: 0
-
-			On Node		: xxxxxxxx-xxxx-xxxx-xxxx-502e658bc307
-
-			Protocol	: FASTPATH_PROTO_LOCAL
-
-			Secure		: true
-
-			Exported	: true
-
-				Target	: /dev/pwx0/909303106655754070
-
-				Source	: /dev/pwx0/909303106655754070
-
-				Type	: Block device
-
-			Imported	: true
-
-				Mapped local device: /dev/pwx0/909303106655754070
-
 ```
+
+The `State` field shows `fastpath active` when the volume uses PX-Fast. If it does not, the volume uses the standard I/O path.
 
 ## Get pool details servicing your volume​
 
@@ -262,20 +228,8 @@ Replica sets on nodes:
 
 Replication Status	 :  Detached
 
-Displaying extended volume state:
-
-Fastpath preferred	: true
-
-Fastpath promoted	: false
-
-Fastpath dirty   	: false
-
-Fastpath force failover	: false
-
-Fastpath attached	: FASTPATH_INACTIVE
-
 ```
 
-`Fastpath preferred : true` means that this volume can use PX-Fast functionality if it is a one replica volume and attached locally.
+The volume is now eligible for PX-Fast. Portworx uses PX-Fast when you attach the volume and it has one replica. The volume must be attached on the node that holds its replica, unless you enable remote fastpath on the cluster.
 
 In this topic:

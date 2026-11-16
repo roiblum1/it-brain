@@ -12,4 +12,4 @@ FlashArray//C, FlashArray//X6.36.12.1
 
 FlashArray//X using NVMe/RoCE6.36.12.3
 
-FlashBlade4.34.8.5
+FlashBlade4.34.8.8

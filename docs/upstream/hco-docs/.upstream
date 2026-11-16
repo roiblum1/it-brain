@@ -1,7 +1,7 @@
 repo: kubevirt/hyperconverged-cluster-operator
 ref: main
-commit: 68dbb1a5868bcd173772fd5a7322425da6ae0901
-latest_tag: v1.19.0
+commit: 210da5eeda2a4d8d973bc543b5692e0b0c6d1263
+latest_tag: v1.19.1
 paths: docs, README.md
-files: 30
-synced: 2026-11-11T11:10:30Z
+files: 31
+synced: 2026-11-16T11:39:55Z

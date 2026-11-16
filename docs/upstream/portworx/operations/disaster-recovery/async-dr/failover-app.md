@@ -18,11 +18,13 @@ Follow the instructions on this page to perform a failover of your applications 
 
 important
 
-Portworx supports failover operations at the namespace level. You can failover a set of VMs or applications using label-based or name-based selection within a namespace. Starting from Stork 26.4.0, you can also select specific resources by name or exclude specific resources by name. See:
+- Portworx supports failover operations at the namespace level. You can failover a set of VMs or applications using label-based or name-based selection within a namespace. Starting from Stork 26.4.0, you can also select specific resources by name or exclude specific resources by name. See:
 
 - Perform failover for specific resources by name (Stork 26.4.0 and later)
 
 - Perform failover with selectors
+
+- Failover from a PX-Security enabled Portworx cluster to a non-secured Portworx cluster is not supported. Asynchronous DR is supported between two Portworx clusters that both have PX-Security enabled, between two non-secured Portworx clusters, and from a non-secured Portworx cluster to a Portworx cluster that has PX-Security enabled.
 
 ## Prerequisites​
 

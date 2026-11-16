@@ -12,10 +12,6 @@ Learn how to provide Portworx nodes their zone, region, and rack information. Th
 
 2 items
 
-## 📄️Kube Datastore
-
-Learn how Kube Datastore groups FlashArray-backed storage pools and controls volume placement in Portworx Enterprise.
-
 ## 📄️FlashArray Cloud Drives
 
 Learn how Portworx uses FlashArray cloud drives to create and manage storage pools for high-performance block volumes.

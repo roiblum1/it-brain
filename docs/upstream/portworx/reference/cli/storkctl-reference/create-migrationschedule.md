@@ -86,13 +86,13 @@ storkctl create migrationschedule my-migration-schedule \
 
 -c my-cluster-pair \
 
-—namespaces namespace1,namespace2 \
+--namespaces namespace1,namespace2 \
 
 -i 30 \
 
-—pre-exec-rule mysql-pre-rule \
+--pre-exec-rule mysql-pre-rule \
 
-—transform-spec mysql-service-transform \
+--transform-spec mysql-service-transform \
 
 -n kube-system
 
@@ -396,6 +396,74 @@ spec:
 
 ```
 
+### Create a migration schedule for specific VMs​
+
+Starting with Stork 26.5.0, you can create a migration schedule that migrates specific KubeVirt VMs and the resources that they depend on. For prerequisites, migration modes, and limitations, see Migrate specific VMs with a migration schedule.
+
+To migrate all VMs in a namespace and their dependencies, run the following command:
+
+```
+
+storkctl create migrationschedule <migrationScheduleName> \
+
+-c <clusterPairName> \
+
+--namespaces <namespace> \
+
+--schedule-policy-name <your-schedule-policy> \
+
+--enforce-primary-kind=true \
+
+--primary-kind=kubevirt.io/v1/VirtualMachine \
+
+-n <migrationNamespace>
+
+```
+
+To migrate only specific VMs, add the `--include-names` flag:
+
+```
+
+storkctl create migrationschedule <migrationScheduleName> \
+
+-c <clusterPairName> \
+
+--namespaces <namespace> \
+
+--schedule-policy-name <your-schedule-policy> \
+
+--enforce-primary-kind=true \
+
+--primary-kind=kubevirt.io/v1/VirtualMachine \
+
+--include-names=<vm-name1>,<vm-name2> \
+
+-n <migrationNamespace>
+
+```
+
+To migrate everything in the namespace except the VMs and their dependencies, set `--enforce-primary-kind=false`:
+
+```
+
+storkctl create migrationschedule <migrationScheduleName> \
+
+-c <clusterPairName> \
+
+--namespaces <namespace> \
+
+--schedule-policy-name <your-schedule-policy> \
+
+--enforce-primary-kind=false \
+
+-n <migrationNamespace>
+
+```
+
+To see the resources that Stork migrates before you create the schedule, add the `--preview` flag to any of these commands. For more information, see Preview resources before creating migration schedule.
+
+To add or remove VMs on an existing schedule, see storkctl update migrationschedule.
+
 ### Set up schedule policy for migration schedule​
 
 You have three options to set up the schedule policy for the migration schedule:
@@ -428,6 +496,8 @@ FieldDescriptionTypeDefault valueOptional
 
 `--disable-skip-deleted-namespaces`If present, Stork will fail the migration when it encounters a namespace that is deleted but specified in the namespaces field. By default, Stork ignores deleted namespaces during migration.booleanfalseYes
 
+`--enforce-primary-kind`Controls how primary kinds, such as KubeVirt VMs, are selected for migration. Set to `true` to migrate only the primary kinds that you specify with `--primary-kind` and their dependencies. Set to `false` to migrate all resources in the namespace except the primary kinds and their dependencies. If you do not set this flag, Stork migrates every resource in the namespace. Available from Stork 26.5.0.booleanNot setYes
+
 `--exclude-resource-types`Comma-separated list of the specific resource types which need to be excluded from migration, ex: Deployment,PersistentVolumeClaim.stringsYes
 
 `--exclude-resources`If present, Kubernetes resources will not be migrated.booleanfalseYes
@@ -437,6 +507,8 @@ FieldDescriptionTypeDefault valueOptional
 `--exclude-volumes`If present, the underlying Portworx volumes will not be migrated. This is the only allowed and default behavior in Sync-DR use-cases or when storage options are not provided in the cluster pair.booleanTrue for Sync-DR and False for Async-DR use cases.Yes
 
 `--ignore-owner-references-check`If set, resources with ownerReferences will also be migrated, even if the corresponding owners are getting migrated.booleanfalseYes
+
+`--include-names`Specify a comma-separated list of primary kind object names to migrate. If you omit this flag, Stork migrates all objects of the primary kind in the namespace. Requires `--enforce-primary-kind=true`. You cannot combine this flag with `--selectors` or `--exclude-selectors`. Available from Stork 26.5.0.stringsYes
 
 `--include-jobs`Set this flag to ensure that K8s Job resources are migrated. By default, the Job resources are not migrated.booleanfalseYes
 
@@ -451,6 +523,8 @@ FieldDescriptionTypeDefault valueOptional
 `--post-exec-rule`Specify the name of the rule to be executed after every migration is triggered.stringYes
 
 `--pre-exec-rule`Specify the name of the rule to be executed before every migration is triggered.stringYes
+
+`--primary-kind`Specify the kind of the primary resource to migrate, in `group/version/Kind` format. Currently, the only supported value is `kubevirt.io/v1/VirtualMachine`. Required when `--enforce-primary-kind=true`, and valid only with that setting. Available from Stork 26.5.0.stringYes
 
 `--purge-deleted-resources`Set this flag to automatically delete Kubernetes resources in the target cluster when they are removed from the source cluster.booleanfalseYes
 

@@ -22,15 +22,21 @@ The migration workflow consists of the following phases:
 
 The migration workflow uses a custom image that runs as a post-migration hook in MTV. This hook performs the following tasks:
 
-- Identifies migrated VM disks
+-
+Identifies migrated VM disks
 
-- Creates corresponding Portworx volumes
+-
+Creates corresponding Portworx volumes
+If the Portworx `StorageClass` uses `volumeBindingMode: WaitForFirstConsumer`, the hook first determines the node on which the VM will run. For more information, see Use a WaitForFirstConsumer StorageClass for hyperconvergence.
 
-- Initiates data conversion
+-
+Initiates data conversion
 
-- Rebinds VM PVCs to Portworx volumes
+-
+Rebinds VM PVCs to Portworx volumes
 
-- Restarts VMs after conversion
+-
+Restarts VMs after conversion
 
 ## Prerequisites​
 
@@ -78,6 +84,10 @@ Consider the following limitations before you begin the migration process:
 
 - Only Fibre Channel (FC) and iSCSI storage protocols are supported. NVMe/TCP is not supported.
 
+- If the cluster uses Kube Datastore dynamic pools, pause pool failover before you migrate VMs. A pool move during the `XCOPY` copy causes the copy to fail. For more information, see Rapid VM Migration limitations on Kube Datastore.
+
+- If the cluster has more than one FlashArray, set `kube_datastore_affinity` in the `StorageClass` that you use as `PXD_STORAGE_CLASS`, so that Portworx creates the volumes on the same FlashArray as the source datastore. For more information, see Rapid VM Migration limitations on Kube Datastore.
+
 ## Best practices and recommendations​
 
 Review the following best practices and recommendations to plan a successful migration.
@@ -103,6 +113,42 @@ To pin the intermediate FADA volume to a Pod, specify the `pure_fa_pod_name: "<f
 ### Create a separate migration plan for VMs with more than 15 disks or at least one disk that is larger than 5TB​
 
 If a VM has more than 15 disks or at least one disk that is larger than 5TB, Portworx by Everpure recommends that you create a separate MTV migration plan for that VM instead of including it in a larger shared plan.
+
+### Use a WaitForFirstConsumer StorageClass for hyperconvergence​
+
+A VM is hyperconverged when it runs on the same node as the storage pools that contain its disks. To place migrated VMs in this configuration, specify a Portworx `StorageClass` that uses `volumeBindingMode: WaitForFirstConsumer` (WFFC) as the `PXD_STORAGE_CLASS` value in the storage secret. For more information, see Step 3: Create the storage secret.
+
+Rapid VM Migration supports both `Immediate` and WFFC destination StorageClasses. With `Immediate` binding, Kubernetes provisions the volumes before a node is selected for the VM, so the volumes might not reside on the node where the VM runs.
+
+To use `WaitForFirstConsumer` (WFFC) with initial hyperconvergence, ensure that:
+
+- Portworx Enterprise 3.7.2 or later is installed.
+
+- The post-migration hook image is version `v1.1.0` or later.
+
+The following table describes WFFC migration behavior for different Portworx Enterprise and hook image versions:
+
+Portworx Enterprise versionHook image versionBehavior
+
+3.7.2 or later`v1.1.0` or laterWFFC migration is supported, and Portworx enforces initial hyperconvergence.
+
+Earlier than 3.7.2`v1.1.0` or laterWFFC migration is supported, but Portworx does not enforce initial hyperconvergence.
+
+Any versionEarlier than `v1.1.0`WFFC migration is not supported.
+
+When the `StorageClass` uses WFFC, the post-migration hook does the following before it converts the FADA volumes:
+
+- Creates an intermediate VM instance that reflects the CPU and memory requests, node affinity rules, and anti-affinity rules of the source VM.
+
+- Waits for the Kubernetes scheduler to select a node for the intermediate VM instance.
+
+- Records the selected node on the destination PVCs.
+
+Portworx then places the volumes on the node where the VM is expected to run. Kubernetes node selectors, taints, tolerations, and node affinity rules that you configured for the VM are honored during volume and VM placement.
+
+For VMs with multiple disks, the migration supports disks that use a combination of `Immediate` and WFFC StorageClasses. Only the disks that use a WFFC `StorageClass` receive initial hyperconvergence. To hyperconverge all disks of a VM, use a WFFC `StorageClass` for each disk.
+
+For more information about hyperconvergence on Kube Datastore, see Run KubeVirt VMs on Kube Datastore.
 
 ## Procedure​
 
@@ -134,7 +180,7 @@ The `fa-pxd-hook-config` ConfigMap contains the following keys:
 
 KeyDescriptionRequiredDefault
 
-CONVERTER_IMAGESpecifies the container image that the privileged data-copy pods run. Set this key to `docker.io/portworx/fa-pxd-converter:v1.0.1`.Yes-
+CONVERTER_IMAGESpecifies the container image that the privileged data-copy pods run. Set this key to `docker.io/portworx/fa-pxd-converter:v1.1.0`.Yes-
 
 FA_API_VERSIONSpecifies the FlashArray REST API version that the hook uses.No2.9
 
@@ -184,6 +230,8 @@ oc get storageclass
 ```
 
 If your cluster does not have a suitable Portworx `StorageClass`, create one before you continue.
+
+To place migrated VMs on the same node as their storage, select a `StorageClass` that uses `WaitForFirstConsumer` binding. For more information, see Use a WaitForFirstConsumer StorageClass for hyperconvergence.
 
 -
 Create a Kubernetes secret in the `openshift-mtv` namespace with the Pure FlashArray management endpoint, user credentials, and the `PURE_CLUSTER_PREFIX` value. Create the secret once, with all the fields:
@@ -306,7 +354,7 @@ To convert FADA volumes into Portworx-backed volumes, enable the post-migration 
 
 - Select the Enable post migration hook checkbox.
 
-- In the Hook runner image field, enter `docker.io/portworx/fa-pxd-hook:v1.0.1`.
+- In the Hook runner image field, enter `docker.io/portworx/fa-pxd-hook:v1.1.0`.
 
 - In the Service account field, enter `fa-pxd-converter`.
 

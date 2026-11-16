@@ -29,18 +29,18 @@ New pools can be created post Portworx installation using `pxctl` CLI `service` 
 This section covers the following key aspects of storage pools:
 
 -
-Provision storage pools: Create and configure storage pools, with options for both initial setup and adding pools after installation
+Provision storage pools: Create and configure storage pools, with options for both initial setup and adding pools after installation.
 
 -
-Manage your storage pool: Monitor pool capacity, handle alerts, recover full pools, and safely move volumes using Pool Drain
+Manage your storage pool: Monitor pool capacity, handle alerts, recover full pools, and safely move volumes using Pool Drain.
 
 -
-Configure storage pool cache: Enable storage pool caching to improve storage pool performance by building a small caching layer
+Configure storage pool cache: Enable storage pool caching to improve storage pool performance by building a small caching layer.
 
 -
 Recover nodes automatically with Auto Cordon: Automatically bring a storage node back online after a disk failure takes one of its storage pools offline.
 
 -
-Reclaim pool space: Reclaim unused capacity from deleted volumes on the underlying FlashArray or SAN storage used by a PX-StoreV2 pool
+Reclaim pool space: Reclaim unused capacity from deleted volumes on the underlying FlashArray or SAN storage used by a PX-StoreV2 pool.
 
 In this topic:

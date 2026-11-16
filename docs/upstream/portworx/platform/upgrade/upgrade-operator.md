@@ -6,6 +6,10 @@ Upgrade Portworx Operator | Portworx Enterprise Documentation
 
 Before upgrading the `StorageCluster`, you must upgrade the Portworx Operator to the latest version. The Operator manages the lifecycle of Portworx components, so keeping it current ensures compatibility with the Portworx Enterprise version you're upgrading to.
 
+important
+
+Operator 26.5.0 and later include guardrails against accidental uninstallation. If `spec.deleteStrategy` is set on a running `StorageCluster`, the Operator emits a `DeleteStrategyPreset` warning event, and deletion of a `StorageCluster` without `deleteStrategy` is blocked. For more information, see Delete strategy guardrails.
+
 The method you use to upgrade the Operator depends on how you installed it:
 
 - If you installed the Operator using a spec downloaded from Portworx Central, see Upgrade Operator installed using Portworx Central.

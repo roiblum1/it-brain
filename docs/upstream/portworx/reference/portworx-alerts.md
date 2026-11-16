@@ -170,6 +170,12 @@ VolumeFastpathStatusActiveVOLUMENOTIFYVolume fastpath status transitions to acti
 
 VolumeFastpathStatusInactiveVOLUMENOTIFYVolume fastpath status transitions to inactive.`px_alerts_volumefastpathstatusinactive_total`
 
+VolumeFastpathSetupFailedVOLUMEWARNINGTriggered when Portworx cannot promote a volume to fastpath. The alert message identifies the node and the reason. Portworx retries the promotion automatically.`px_alerts_volumefastpathsetupfailed_total`
+
+FastpathPortInUseNODEWARNINGTriggered when a process that is not part of Portworx holds the fastpath port 4420 on the node. The node cannot serve as a remote fastpath target until you free the port and restart Portworx on the node.`px_alerts_fastpathportinuse_total`
+
+FastpathPortExhaustionNODEWARNINGTriggered when the node runs out of available ports during NVMe-oF/TCP login.`px_alerts_fastpathportexhaustion_total`
+
 VolumeDeviceExistsVOLUMEALARMTriggered when there is a stale device for a volume that requires cleanup`px_alerts_volumedeviceexists_total`
 
 LegacySharedToSharedv4ServiceMigrationStartedVOLUMENOTIFYTriggered when a legacy shared volume is picked up for migration to type sharedv4 service.`px_alerts_legacysharedtosharedv4servicemigrationstarted_total`

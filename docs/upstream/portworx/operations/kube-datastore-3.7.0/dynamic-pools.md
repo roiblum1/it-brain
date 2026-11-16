@@ -1,61 +1,20 @@
-# Dynamic Pools for Volumes with Replication Factor 1
+# Dynamic Pool Failover for Portworx Enterprise 3.7.0
 
-Source: https://docs.portworx.com/portworx-enterprise/operations/storage-pool/kds-dynamicpools (Portworx Enterprise latest)
+Source: https://docs.portworx.com/portworx-enterprise/operations/kube-datastore-3.7.0/dynamic-pools (Portworx Enterprise latest)
 
-Dynamic Pools for Volumes with Replication Factor 1 | Portworx Enterprise Documentation
+Dynamic Pool Failover for Portworx Enterprise 3.7.0 | Portworx Enterprise Documentation
 
 important
 
-This feature is under Directed Availability. Please engage with your Portworx representative if you are interested and need to enable it in your environment under the current guidelines.
+Kube Datastore (KDS) dynamic pools was available under Directed Availability (DA) in Portworx Enterprise 3.7.0 and is now generally available (GA) in version 3.7.2. Upgrade to Portworx Enterprise 3.7.2 to access additional capabilities, including higher scale limits, compute-aware placement and hyperconvergence, and fastpath support on dynamic pools.
 
-Portworx’s Kube Datastore (KDS) is a distributed datastore that provides highly available, resilient, and efficient datastores for shared storage backend (SAN), and cloud drive environments.
-Each storage pool is created using a set of homogeneous storage devices available within a node, and a collection of these homogeneous storage pools within a cluster combined together forms a Kube Datastore. For more information, see Kube Datastore.
+For more information, see Kube Datastore for Portworx Enterprise 3.7.2 and Set Up KDS Dynamic Pools on a Portworx Cluster.
 
-Static storage pools: Pools created from direct attached storage in a shared-nothing architecture. They cannot be detached and reattached to another node after creation. High availability for volumes in static pools is achieved through replication (`repl=2` or `repl=3`). If a node fails, another replica serves the volume based on the configured replication factor.
+Dynamic pool failover allows Portworx to move eligible storage pools between Kubernetes nodes during node failures, maintenance, upgrades, and administrator-initiated operations. During relocation, Portworx detaches the pools from the source node and attaches it to a healthy node.
 
-Dynamic storage pools: Pools created from FlashArray Cloud Drives (FACD). These pools can be detached from one node and reattached to another. During relocation, all volumes in the pool move together instead of relying on intra-cluster replication. This enables efficient failover for volumes by leveraging the resiliency of the shared storage backend. Portworx Enterprise supports dynamic pools for volumes with `repl=1` in environments using FACD and PX-StoreV2. Static pools can continue to host volumes with higher replication factors (repl>1).
+This topic describes how dynamic pools in Kube Datastore (KDS) fail over to healthy nodes, how Portworx Enterprise selects destination nodes and rebalances pools, and how to enable and manually migrate dynamic pools in Portworx Enterprise 3.7.0.
 
-KDS dynamic storage pools are designed for shared storage backend (SAN) environments. KDS dynamic storage pools leverage the capabilities of the underlying FlashArray volumes to deliver superior data reduction, data protection, and resiliency, including:
-
-- Erasure coding for fault tolerance
-
-- Data reduction for storage efficiency
-
-- Efficient network utilization
-
-- Elimination of network I/O amplification caused by replication
-
-- No east-west traffic for rebuild operations
-
-## Storage Configuration for Dynamic and Static Pools​
-
-In environments that use both dynamic and static pools, clusters may contain a mix of `repl=1` and `repl=2` (or higher) volumes. Mixed pool configurations are supported but require explicit planning to ensure correct workload placement and failover behavior.
-
-Dynamic pools support only `repl=1` volumes and enable pool-level failover. Volumes with higher replication factors (`repl=2` or `repl=3`) use replication-based high availability and do not participate in dynamic pool failover.
-
-When you configure storage, follow these guidelines:
-
-- Use dynamic pools for workloads that require fast failover using shared storage backends.
-
-- Use static pools for workloads that require replication-based availability (`repl=2+`).
-
-- Configure storage classes with the appropriate replication factor. For example,`repl=1` for dynamic pools.
-
-If you are migrating from a replication-based setup to dynamic pools:
-
-- Convert existing volumes to `repl=1` using HA reduction. For more information, see Decreasing the replication factor.
-
-- Pool failover does not occur if any volume in the pool has a replication factor greater than 1.
-
-In mixed environments:
-
-- Pools with `repl=1` volumes can fail over across nodes.
-
-- Pools with `repl=2+` volumes use replication-based recovery.
-
-- Failover eligibility is determined at the pool level based on the volumes present.
-
-## Dynamic pools failover and node selection​
+## Dynamic pool failover and node selection​
 
 Dynamic pools with `repl=1` volumes can fail over to any node in the cluster. The only exception is nodes explicitly marked as `storageless`, which are not eligible to host storage in a disaggregated cluster.
 
@@ -75,7 +34,7 @@ note
 
 - When both pool resize and pool failover operations are triggered, the operation that starts first takes precedence. The other operation remains blocked until the first operation completes.
 
-### Dynamic pools failover scenarios​
+### Dynamic pool failover scenarios​
 
 Portworx Enterprise supports automatic pool migration in several scenarios:
 

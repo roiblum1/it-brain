@@ -219,6 +219,168 @@ oc apply -f migrationschedule.yaml
 
 If the policy name is missing or invalid there will be events logged against the schedule object. Success and failures of the migrations created by the schedule will also result in events being logged against the object. These events can be seen by running a `kubectl describe` or `oc describe` command on the object.
 
+## Migrate specific VMs with a migration schedule​
+
+Starting with Stork 26.5.0, you can limit a migration schedule to specific KubeVirt virtual machines (VMs) instead of migrating every resource in a namespace. You select the VMs by name. Stork automatically identifies the resources that each VM depends on, such as its PVCs and DataVolumes, and migrates them together with the VM. You do not need to label each dependency, and the other VMs in the namespace are not affected.
+
+### Prerequisites​
+
+Before migrating specific VMs, ensure that the following requirements are met:
+
+- Stork version: Stork 26.5.0 or later is installed on both the source and destination clusters.
+
+- ClusterPair: A ClusterPair is configured between the source and destination clusters.
+
+- KubeVirt VMs: The namespaces that you want to migrate contain KubeVirt VMs.
+
+### Migration modes​
+
+The `enforcePrimaryKind` field in the MigrationSchedule specification determines what Stork migrates:
+
+Mode`enforcePrimaryKind`What Stork migrates
+
+DefaultNot setStork migrates all resources in the namespace. This is the existing behavior.
+
+VMs only`true`Stork migrates only the kinds that you list in `primaryKinds`, which are VMs, and their dependencies. To migrate specific VMs, list their names in `includeNames`.
+
+Everything except VMs`false`Stork migrates all resources in the namespace except the registered primary kinds, which are VMs, and their dependencies. Do not set `primaryKinds` in this mode.
+
+### Create a migration schedule for specific VMs​
+
+To create a migration schedule for specific VMs, use one of the following methods:
+
+-
+Run the `storkctl create migrationschedule` command with the `--enforce-primary-kind` and `--primary-kind` flags. For the commands and examples, see Create a migration schedule for specific VMs.
+
+or
+
+-
+Add the `enforcePrimaryKind` and `primaryKinds` fields to the `spec.template.spec` section of the `migrationschedule.yaml` file that you created in Create a migration schedule on your source cluster, as shown in the following example.
+
+```
+
+apiVersion: stork.libopenstorage.org/v1alpha1
+
+kind: MigrationSchedule
+
+metadata:
+
+  name: vm-migration-schedule
+
+  namespace: <migrationnamespace>
+
+spec:
+
+  schedulePolicyName: <your-schedule-policy>
+
+  template:
+
+    spec:
+
+      clusterPair: <clusterpair-name>
+
+      includeVolumes: false
+
+      startApplications: false
+
+      namespaces:
+
+      - <app-namespace>
+
+      enforcePrimaryKind: true
+
+      primaryKinds:
+
+      - kind: kubevirt.io/v1/VirtualMachine
+
+        includeNames:       # Omit includeNames to select all VMs in the namespace
+
+        - <vm-name1>
+
+        - <vm-name2>
+
+```
+
+To see the resources that Stork migrates before you create the schedule, add the `--preview` flag to the `storkctl create migrationschedule` command.
+
+### Add or remove VMs on an existing schedule​
+
+To change which VMs a schedule covers without rewriting the schedule, use the `storkctl update migrationschedule` command. You can add VMs, remove VMs, or preview the change before you apply it.
+
+The following example shows how to add a VM, remove a VM, and preview a change:
+
+```
+
+# Add the VM <vm-name> to the schedule <migration-schedule>
+
+storkctl update migrationschedule <migration-schedule> \
+
+  --primary-kind=kubevirt.io/v1/VirtualMachine \
+
+  --add-names=<vm-name> \
+
+  -n <migrationnamespace>
+
+# Remove the VM <vm-name> from the schedule <migration-schedule>
+
+storkctl update migrationschedule <migration-schedule> \
+
+  --primary-kind=kubevirt.io/v1/VirtualMachine \
+
+  --remove-names=<vm-name> \
+
+  -n <migrationnamespace>
+
+# Preview the resulting primaryKinds without applying the change
+
+storkctl update migrationschedule <migration-schedule> \
+
+  --primary-kind=kubevirt.io/v1/VirtualMachine \
+
+  --add-names=<vm-name> \
+
+  --dry-run \
+
+  -n <migrationnamespace>
+
+```
+
+Replace `<migration-schedule>` with the name of the migration schedule, `<vm-name>` with the name of the VM, and `<migrationnamespace>` with the namespace of the migration schedule.
+
+When an update succeeds, the command prints the following message:
+
+```
+
+MigrationSchedule <migrationnamespace>/<migration-schedule> updated
+
+```
+
+With the `--dry-run` flag, the command prints the resulting `primaryKinds` block without applying the change:
+
+```
+
+DRY RUN — resulting primaryKinds:
+
+- includeNames:
+
+  - <vm-name>
+
+  kind: kubevirt.io/v1/VirtualMachine
+
+```
+
+For all options, see storkctl update migrationschedule.
+
+### Limitations​
+
+The following limitations apply when migrating specific VMs:
+
+- VM selection: You can select VMs either by name with `includeNames` or by label with `--selectors` and `--exclude-selectors`. Stork rejects a schedule that uses both.
+
+- Primary kinds: The only supported primary kind is `kubevirt.io/v1/VirtualMachine`, and each kind can appear only once in `primaryKinds`. Stork rejects any other primary kind.
+
+- Required settings: `enforcePrimaryKind: true` requires at least one entry in `primaryKinds`. You can use `primaryKinds` and `includeNames` only when `enforcePrimaryKind` is `true`. Stork rejects these fields in the default mode or when `enforcePrimaryKind` is `false`.
+
 ## Check your migration status​
 
 -

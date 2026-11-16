@@ -81,7 +81,7 @@ Portworx places volumes on storage pools that match the requested priority tier.
 
 io_profileOverrides I/O algorithm that Portworx uses for a volume. For more information about IO profiles, see the IO profiles section of the documentation.io_profile: "db_remote"
 
-kube_datastore_affinityPins the volumes created from this StorageClass to a single Kube Datastore (KDS), and therefore to a single FlashArray. Specify the name of one KDS. Portworx adds an internal replica affinity rule that places all volume replicas on the pools of that KDS, and combines this rule with any other placement rules that apply to the volume. Supported only on FlashArray CloudDrive (FACD) deployments. For more information, see Kube Datastore affinity.kube_datastore_affinity: "fa-x90-1a"
+kube_datastore_affinityPins the volumes created from this StorageClass to a single Kube Datastore (KDS), and therefore to a single FlashArray. Specify the name of one KDS. Portworx adds an internal replica affinity rule that places all volume replicas on the pools of that KDS, and combines this rule with any other placement rules that apply to the volume. Supported only for Portworx volumes on FlashArray Cloud Drive (FACD) storage pools. Not supported for FlashArray Direct Access (FADA) volumes. For more information, see Provision volumes with KDS-aware StorageClasses.kube_datastore_affinity: "fa-x90-1a"
 
 groupSpecifies the group a volume should belong to. Portworx restricts replication sets of volumes of the same group on different nodes. If the force group option 'fg' is set to true, the volume group rule is strictly enforced. By default, it's not strictly enforced.group: "volgroup1"
 

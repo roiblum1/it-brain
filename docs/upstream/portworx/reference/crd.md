@@ -68,6 +68,10 @@ Reference information for Stork CRD Rule
 
 Reference information for Stork CRD SchedulePolicy
 
+## 📄️SchedulingOptimization
+
+Reference information for Stork CRD SchedulingOptimization
+
 ## 📄️StorageCluster
 
 Explanation of Portworx Enterprise Operator and fields in StorageCluster object

@@ -4,13 +4,13 @@ Source: https://docs.portworx.com/portworx-enterprise/reference/helm-chart-param
 
 Portworx Helm Chart Parameters | Portworx Enterprise Documentation
 
-This topic provides the configurable parameters of the latest Portworx Helm chart and their default values. For more information, see the Portworx Helm chart GitHub repository. For Helm chart compatibility matrix, see the Helm Chart Compatibility Matrix.
+This topic provides the configurable parameters of the latest Portworx Helm chart and their default values. For more information, see the Portworx Helm chart GitHub repository. For the Helm chart compatibility matrix, see the Helm Chart Compatibility Matrix.
 
 ParameterDescriptionDefault
 
-`imageVersion`Specifies the version of the Portworx image.3.7.1
+`imageVersion`Specifies the version of the Portworx image.3.7.2
 
-`pxOperatorImageVersion`Specifies the version of the Portworx operator image.26.4.0
+`pxOperatorImageVersion`Specifies the version of the Portworx operator image.26.5.0
 
 `verboseOperatorLogs`Enable verbose logging for the Portworx operatortrue
 
@@ -124,11 +124,19 @@ ParameterDescriptionDefault
 
 `pxfslibsUpdate.schedule`Schedule the pxfslibs update job in cronjob format (e.g., "0 2 * * *" for daily at 2 AM)""
 
-`ocpDynamicPlugin.cacheAgentImage`Specifies Cache agent image for OpenShift dynamic plugin.""
+`ocpDynamicPlugin.cacheAgentImage`Deprecated. Use `platformAgent.image` instead. Specifies the cache agent image for the OpenShift dynamic plugin.""
 
 `ocpDynamicPlugin.pluginImage`Specifies the image for the OpenShift dynamic plugin.""
 
 `ocpDynamicPlugin.proxyImage`Specifies the image for the OpenShift dynamic plugin proxy.""
+
+`platformAgent.enabled`Enables or disables the PX Platform Agent. When unset, it is enabled on OpenShift and disabled on other Kubernetes platforms.—
+
+`platformAgent.image`Overrides the PX Platform Agent image from the release manifest. Supersedes the deprecated `ocpDynamicPlugin.cacheAgentImage` when both are set.""
+
+`platformAgent.ui.enabled`Enables or disables the PX Observability UI that uses the Platform Agent. Disabled when unset.—
+
+`platformAgent.ui.image`Overrides the PX Observability UI image from the release manifest.""
 
 `monitoring.prometheus.enabled`Enables or disables Prometheus monitoring.false
 
@@ -218,7 +226,7 @@ ParameterDescriptionDefault
 
 `clusterToken.serviceAccountName`The service account name utilized for the post-install hook to generate the cluster token."px-create-cluster-token"
 
-`deleteStrategy.type`Specifies the delete strategy for the Portworx cluster, with valid options being Uninstall or UninstallAndWipe.""
+`deleteStrategy.type`Specifies the delete strategy for the Portworx cluster, with valid options being `Uninstall`, `UninstallAndWipe`, or `UninstallAndDelete`. Set this only at the time you uninstall Portworx, not during installation. For more information, see Delete strategy.""
 
 `deleteStrategy.ignoreVolumes`Specifies whether to ignore volumes during cluster deletion.""
 
@@ -240,7 +248,7 @@ ParameterDescriptionDefault
 
 `componentK8sConfig.globalConfig`Global configuration that applies to all Portworx components unless overridden by component-specific configuration. Supports annotations, labels, placement (nodeAffinity, tolerations), and priorityClass. Note: Global configuration cannot set container resource requests and limits.
 
-`componentK8sConfig.components`List of component-specific configurations. Each component can specify componentNames (e.g., "Autopilot", "CSI", "Portworx API") and workloadConfigs with workloadNames, annotations, labels, containerConfigs (resources), priorityClass, and placement settings.[]
+`componentK8sConfig.components`List of component-specific configurations. Each component can specify componentNames (e.g., "Autopilot", "CSI", "Portworx API") and workloadConfigs with workloadNames, annotations, labels, containerConfigs (resources, args, env), priorityClass, and placement settings.[]
 
 `workloadIdentity.credentials`List of cloud workload identity credentials used to annotate the Portworx ServiceAccount for cloud provider authentication. Each entry specifies `cloudProvider` (valid values: aws, azure), `key` (annotation key, e.g. `eks.amazonaws.com/role-arn` for AWS), and `value` (annotation value, e.g. the IAM role ARN to be assumed by the ServiceAccount).[]
 
@@ -248,4 +256,4 @@ ParameterDescriptionDefault
 
 note
 
-You can specify each parameter using the `--set key1=value1,key2=value2` argument with the `helm install` command. For example, `helm install my-release portworx/portworx --set pxOperatorImageVersion=25.3.1` command sets the Portworx Operator version to `25.3.1`.
+You can specify each parameter using the `--set key1=value1,key2=value2` argument with the `helm install` command. For example, `helm install my-release portworx/portworx --set pxOperatorImageVersion=25.3.1` sets the Portworx Operator version to `25.3.1`.

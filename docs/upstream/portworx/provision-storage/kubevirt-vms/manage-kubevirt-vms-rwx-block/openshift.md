@@ -34,7 +34,7 @@ If you are using OpenShift Container Platform (OCP) 4.20, version 4.20.27 or lat
 
 If you are running Portworx Enterprise version 3.4.0 or later with Portworx Operator version 25.5.0 or later, the Portworx Operator creates the following StorageClasses by default when the `HyperConverged` custom resource is detected:
 
-- `px-rwx-block-kubevirt`: RWX block volume class, and is annotated as the default KubeVirt StorageClass (only if no other default exists).
+- `px-rwx-block-kubevirt`: RWX block volume class, and is annotated as the default KubeVirt StorageClass (only if no other default exists). On new installations with dynamic pools enabled, `px-rwx-block-kubevirt-repl1` is the default instead. See the following note.
 
 - `px-rwx-file-kubevirt`: Shared file system RWX class used for features like vTPM.
 
@@ -44,7 +44,7 @@ You can control the creation of these StorageClasses using the `spec.csi.kubeVir
 
 important
 
-Starting with Operator version 26.1.0, the operator creates an additional storage class, `px-rwx-block-kubevirt-repl1`, when dynamic pools are enabled. When using dynamic pools, you must explicitly set this storage class as the default by adding the `storageclass.kubevirt.io/is-default-virt-class` annotation. Portworx does not add this annotation automatically. For information about dynamic pools, see Dynamic Pools for Volumes with Replication Factor 1.
+Starting with Portworx Operator version 26.1.0, the Operator creates an additional StorageClass, `px-rwx-block-kubevirt-repl1`, when dynamic pools are enabled. For new installations running Portworx Enterprise 3.7.2 or later with Operator 26.5.0 or later, and dynamic pools enabled, the Operator makes `px-rwx-block-kubevirt-repl1` the default KubeVirt StorageClass by adding the `storageclass.kubevirt.io/is-default-virt-class: "true"` annotation. This replaces `px-rwx-block-kubevirt` with `px-rwx-block-kubevirt-repl1` as the default KubeVirt StorageClass for these installations. For existing or upgraded clusters, or installations without dynamic pools, the Operator does not add this annotation. In these cases, to make `px-rwx-block-kubevirt-repl1` the default KubeVirt StorageClass, add the annotation manually. For more information, see Dynamic Pool Failover.
 
 When Portworx is configured as the default KubeVirt StorageClass, the Hyperconverged Cluster Operator (HCO) automatically manages OS image boot sources in the `openshift-virtualization-os-images` namespace.
 

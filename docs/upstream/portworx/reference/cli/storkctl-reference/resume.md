@@ -12,20 +12,6 @@ note
 
 The following commands support a set of global flags that can be used across all `storkctl` commands. For details, see the Global Flags section.
 
-## storkctl resume applicationbackupschedules​
-
-Resume applicationBackup schedules
-
-Aliases: `applicationbackupschedule`
-
-Example: `storkctl resume applicationbackupschedule <name> <flags>`
-
-###  Flags
-
-FlagInput typeDescriptionDefaultRequired
-
-`--backupLocation`, `-b``string`Name of the BackupLocation for which to resume ALL applicationBackup schedules-Optional
-
 ## storkctl resume migrationschedules​
 
 Resume migration schedules

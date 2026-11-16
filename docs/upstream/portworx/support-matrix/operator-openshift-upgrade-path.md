@@ -14,11 +14,11 @@ important
 
 Portworx Enterprise version:
 
-3.7.1▼
+3.7.2▼
 
-Portworx Operator version: 26.4.0 or later
+Portworx Operator version: 26.5.0 or later
 
-Showing 5 qualified OpenShift upgrade paths for Portworx Enterprise 3.7.1
+Showing 6 qualified OpenShift upgrade paths for Portworx Enterprise 3.7.2
 
 OpenShift ChannelOpenShift VersionKubernetes Version
 
@@ -26,8 +26,14 @@ stable-4.184.18.561.31.14
 
 stable-4.194.19.511.32.13
 
-stable-4.204.20.421.33.13
+stable-4.204.20.461.33.13
 
-stable-4.214.21.371.34.9
+stable-4.214.21.421.34.9
 
-stable-4.224.22.181.35.8
+stable-4.224.22.221.35.9
+
+stable-5.05.0.11.36.5
+
+note
+
+Portworx Enterprise does not support PXStoreV1 on nodes running Red Hat Enterprise Linux (RHEL) 10 or later in OpenShift Container Platform (OCP) clusters.

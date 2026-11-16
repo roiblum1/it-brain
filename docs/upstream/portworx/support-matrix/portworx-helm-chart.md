@@ -16,6 +16,8 @@ important
 
 Helm chart versionPXE versionOperator version
 
+10.2.03.7.226.5.0
+
 10.1.03.7.126.4.0
 
 10.0.03.7.026.3.2

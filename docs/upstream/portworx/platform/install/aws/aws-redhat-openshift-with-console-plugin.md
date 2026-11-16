@@ -645,6 +645,8 @@ In the Component Settings section:
 
 - (Optional) Select the Enable Stork checkbox to enable Stork.
 
+- (Optional) Select the Remote Fastpath (NVMe-oF/TCP) checkbox to enable Remote Fastpath. For more information, see Remote Fastpath.
+
 - (Optional) Select Restrict Data Protection RBAC to restrict RBAC permissions for Stork (if enabled) and Operator.
 You will not be able to use Backup and DR capabilities with this restriction.
 For more information, see Restrict Data Protection RBAC.

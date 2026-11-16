@@ -22,7 +22,7 @@ Reference for the installation script used when installing or upgrading Portworx
 
 ## 🗃Custom Resource Definitions
 
-20 items
+21 items
 
 ## 📄️Limits of Traditional DR
 

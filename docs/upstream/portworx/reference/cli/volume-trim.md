@@ -30,7 +30,14 @@ Automatic filesystem trim is disabled by default. You can enable automatic files
 
 note
 
+-
 Starting from Portworx Enterprise 3.5.0, auto fstrim supports volumes with both `discard` and `nodiscard` mount options. In earlier versions, auto fstrim only ran on volumes with `nodiscard` enabled.
+
+-
+Starting with Portworx Enterprise 3.6.0, Portworx enables discard support when it attaches an encrypted volume. This allows `fstrim` operations, including auto fstrim, to run on encrypted volumes.
+
+-
+If you created an encrypted volume in Portworx Enterprise 3.5.x or earlier, detach and reattach the volume one time after you upgrade to 3.6.0 or later. Until you reattach the volume, `fstrim` operations on it fail with the error `the discard operation is not supported`. Kubernetes users can scale down their application pods so that the volume is in a detached state and then scale up to attach the volume.
 
 Auto fstrim takes into account current workloads in the system and dynamically adjusts the rate at which it performs the trim job. This prioritizes user application performance while optimizing trim rate when application load is low. Note that nodiscard and auto fstrim are not supported on volumes formatted with XFS. For more details, see the Force-enable the nodiscard and auto-fstrim options on XFS formatted volumes section.
 
@@ -541,7 +548,7 @@ pxctl volume trim start exampleVolume
 
 ```
 
-#### pxctl volume trim status​
+#### pxctl volume trim status  ​
 
 ```
 

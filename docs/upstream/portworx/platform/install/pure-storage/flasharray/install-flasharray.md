@@ -63,6 +63,15 @@ For more information, see Secure your etcd communication.
 
 - Select backend store based on your infrastructure as PX-StoreV1 or PX-StoreV2. By default, the system selects PX-StoreV2 as the datastore.
 
+- (Optional) Select the Run on Small Node Configuration checkbox if your cluster nodes have limited resources (for example, 4 CPU cores and 8 GB of memory).
+Portworx requires 8 CPU cores and 8 GB of memory by default. Enabling this option allows Portworx to run on smaller nodes, but it may reduce overall performance compared to the default configuration.
+
+note
+
+This checkbox is available only when you select PX-StoreV2 as the datastore.
+
+- (Optional) Select the Enable Dynamic Pool checkbox to enable dynamic pools. For more information, see Dynamic Pools.
+
 - From the Select type of storage area network dropdown, choose one of the following:
 
 - iSCSI(Default)
@@ -116,6 +125,8 @@ In the Kubernetes Distribution section, under Are you running on either of these
 In the Component Settings section:
 
 - Select the Enable Stork checkbox to enable Stork.
+
+- (Optional) Select the Remote Fastpath (NVMe-oF/TCP) checkbox to enable Remote Fastpath. For more information, see Remote Fastpath.
 
 - Select the Restrict Data Protection RBAC to restrict RBAC permissions for Stork (if enabled) and Operator (not supported for OpenShift 4+). You will not be able to use Backup and DR capabilities with this restriction. For OpenShift 4+, selecting Enable Stork is required to enable Restrict Data Protection RBAC. For more information, see Restrict Data Protection RBAC.
 
@@ -232,7 +243,15 @@ cloudStorage:
 
 ```
 
-Portworx Enterprise creates a Kube Datastore for each FlashArray when the first storage pool is provisioned on that array. For more information, see Create a Kube Datastore on a specific FlashArray.
+This configuration creates three storage pools on each storage node, one from each FlashArray. Portworx creates a separate KDS for each FlashArray when its first pool is provisioned.
+
+Pool provisioning also follows CSI topology. If a device specification includes the `pod` field, Portworx uses the specified FlashArray pod placement.
+
+note
+
+Portworx applies `deviceSpecs` only when provisioning new storage nodes. Changes to this field do not affect existing storage nodes. Similarly, changes made to storage pools on an existing node by using `pxctl` are not reflected in the `StorageCluster` specification.
+
+Portworx Enterprise creates a Kube Datastore for each FlashArray when the first storage pool is provisioned on that array. For more information, see Select the KDS for storage pools.
 
 ## (Optional) Customize Portworx system volumes for secure multi-tenancy​
 

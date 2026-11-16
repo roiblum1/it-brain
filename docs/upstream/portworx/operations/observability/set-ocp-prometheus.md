@@ -281,6 +281,8 @@ curl "https://docs.portworx.com/portworx-enterprise/samples/k8s/pxc/portworx-etc
 
 curl "https://docs.portworx.com/portworx-enterprise/samples/k8s/pxc/portworx-nbdd-dashboard.json" -o portworx-nbdd-dashboard.json && \
 
+curl "https://docs.portworx.com/portworx-enterprise/samples/k8s/pxc/portworx-source-disks-performance-dashboard.json" -o portworx-source-disks-performance-dashboard.json && \
+
 # Optional: Following files are required only if you need to monitor API requests sent to FlashArray.
 
 curl "https://docs.portworx.com/portworx-enterprise/samples/k8s/pxc/fa-apis-dashboard1.json" -o fa-apis-dashboard1.json && \
@@ -308,6 +310,8 @@ oc -n portworx create configmap grafana-dashboards \
 --from-file=portworx-etcd-dashboard.json \
 
 --from-file=portworx-nbdd-dashboard.json \
+
+--from-file=portworx-source-disks-performance-dashboard.json \
 
 # Optional: Following dashboards are required only if you need to monitor API requests sent to FlashArray.
 

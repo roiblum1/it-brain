@@ -12,28 +12,6 @@ note
 
 The following commands support a set of global flags that can be used across all `storkctl` commands. For details, see the Global Flags section.
 
-## storkctl delete applicationbackups​
-
-Delete applicationbackup resources
-
-Aliases: `applicationbackup`, `backup`, `backups`
-
-Example: `storkctl delete applicationbackup <name>`
-
-## storkctl delete applicationbackupschedules​
-
-Delete applicationBackup schedules
-
-Aliases: `applicationbackupschedule`
-
-Example: `storkctl delete applicationbackupschedule <name>`
-
-###  Flags
-
-FlagInput typeDescriptionDefaultRequired
-
-`--backupLocation`, `-b``string`Name of the BackupLocation for which to delete ALL applicationBackup schedules-Optional
-
 ## storkctl delete applicationclones​
 
 Delete applicationclone resources
@@ -41,14 +19,6 @@ Delete applicationclone resources
 Aliases: `applicationclone`, `clone`, `clones`
 
 Example: `storkctl delete applicationclone <name>`
-
-## storkctl delete applicationrestores​
-
-Delete applicationrestore resources
-
-Aliases: `applicationrestore`, `apprestore`, `apprestores`
-
-Example: `storkctl delete applicationrestore <name>`
 
 ## storkctl delete groupsnapshots​
 

@@ -335,6 +335,8 @@ note
 
 - The default clusterName is `mycluster`. However, it's recommended to change it to a unique identifier to avoid conflicts in multi-cluster environments.
 
+- Do not set `deleteStrategy` in the `px_install_values.yaml` file. Set it only at the time you uninstall Portworx. If it is set, the Operator emits a `DeleteStrategyPreset` warning event. For more information, see Delete strategy.
+
 -
 Install Portworx.
 

@@ -8,6 +8,10 @@ The topics below provide comprehensive instructions for upgrading Portworx Enter
 
 note
 
+If your cluster uses Kube Datastore dynamic pools, or you want to adopt them as part of this upgrade, additional steps apply and the upgrade takes longer, because the Portworx Operator relocates dynamic pools off each node before restarting Portworx on it. For more information, see Upgrade a cluster for dynamic pools.
+
+note
+
 During an upgrade, Portworx pods are deleted and re-created on each node to apply the spec changes. The `spec.updateStrategy` field in the StorageCluster resource controls how nodes are upgraded. By default, the update strategy is RollingUpdate, and the `maxUnavailable` field specifies the maximum number of nodes that can be unavailable at a time. The default value of `maxUnavailable` is 1.
 
 This is expected behavior, and you might see pod deletion events in the Kubernetes audit logs. You don't need to take any action.

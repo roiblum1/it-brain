@@ -58,10 +58,10 @@ Note: Supported in Portworx Operator 25.6.0 or later.`object`
 `containerConfigs`ContainerConfig contains container configuration for all or some containers of the component`array`
 
 `spec.components.workloadConfigs.`
-`containerConfigs.containerSelector`ContainerNames is the list of containers for a workload on which these resource configurations will be applied.`array`
+`containerConfigs.containerNames`ContainerNames is the list of containers for a workload on which these resource configurations will be applied.`array`
 
 `spec.components.workloadConfigs.`
-`containerConfigs.resources`Resources contains resource requirements for all the containers selected by the containerSelector`object`
+`containerConfigs.resources`Resources contains resource requirements for all the containers selected by the containerNames`object`
 
 `spec.components.workloadConfigs.`
 `containerConfigs.resources.claims`Claims lists the names of resources, defined in spec.resourceClaims,
@@ -86,6 +86,16 @@ More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-co
 If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,
 otherwise to an implementation-defined value. Requests cannot exceed Limits.
 More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/`object`
+
+`spec.components.workloadConfigs.`
+`containerConfigs.args`Container arguments to override on all containers selected by `containerNames`. The operator merges each entry into the container's existing args by matching the flag name (the substring before `=`). Matching args are replaced in place; new args are appended.
+
+Available in Operator 26.5.0 or later. Each entry must be a POSIX-style flag: long form `--name` or `--name=value` (name has two or more characters after the double dash), or short form `-x` or `-x=value` (single character after a single dash). Single-dash multi-character flags such as `-kube-api-qps=50` are not supported — pflag-based CSI sidecar containers parse them as combined short flags and fail to start. The Kubernetes API server rejects entries that do not match this format.`array`
+
+`spec.components.workloadConfigs.`
+`containerConfigs.env`Environment variables to override on all containers selected by `containerNames`. The operator merges each entry into the container's existing environment variables by matching `name`. A matching variable is replaced in place; a new variable is appended.
+
+Available in Operator 26.5.0 or later. Only components that support environment variable overrides accept this field, and the `ComponentK8sConfig` is rejected with `status.phase` set to `VALIDATION_FAILED` if you set `env` on a container that does not support it. The `CSI` component does not support `env`; use `args` instead.`array`
 
 `spec.components.workloadConfigs.`
 `labels`Labels are the labels to be applied to the component`object`
@@ -270,6 +280,6 @@ Note: Supported in Portworx Operator 25.6.0 or later.`string`
 
 FieldDescriptionType
 
-`status.phase`Phase of the StorageCluster is a simple, high-level summary of where the StorageCluster is in its lifecycle. The condition array contains more detailed information about the state of the cluster.`string`
+`status.phase`Phase of the ComponentK8sConfig is a simple, high-level summary of where the ComponentK8sConfig is in its lifecycle. The condition array contains more detailed information about the state of the cluster.`string`
 
-`status.reason`Reason is CamelCase messages split with commas indicating details about why the StorageCluster is in this state.`string`
+`status.reason`Reason is CamelCase messages split with commas indicating details about why the ComponentK8sConfig is in this state.`string`

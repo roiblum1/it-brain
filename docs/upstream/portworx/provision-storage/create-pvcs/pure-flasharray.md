@@ -30,6 +30,8 @@ note
 
 - Volume import and CSI ephemeral volumes are not supported.
 
+- The `kube_datastore_affinity` StorageClass parameter is not supported. FlashArray Direct Access volumes are not placed on Portworx storage pools, so Kube Datastore (KDS) affinity does not apply.
+
 - `CreateOperations` is not honored by Portworx.
 
 Once you’ve configured Portworx to work with your FlashArray, you can create a StorageClass and reference it in any PVCs you create.

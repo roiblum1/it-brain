@@ -14,6 +14,8 @@ important
 
 - Perform failback for specific resources by name (Stork 26.4.0 and later)
 
+- Failback from a PX-Security enabled Portworx cluster to a non-secured Portworx cluster is not supported. Asynchronous DR is supported between two Portworx clusters that both have PX-Security enabled, between two non-secured Portworx clusters, and from a non-secured Portworx cluster to a Portworx cluster that has PX-Security enabled.
+
 The following considerations are used in the examples on this page. Update them to the appropriate values based on your environment:
 
 - Source Cluster is the Kubernetes cluster which is down and where your applications were originally running.

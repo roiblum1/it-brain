@@ -354,6 +354,8 @@ wget https://docs.portworx.com/portworx-enterprise/samples/k8s/pxc/portworx-etcd
 
 wget https://docs.portworx.com/portworx-enterprise/samples/k8s/pxc/portworx-nbdd-dashboard.json
 
+wget https://docs.portworx.com/portworx-enterprise/samples/k8s/pxc/portworx-source-disks-performance-dashboard.json
+
 # Optional: Following files are required only if you need to monitor API requests sent to FlashArray.
 
 wget https://docs.portworx.com/portworx-enterprise/samples/k8s/pxc/fa-apis-dashboard1.json
@@ -381,6 +383,8 @@ kubectl -n <px-namespace> create configmap grafana-dashboards \
 --from-file=portworx-etcd-dashboard.json  \
 
 --from-file=portworx-nbdd-dashboard.json \
+
+--from-file=portworx-source-disks-performance-dashboard.json \
 
 # Optional: Following dashboards are required only if you need to monitor API requests sent to FlashArray.
 

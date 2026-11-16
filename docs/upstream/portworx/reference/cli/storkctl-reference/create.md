@@ -12,54 +12,6 @@ note
 
 The following commands support a set of global flags that can be used across all `storkctl` commands. For details, see the Global Flags section.
 
-## storkctl create applicationbackups​
-
-Start an applicationBackup
-
-Aliases: `applicationbackup`, `backup`, `backups`
-
-Example: `storkctl create applicationbackup <name> <flags>`
-
-###  Flags
-
-FlagInput typeDescriptionDefaultRequired
-
-`--backupLocation`, `-b``string`BackupLocation to use for the backup-Yes
-
-`--namespaces``stringSlice`Comma separated list of namespaces to backup`[]`Yes
-
-`--postExecRule``string`Rule to run after executing applicationbackup-Optional
-
-`--preExecRule``string`Rule to run before executing applicationbackup-Optional
-
-`--resourceTypes``string`List of specific resource types which need to be backed up, ex: "Deployment,PersistentVolumeClaim"-Optional
-
-`--wait``bool`Wait for applicationbackup to complete`false`Optional
-
-## storkctl create applicationbackupschedules​
-
-Create a applicationBackup schedule
-
-Aliases: `applicationbackupschedule`
-
-Example: `storkctl create applicationbackupschedule <name> <flags>`
-
-###  Flags
-
-FlagInput typeDescriptionDefaultRequired
-
-`--backupLocation`, `-b``string`BackupLocation to use for the backup-Yes
-
-`--namespaces``stringSlice`Comma separated list of namespaces to migrate`[]`Yes
-
-`--postExecRule``string`Rule to run after executing applicationBackup-Optional
-
-`--preExecRule``string`Rule to run before executing applicationBackup-Optional
-
-`--schedulePolicyName`, `-s``string`Name of the schedule policy to use`default-applicationbackup-policy`Optional
-
-`--suspend``bool`Flag to denote whether schedule should be suspended on creation`false`Optional
-
 ## storkctl create applicationclones​
 
 Start an applicationClone
@@ -83,30 +35,6 @@ FlagInput typeDescriptionDefaultRequired
 `--sourceNamespace``string`The namespace from where applications should be cloned-Optional
 
 `--wait``bool`Wait for applicationclone to complete`false`Optional
-
-## storkctl create applicationrestores​
-
-Start an applicationRestore
-
-Aliases: `applicationrestore`, `apprestore`, `apprestores`
-
-Example: `storkctl create applicationrestore <name> <flags>`
-
-###  Flags
-
-FlagInput typeDescriptionDefaultRequired
-
-`--backupLocation`, `-l``string`BackupLocation to use for the restore-Yes
-
-`--backupName`, `-b``string`Backup to restore from-Optional
-
-`--namespaceMapping``string`Namespace mapping for each of the backed up namespaces, ex: <"srcns1:destns1,srcns2:destns2">-Optional
-
-`--replacePolicy`, `-r``string`Policy to use if resources being restored already exist (Retain or Delete).`Retain`Optional
-
-`--resources``string`Specific resources for restoring, should be given in format "<kind>/<namespace>/<name>,<kind>/<namespace>/<name>,<kind>/<name>", ex: "<Deployment>/<ns1>/<dep1>,<PersistentVolumeClaim>/<ns1>/<pvc1>,<ClusterRole>/<clusterrole1>"-Optional
-
-`--wait``bool`Wait for applicationrestore to complete`false`Optional
 
 ## storkctl create clusterpair​
 
@@ -228,11 +156,15 @@ FlagInput typeDescriptionDefaultRequired
 
 `--dry-run``bool`Validate migration params before starting migration`false`Optional
 
+`--enforce-primary-kind``string`Workload-class mode: "" (legacy), "true" (primaries-only), "false" (non-primaries-only).-Optional
+
 `--file`, `-f``string`file to run migration-Optional
+
+`--include-names``stringSlice`Comma-separated primary names. Mutually exclusive with --selectors / --exclude-selectors.`[]`Optional
 
 `--includeResources`, `-r``bool`Include resources in the migration`true`Optional
 
-`--includeVolumes``bool`Include volumes in the migration`true`Optional
+`--includeVolumes``bool`Include volumees in the migration`true`Optional
 
 `--namespaces``stringSlice`Comma separated list of namespaces to migrate`[]`Yes
 
@@ -243,6 +175,8 @@ FlagInput typeDescriptionDefaultRequired
 `--preview``bool`Preview resources that will be migrated`false`Optional
 
 `--previewFile``string`file where migration preview will be saved-Optional
+
+`--primary-kind``string`Canonical group/version/kind for a primary (e.g. kubevirt.io/v1/VirtualMachine). Required when --enforce-primary-kind=true.-Optional
 
 `--startApplications`, `-a``bool`Start applications on the destination cluster after migration`true`Optional
 
@@ -270,6 +204,8 @@ FlagInput typeDescriptionDefaultRequired
 
 `--disable-skip-deleted-namespaces``bool`If present, Stork will fail the migration when it encounters a namespace that is deleted but specified in the namespaces field. By default, Stork ignores deleted namespaces during migration`false`Optional
 
+`--enforce-primary-kind``string`Workload-class mode: "" (legacy), "true" (primaries-only), "false" (non-primaries-only).-Optional
+
 `--exclude-resource-types``stringSlice`Comma-separated list of the specific resource types which need to be excluded from migration, ex: Deployment,PersistentVolumeClaim`[]`Optional
 
 `--exclude-resources``bool`If present, Kubernetes resources will not be migrated`false`Optional
@@ -281,6 +217,8 @@ FlagInput typeDescriptionDefaultRequired
 `--ignore-owner-references-check``bool`If set, resources with ownerReferences will also be migrated, even if the corresponding owners are getting migrated`false`Optional
 
 `--include-jobs``bool`Set this flag to ensure that K8s Job resources are migrated. By default, the Job resources are not migrated`false`Optional
+
+`--include-names``stringSlice`Comma-separated primary names. Mutually exclusive with --selectors / --exclude-selectors.`[]`Optional
 
 `--include-network-policy-with-cidr``bool`If set, the underlying network policies will be migrated even if a fixed CIDR is present on them`false`Optional
 
@@ -297,6 +235,8 @@ FlagInput typeDescriptionDefaultRequired
 `--preview``bool`Preview resources that will be migrated`false`Optional
 
 `--preview-file``string`file where migration preview will be saved-Optional
+
+`--primary-kind``string`Canonical group/version/kind for a primary (e.g. kubevirt.io/v1/VirtualMachine). Required when --enforce-primary-kind=true.-Optional
 
 `--purge-deleted-resources``bool`Set this flag to automatically delete Kubernetes resources in the target cluster when they are removed from the source cluster`false`Optional
 

@@ -100,10 +100,6 @@ pxctl cluster options update --free-space-threshold-gb <threshold-value>
 
 ```
 
-### Related topics​
-
-- Considerations for PX-StoreV2 pools
-
 ## Move Volumes using Pool Drain​
 
 Use the Pool Drain operation to evacuate all volumes from a set of storage pools or nodes to other pools or nodes in your Portworx cluster. This feature can be used to safely clear out all volume replicas on a node, prior to performing any disruptive operations on it.
@@ -127,7 +123,7 @@ pxctl service pool drain submit --source-uuids <pool-ID1>,<pool-ID-2>
 
 ```
 
-Note that only one active pool drain request can be submitted at a time. To submit a new request, the current job must be either "DONE" or "CANCELLED".
+::: note Only one active pool drain request can be submitted at a time. To submit a new request, the current job must be either `DONE` or `CANCELLED`. :::
 
 ```
 
@@ -151,7 +147,7 @@ pxctl service pool drain submit --source-uuids <node-ID-1>,<node-ID-2> --target-
 
 ```
 
-If no targets are specified, Portworx will automatically select an appropriate node or pool for moving the volume.
+If no targets are specified, Portworx Enterprise will automatically select an appropriate node or pool for moving the volume.
 
 -
 Monitor the status of a pool drain job
@@ -232,7 +228,7 @@ Replica remove action:
 
 ```
 
-This will show the list of volumes currently being acted on, their operation status, and any errors encountered during the move. Once all volumes have been moved from the sources, the status of the pool drain job is updated to DONE.
+This shows the list of volumes currently being acted on, their operation status, and any errors encountered during the move. Once all volumes have been moved from the sources, the status of the pool drain job is updated to `DONE`.
 
 -
 Pause, resume or cancel a pool drain job
@@ -245,7 +241,9 @@ pxctl sv pool drain pause --job-id <job-id>
 
 ```
 
-Note: Previously submitted ha-increase or ha-reduce operations may still progress even after the job is paused.
+note
+
+Previously submitted ha-increase or ha-reduce operations may still progress even after the job is paused.
 
 To resume a paused pool drain job, run:
 
@@ -263,7 +261,17 @@ pxctl sv pool drain cancel --job-id <job-id>
 
 ```
 
-It is not possible to resume a cancelled pool drain job. Note cancelling an active pool drain job may result in some volumes having incorrect ha-levels.
+important
+
+- You cannot resume a canceled pool drain job.
+
+- Canceling an active pool drain job can leave some volumes with incorrect high-availability (HA) levels.
+
+- Portworx automatically cancels a pool drain job if it cannot generate new actions for 30 minutes. For example, this can happen when the target node already has a replica of the volume being moved. Portworx cancels the job and reports an error indicating the cause.
+
+- Portworx also cancels a pool drain job if it exceeds the maximum job duration, which is 24 hours by default.
+
+- If a node hosting `repl=1` volumes enters the `Offline`, `StorageDown`, or `Maintenance` state while a volume is being moved, the pool drain operation cannot continue. If the node remains in this state until the maximum job duration is reached, Portworx cancels the job.
 
 -
 Clear Pool drain status
@@ -354,9 +362,6 @@ Header: alert id - alert timestamp - alert message
 ```
 
 -
-If a node having volumes with a replication factor of 1 is Offline, StorageDown or in Maintenance Mode, a pool drain operation on that node will not be able to move these volumes and will eventually end up being cancelled.
-
--
 Ensure source pools or nodes are online and healthy before starting.
 
 ## Pool Drain Command line reference​
@@ -400,5 +405,9 @@ Expand your storage pool size
 
 -
 Expanding your Storage Pool with Autopilot
+
+### Related topics​
+
+- Considerations for PX-StoreV2 pools
 
 In this topic:

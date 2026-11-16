@@ -218,10 +218,6 @@ spec:
 
       maxUnavailable: 20%
 
-  deleteStrategy:
-
-    type: UninstallAndWipe
-
   placement:
 
     nodeAffinity:
@@ -639,7 +635,7 @@ providerSpecifies the cloud provider name, such as: pure, azure, aws, gce, vsphe
 
 spec.
 cloudStorage.
-deviceSpecs[]A list of specifications for cloud storage devices. Portworx creates a cloud disk for each device specification. In a FlashArray Cloud Drive deployment, you can set the `storage_backend` field in a device specification to select the FlashArray on which Portworx provisions the storage pool. For more information, see Create a Kube Datastore on a specific FlashArray.`[]string`None
+deviceSpecs[]A list of specifications for cloud storage devices. Portworx creates a cloud disk for each device specification. In a FlashArray Cloud Drive deployment, you can set the `storage_backend` field in a device specification to select the FlashArray on which Portworx provisions the storage pool. For more information, see Select the KDS for storage pools.`[]string`None
 
 spec.
 cloudStorage.
@@ -647,11 +643,13 @@ journalDeviceSpecSpecifies the cloud device Portworx uses for journaling.`string
 
 spec.
 cloudStorage.
-systemMetadataDeviceSpecIndicates the cloud device Portworx uses for metadata. For performance, specify a system metadata device when using Portworx with the internal KVDB.`string`None
+systemMetadataDeviceSpecIndicates the cloud device Portworx uses for metadata. For performance, specify a system metadata device when using Portworx with the internal KVDB.
+In PX-StoreV2 environments, specifying `spec.cloudStorage.systemMetadataDeviceSpec` is mandatory.`string`None
 
 spec.
 cloudStorage.
-kvdbDeviceSpecSpecifies the cloud device Portworx uses for an internal KVDB.`string`None
+kvdbDeviceSpecSpecifies the cloud device Portworx uses for an internal KVDB.
+If you specify `spec.cloudStorage.systemMetadataDeviceSpec`, Portworx ignores `kvdbDeviceSpec`. The internal KVDB uses the drives provisioned by `systemMetadataDeviceSpec` instead of separate KVDB drives.`string`None
 
 spec.
 cloudStorage.
@@ -794,7 +792,7 @@ FieldDescriptionTypeDefault
 
 spec.
 deleteStrategy.
-typeIndicates what happens when the Portworx `StorageCluster` object is deleted. By default, there is no delete strategy, which means only the Kubernetes components deployed by the operator are removed. The Portworx `systemd` service continues to run, and the Kubernetes applications using the Portworx volumes are not affected. Portworx supports the following delete strategies:
+typeIndicates what happens when the Portworx `StorageCluster` object is deleted. Set this field only at the time you uninstall Portworx; do not set it during installation. By default, there is no delete strategy. With Operator 26.5.0 or later, deletion of a `StorageCluster` is blocked until you set a delete strategy, and the Operator emits a `DeleteStrategyPreset` warning event if a delete strategy is set on a running `StorageCluster`. With earlier Operator versions, no delete strategy means only the Kubernetes components deployed by the operator are removed, and the Portworx `systemd` service continues to run. Portworx supports the following delete strategies:
 
 -  `Uninstall` - Removes all Portworx components from the system and leaves the devices and KVDB intact.
 
@@ -811,6 +809,42 @@ typeIndicates what happens when the Portworx `StorageCluster` object is deleted.
 spec.
 deleteStrategy.
 ignoreVolumesIndicates whether to ignore volumes when deleting the storage cluster. If set to `true`, the cluster is deleted even if Portworx volumes are present. If set to `false`, the deletion is blocked if Portworx volumes exist.`boolean``false`
+
+important
+
+Set `deleteStrategy` only at the time you uninstall Portworx. Do not set it during installation, and do not keep it in a GitOps manifest or a copied StorageCluster template. If it is set, an accidental `kubectl delete storagecluster` starts an uninstall and, with `UninstallAndWipe` or `UninstallAndDelete`, permanently deletes data.
+
+#### Delete strategy guardrails​
+
+With Operator 26.5.0 or later:
+
+- Deletion is blocked if `deleteStrategy` is not set. The `StorageCluster` remains in the `Terminating` state and Portworx is not uninstalled. Set `deleteStrategy`, and the Operator resumes the uninstall automatically.
+
+- A warning event is emitted if `deleteStrategy` is set on a running `StorageCluster`. The Operator emits a `Warning` event with the reason `DeleteStrategyPreset`. The message states the configured strategy type. For `UninstallAndWipe` and `UninstallAndDelete`, it also states that data is permanently erased on uninstall. The Operator repeats the event every 5 minutes until you remove the field, and immediately if you change the strategy type.
+
+To check for the warning:
+
+```
+
+kubectl describe storagecluster <storagecluster-name> -n <px-namespace>
+
+```
+
+To remove a `deleteStrategy` if you do not intend to uninstall Portworx:
+
+```
+
+kubectl patch storagecluster <storagecluster-name> -n <px-namespace> \
+
+  --type=merge \
+
+  -p '{"spec":{"deleteStrategy":null}}'
+
+```
+
+If you manage the `StorageCluster` through GitOps or Helm, also remove `deleteStrategy` from the source manifest or values file. Otherwise, it is applied again.
+
+To uninstall Portworx, set `deleteStrategy` and then delete the `StorageCluster`. For the full procedure, see Uninstall Portworx using the Operator.
 
 ### Pure Platform configuration​
 
@@ -1081,6 +1115,16 @@ spec.stork.args.pod-delete-batch-sizeNumber of pods to delete in each batch when
 
 spec.stork.args.pod-batch-delete-intervalThe interval in seconds between pod delete batches when cleaning up pods from offline nodes.`int`30
 
+spec.stork.args.enable-attach-cap-filterEnables Stork to filter out nodes that have reached the Portworx per-node limit of 1024 volume attachments when scheduling pods. Requires `enable-volume-cache` to be `true`. When set to `false`, Stork skips this check. Supported in Stork 26.5.0 or later.`boolean``true`
+
+spec.stork.args.enable-attach-cap-penaltyEnables Stork to lower the score of candidate nodes that are projected to exceed the `attach-cap-penalty-threshold-percent` of the per-node volume attachment limit when prioritizing nodes. Requires `enable-volume-cache` to be `true`. When set to `false`, Stork applies no penalty. `attach-cap-penalty-threshold-percent` and `attach-cap-penalty-factor` flags apply only when this flag is `true`. Supported in Stork 26.5.0 or later.`boolean``true`
+
+spec.stork.args.attach-cap-penalty-threshold-percentPercentage of the per-node volume attachment limit above which Stork applies the score penalty. Valid values are greater than `0` and up to `100`. Stork ignores values outside this range and uses the default. Applies only when `enable-attach-cap-penalty` is `true`. Supported in Stork 26.5.0 or later.`float``95`
+
+spec.stork.args.attach-cap-penalty-factorMultiplier that Stork applies to the locality score of a node that exceeds the attach limit threshold. Valid values are from `0` to `1`. For example, `0.5` halves the score and `0` sets it to zero. Stork ignores values outside this range and uses the default. Applies only when `enable-attach-cap-penalty` is `true`. Supported in Stork 26.5.0 or later.`float``0.5`
+
+spec.stork.args.disable-pod-failoverSet to `true` to keep application pods that use Portworx volumes running on the same node while Portworx is being upgraded on that node. By default, Stork deletes such pods during the upgrade so that they are scheduled to a different node. Supported in Stork 26.5.0 or later.`boolean``false`
+
 spec.stork.args.early-migration-resources-collectionEnable early resource collection during migration to improve performance.`boolean`true
 
 spec.stork.args.log-file-buffer-size-mibMaximum size in MiB of the in-memory log buffer for hourly log files when file writes fail. Set to `0` to disable buffering. This parameter is used when Stork log telemetry is enabled.`int`50
@@ -1101,6 +1145,14 @@ spec.stork.args.zone-scoreScore assigned to nodes in the same zone as the pod's 
 spec.stork.args.region-scoreScore assigned to nodes in the same region as the pod's data node. Applies only when `normalize-stork-scores` is `true`.`int``1`
 
 spec.stork.args.remote-scoreScore assigned to nodes that don't hold any of the pod's data. Applies only when `normalize-stork-scores` is `true`.`int``0`
+
+spec.stork.args.enable-scheduling-optimizationEnables the scheduling optimization controller for KubeVirt virtual machine (VM) hyperconvergence remediation after pool failover. `scheduling-optimization-max-parallel-migrations`, `scheduling-optimization-cool-off`, and `scheduling-optimization-migration-timeout` flags apply only when this flag is `true`.`boolean``true`
+
+spec.stork.args.scheduling-optimization-max-parallel-migrationsSpecifies the maximum concurrent live migrations that the scheduling optimization engine runs per active request. You can override this value per request in the `SchedulingOptimization` specification. Applies only when `enable-scheduling-optimization` is `true`.`int``5`
+
+spec.stork.args.scheduling-optimization-cool-offSpecifies the minimum interval between Stork-triggered live migrations of the same VM. You can override this value per request in the `SchedulingOptimization` specification. Applies only when `enable-scheduling-optimization` is `true`.`string``1h`
+
+spec.stork.args.scheduling-optimization-migration-timeoutSpecifies the per-VM timeout for waiting on a live migration to complete before the worker gives up its slot. Applies only when `enable-scheduling-optimization` is `true`.`string``30m`
 
 spec.
 stork.
@@ -1163,7 +1215,7 @@ enabledFlag indicating whether CSI needs to be installed for the storage cluster
 
 spec.
 csi.
-installSnapshotControllerFlag indicating whether CSI Snapshot Controller needs to be installed for the storage cluster.`boolean`true
+installSnapshotControllerFlag indicating whether CSI Snapshot Controller needs to be installed for the storage cluster. Starting with Operator 26.5.0, setting this to `false` also stops the Operator from reconciling the `volumesnapshots`, `volumesnapshotcontents`, and `volumesnapshotclasses` CRDs. Use this setting when another component, such as the GKE add-on manager, manages these CRDs.`boolean`true
 
 spec.
 csi.

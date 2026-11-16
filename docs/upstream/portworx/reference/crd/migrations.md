@@ -33,6 +33,17 @@ FieldDescriptionType
 
 `spec.clusterPair`ClusterPair is the name of the cluster pair using which the migration will be performed.`string`
 
+`spec.enforcePrimaryKind`EnforcePrimaryKind controls which workload class this migration covers
+(VM-granularity feature; only KubeVirt virtual machines are supported). Tri-state:
+ nil → legacy collection (today's behaviour, default for upgraded schedules)
+ true → primaries-only: only objects of the kinds enumerated in PrimaryKinds
+ are collected as primaries, with their dep closure walked by the
+ per-Kind handler. Requires PrimaryKinds to be non-empty.
+ false → non-primaries-only: every namespace-wide object EXCEPT the
+ registered primary Kinds and their dep closure is collected.
+ PrimaryKinds is ignored when EnforcePrimaryKind=false.
+See .specify/specs/001-vm-granularity-migration/spec.md FR-002, FR-003, FR-004.`boolean`
+
 `spec.excludeResourceTypes`ExcludeResourceTypes is a list of resource types that should be excluded from the migration.`array`
 
 `spec.excludeSelectors`ExcludeSelectors is a set of label-based selectors used to filter out specific objects from the migration.`object`
@@ -54,6 +65,21 @@ FieldDescriptionType
 `spec.postExecRule`PostExecRule is the name of the rule that should be executed after migration completes.`string`
 
 `spec.preExecRule`PreExecRule is the name of the rule that should be executed before migration starts.`string`
+
+`spec.primaryKinds`PrimaryKinds enumerates the primary Kinds to migrate when
+EnforcePrimaryKind=true. Ignored when EnforcePrimaryKind is nil or false.
+Each entry's Kind MUST appear in the compiled-in primary-Kind registry
+(only kubevirt.io/v1/VirtualMachine is supported).`array`
+
+`spec.primaryKinds.includeNames`IncludeNames narrows the entry to specific instance names within the
+schedule's namespaces. When empty, every instance of Kind in scope is
+selected (subject to MigrationSpec.Selectors / ExcludeSelectors).
+When non-empty, the global Selectors / ExcludeSelectors MUST be empty
+(validator-enforced mutex).`array`
+
+`spec.primaryKinds.kind`Kind in canonical "group/version/kind" form (e.g.
+"kubevirt.io/v1/VirtualMachine"). Only the registered
+primary Kinds are accepted. Currently, only kubevirt.io/v1/VirtualMachine is supported.`string`
 
 `spec.purgeDeletedResources`PurgeDeletedResources specifies whether deleted resources (that existed before but no longer exist) should be removed from the destination cluster.`boolean`
 

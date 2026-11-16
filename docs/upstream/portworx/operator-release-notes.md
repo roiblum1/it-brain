@@ -10,6 +10,101 @@ If you are running Portworx with restricted RBAC, Portworx Operator 26.3.0 and l
 
 This ensures that the changes to the ClusterRole permissions are applied before the upgrade. Otherwise, the StorageCluster enters a degraded state because of a mismatch in the ClusterRole permissions.
 
+## 26.5.0​
+
+November 12, 2026
+
+### New features​
+
+-
+Container arguments for CSI sidecar containers: You can now use the `ComponentK8sConfig` custom resource (CR) to pass command-line arguments to the CSI sidecar containers, such as `csi-external-provisioner`, `csi-attacher`, `csi-snapshotter`, `csi-resizer`, `csi-snapshot-controller`, and `csi-health-monitor-controller`. For example, you can set `--kube-api-qps`, `--kube-api-burst`, and `--worker-threads` to tune throughput in scaled environments with many concurrent snapshots or provisioning requests. The operator merges each argument into the container's existing arguments by flag name. For more information, see Configure CSI sidecar container arguments.
+
+-
+Environment variable overrides for CSI node-plugin containers: You can now use the `env` field in the `ComponentK8sConfig` custom resource (CR) to override environment variables on CSI node-plugin DaemonSet containers. For example, you can set `NODE_STAGE_CONCURRENCY` on the `node-plugin` container to control the number of concurrent volume stage operations. This extends the existing argument override support introduced for CSI sidecar containers. For more information, see Configure resource limits, placements, tolerations, nodeAffinity, labels, and annotations for Portworx components.
+
+### Improvements​
+
+-
+Enforced minimum OpenShift version for Operator installation and upgrade: Starting with Operator 26.5.0, the Portworx Operator requires OpenShift Container Platform (OCP) 4.15 or later. The Portworx Operator catalog for OperatorHub and OLM no longer includes Operator 26.5.0 or later for OCP 4.14 and earlier. Clusters running OCP 4.14 or earlier will not receive this or future Operator updates through OperatorHub and will remain on Operator 26.4.0.
+
+If your cluster is running OCP 4.14 or earlier, upgrade your OpenShift cluster to OCP 4.15 or later before upgrading the Portworx Operator. For supported OCP and Portworx version combinations, see OpenShift Upgrade Path with Portworx Enterprise.
+
+-
+Guardrails against accidental StorageCluster deletion: To prevent accidental Portworx uninstallation and data loss, `spec.deleteStrategy` is now treated as an explicit pre-delete action instead of a persistent installation setting.
+
+- The Operator blocks deletion of a `StorageCluster` if `spec.deleteStrategy.type` is not set. The `StorageCluster` remains in the `Terminating` state until you set `deleteStrategy`. Earlier Operator versions removed only the Kubernetes components in this case.
+
+- The Operator emits a `DeleteStrategyPreset` warning event if `deleteStrategy` is set on a running `StorageCluster`. The event is repeated every 5 minutes until you remove the field.
+
+Set `deleteStrategy` only at the time you uninstall Portworx. For more information, see Delete strategy guardrails.
+
+important
+
+Upgrade impact: After you upgrade to Operator 26.5.0 or later:
+
+- If `deleteStrategy` is already set on your `StorageCluster`, the Operator emits `DeleteStrategyPreset` warning events. Remove `deleteStrategy` from your `StorageCluster`. If you manage the `StorageCluster` through Helm or GitOps, also remove it from your values file or manifest.
+
+- If `deleteStrategy` is not set, deleting the `StorageCluster` no longer removes only the Kubernetes components. The `StorageCluster` remains in the `Terminating` state until you set `deleteStrategy`.
+
+-
+Default KubeVirt StorageClass is now replication factor 1 for new Dynamic Pools installations: On a new installation with Dynamic Pools enabled (`spec.kubeDatastore.enableDynamicPools: true`) and Portworx Enterprise 3.7.2 or later, the Portworx Operator now sets `px-rwx-block-kubevirt-repl1` as the default KubeVirt StorageClass by applying the `storageclass.kubevirt.io/is-default-virt-class: "true"` annotation. Previously, `px-rwx-block-kubevirt` (replication factor 3) was the default. This change does not affect upgrades, existing clusters, or new installations without Dynamic Pools enabled.
+
+### Fixes​
+
+Issue NumberIssue DescriptionSeverity
+
+PWX-61399Issue: On OpenShift clusters using the PX-Pure CSI controller (`px-pure-csi-controller`), the Portworx Operator deployed its own CSI snapshot controller even when OpenShift's `openshift-cluster-storage-operator` had already installed one. The snapshot controller detection logic used before installation did not extend to the `px-pure-csi-controller` component, so the Operator did not detect OpenShift's rebranded snapshot controller image.
+
+User Impact: Two snapshot controllers attempted to process the same `VolumeSnapshot` resources simultaneously, causing unpredictable snapshot behavior on OpenShift clusters that use PX-Pure CSI.
+
+Resolution: The Operator now detects existing snapshot controllers for the `px-pure-csi-controller` component by checking stable identifiers: the `app=csi-snapshot-controller` and `app.kubernetes.io/name=snapshot-controller` labels and the `snapshot-controller` container name, in addition to matching image names. When the Operator detects an existing controller, it does not deploy a duplicate.
+
+Affected versions: 26.4.0 and earlierMajor
+
+PWX-61434Issue: When `spec.csi.installSnapshotController` was set to `false`, the Portworx Operator still reconciled the `volumesnapshots`, `volumesnapshotcontents`, and `volumesnapshotclasses` CRDs on every reconcile pass. On environments where another controller also manages these CRDs, such as GKE with its add-on manager, the two reconcilers continuously overwrote each other.
+
+User Impact: The CRDs showed continuous spec drift, and their `metadata.generation` increased every 15 to 20 seconds.
+
+Resolution: The Operator no longer reconciles these CRDs when `installSnapshotController` is `false`. Set `installSnapshotController: false` to opt out of both the snapshot-controller workload and CRD reconciliation. Default (`true`) and unset behavior is unchanged.
+
+Affected versions: 26.4.0 and earlierMinor
+
+PWX-45109Issue: On clusters with internal KVDB TLS enabled, etcd frequently logged `rejected connection` warnings from KVDB pods. These warnings occurred because the pod health probes used `tcpSocket` checks, which opened and immediately closed TCP connections without completing a TLS handshake. etcd expected a TLS handshake after each TCP connection and therefore logged each probe as a rejected connection.
+
+User Impact: The warnings were harmless and did not affect KVDB functionality, but they generated numerous unnecessary log entries at scale.
+
+Resolution: KVDB pod liveness and readiness probes now run `curl` commands through `exec` to check the etcd `/livez` and `/readyz` health endpoints with the appropriate TLS certificates, eliminating these unnecessary warnings.
+
+Affected versions: 26.4.0 and earlierMinor
+
+PWX-61082Issue: The `envoy` container in the `PureCSITelemetry` component's workloads (`px-pure-csi-telemetry` and `px-pure-csi-telemetry-registration`) did not allow command-line arguments to be set through the `ComponentK8sConfig` CR. Attempts to set arguments for the `envoy` container resulted in a `VALIDATION_FAILED` status with the message `args are not supported for container "envoy"`.
+
+User Impact: Customers could not tune Envoy proxy settings, such as `--concurrency`, through the ComponentK8sConfig CR on PX-Pure CSI deployments that include the telemetry component.
+
+Resolution: The `PureCSITelemetry` component now permits command-line arguments on the `envoy` container in both `px-pure-csi-telemetry` and `px-pure-csi-telemetry-registration` workloads.
+
+Affected versions: 26.4.0 and earlierMinor
+
+PWX-48460Issue: On RKE2 clusters, the Portworx DaemonSet mounted the containerd socket file (`/run/k3s/containerd/containerd.sock`) directly over the standard containerd socket path inside the container. When the containerd service restarted, the socket file was deleted and recreated, but the bind mount inside the running Portworx Pod continued to reference the stale deleted path. Portworx then logged `Unable to list containers: connection refused` errors until the Portworx Pod was restarted.
+
+User Impact: After a containerd restart on RKE2 nodes, Portworx logged high volumes of `connection refused` error messages until the Portworx Pod was manually restarted. Storage operations were not affected.
+
+Resolution: The Portworx Operator now mounts the containerd socket directory (`/run/k3s/containerd/`) rather than the socket file. When containerd restarts and recreates its socket, the new socket is immediately visible inside the Pod without requiring a Pod restart. This fix also requires Portworx Enterprise 3.7.2 or later.
+
+Affected versions: 26.4.0 and earlierMinor
+
+### Known issues (Errata)​
+
+Issue numberDescription
+
+PWX-61076On OpenShift clusters with Dynamic Pools enabled, the Portworx Operator creates one `PodDisruptionBudget` (PDB) per PX node with `minAvailable: 1`. Because each PDB covers exactly one Pod and that Pod is always running, each PDB permanently shows `0` disruptions allowed. OpenShift's built-in `PodDisruptionBudgetAtLimit` Prometheus alert fires for any PDB that has been in this state for more than 60 minutes, resulting in a standing warning alert for every PX node on the cluster.
+
+User impact: A permanent `PodDisruptionBudgetAtLimit` warning fires for every PX node on OpenShift clusters with Dynamic Pools. The warning is expected behavior and does not indicate a problem. However, the alerts can obscure genuine PDB issues on the cluster.
+
+Workaround: To silence these alerts in OpenShift, create a Prometheus silence targeting `alertname="PodDisruptionBudgetAtLimit"` and `namespace="portworx"` through the OpenShift Console under Observe → Alerting → Silence alert, or by using the Alertmanager API. The silence must be renewed periodically.
+
+Affected versions: 26.5.0
+
 ## 26.4.0​
 
 September 29, 2026
@@ -560,7 +655,7 @@ Affected Version: 25.6.0Major
 
 ## 25.5.2​
 
-February 02, 2026
+February 2, 2026
 
 This release also addresses security vulnerabilities.
 
@@ -1758,7 +1853,7 @@ note
 
 Issue NumberIssue Description
 
-PWX-36663The `px-prometheus` account user is added to the Portworx Security Context Constraint only in either of the following cases:
+PWX-36663The `px-prometheus` account user is added to the Portworx Security Context Constraint in either of the following cases:
 
 -  The platform version is below OpenShift 4.12.
 
@@ -2251,7 +2346,7 @@ telemetry is now enabled by default.
 
 - On fresh installations, all clusters will have telemetry enabled when you generate a spec from PX-Central.
 
-- When you upgrade the Portworx Operator to version 23.3.0, telemetry will be enabled by default unless you disable telemetry in the StorageCluster spec, or when the `PX_HTTPS_PROXY` variable is configured.
+- When you upgrade the Portworx Operator to version 23.3.0, telemetry will be enabled by default unless you disable telemetry in the StorageCluster spec or the `PX_HTTPS_PROXY` variable is configured.
 
 note
 
@@ -2437,7 +2532,7 @@ June 22, 2022
 
 - Added support for Operator to run on IPv6 environment.
 
-- You can now enable CSI topology feature by setting the `.Spec.CSI.Topology.Enabled` flag to `true` in the StorageCluster CRD, the default value is `false`. The feature is only supported on FlashArray direct access volumes.
+- You can now enable the CSI topology feature by setting the `.Spec.CSI.Topology.Enabled` flag to `true` in the StorageCluster CRD. The default value is `false`. The feature is only supported on FlashArray direct access volumes.
 
 - Operator now uses custom SecurityContextConstraints `portworx` instead of `privileged` on OpenShift.
 

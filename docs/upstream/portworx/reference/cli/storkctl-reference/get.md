@@ -12,38 +12,6 @@ note
 
 The following commands support a set of global flags that can be used across all `storkctl` commands. For details, see the Global Flags section.
 
-## storkctl get applicationbackups​
-
-Get applicationbackup resources
-
-Aliases: `applicationbackup`, `backup`, `backups`
-
-Example: `storkctl get applicationbackup <name> <flags>`
-
-###  Flags
-
-FlagInput typeDescriptionDefaultRequired
-
-`--all-namespaces`, `-A``bool`If present, list the requested object(s) across all namespaces.
-Namespace in current context is ignored even if specified with --namespace.`false`Optional
-
-## storkctl get applicationbackupschedules​
-
-Get applicationBackup schedules
-
-Aliases: `applicationbackupschedule`
-
-Example: `storkctl get applicationbackupschedule <name> <flags>`
-
-###  Flags
-
-FlagInput typeDescriptionDefaultRequired
-
-`--all-namespaces`, `-A``bool`If present, list the requested object(s) across all namespaces.
-Namespace in current context is ignored even if specified with --namespace.`false`Optional
-
-`--backupLocation`, `-b``string`Name of the BackupLocation for which to list applicationBackup schedules-Optional
-
 ## storkctl get applicationclones​
 
 Get applicationclone resources
@@ -66,21 +34,6 @@ Get applicationRegistration resources
 Aliases: `applicationregistration`, `appreg`, `appregs`
 
 Example: `storkctl get applicationregistration <name> <flags>`
-
-###  Flags
-
-FlagInput typeDescriptionDefaultRequired
-
-`--all-namespaces`, `-A``bool`If present, list the requested object(s) across all namespaces.
-Namespace in current context is ignored even if specified with --namespace.`false`Optional
-
-## storkctl get applicationrestores​
-
-Get applicationrestore resources
-
-Aliases: `applicationrestore`, `apprestore`, `apprestores`
-
-Example: `storkctl get applicationrestore <name> <flags>`
 
 ###  Flags
 

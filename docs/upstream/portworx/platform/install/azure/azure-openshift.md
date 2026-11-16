@@ -495,6 +495,8 @@ In the Component Settings section:
 
 - Select the Restrict Data Protection RBAC to restrict RBAC permissions for Stork (if enabled). You will not be able to use Backup and DR capabilities with this restriction. For more information, see Restrict Data Protection RBAC.
 
+- (Optional) Select the Remote Fastpath (NVMe-oF/TCP) checkbox to enable Remote Fastpath. For more information, see Remote Fastpath.
+
 - Select the Enable Monitoring checkbox to enable monitoring of Portworx components and resources.
 
 - To configure the monitoring stack, select one of the following:

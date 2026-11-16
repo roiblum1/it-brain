@@ -8,7 +8,9 @@ Portworx creates one or more storage pools by grouping together homogeneous driv
 
 note
 
-This document summarizes various configurable parameters to provision storage pools and also covers higher capacity provisioning for PX-StoreV2 pools. It is applicable for custom storage pool creation. For default setup, do not configure these parameters and use the default options provided in the spec generation by Portworx.
+- This topic describes the configuration parameters for creating custom storage pools, including how to provision higher-capacity PX-StoreV2 pools. Use these parameters only when you need a custom storage pool configuration. For a standard installation, use the default settings provided when generating the Portworx installation specification.
+
+- To add a storage pool, the node must be in pool maintenance mode. Node maintenance mode alone is not sufficient. Otherwise, the command fails with the `Requires pool maintenance mode` error. For more information, see Storage pool maintenance.
 
 ## What are Portworx storage pool configurable parameters?​
 
@@ -39,6 +41,26 @@ This parameter specifies the maximum capacity that the PX-StoreV2 pool can grow 
 note
 
 The `max_pool_size_tb` parameter can only be specified during pool creation and cannot be changed after the pool is created.
+
+PX-StoreV2 storage pools use chunk sizes that are powers of 2 and multiples of 64 KiB. To meet this requirement, Portworx rounds certain `max_pool_size_tb` values (`--max-pool-size-tb` in `pxctl`) up when creating a pool.
+
+The following table shows how the configured maximum pool size (N) affects the chunk size and actual maximum pool size:
+
+max_pool_size_tb (N)Chunk sizeActual maximum pool size
+
+`N <= 15`64 KiB15 TiB
+
+`15 < N <= 30`128 KiB30 TiB
+
+`30 < N <= 60`256 KiB60 TiB
+
+`60 < N <= 120`512 KiB120 TiB
+
+`120 < N <= 240`1024 KiB240 TiB
+
+`240 < N <= 480`2048 KiB480 TiB
+
+For example, if you set `max_pool_size_tb` to `45`, Portworx creates the pool with a maximum size of 60 TiB instead of 45 TiB.
 
 ### limit_drives_per_pool​
 
@@ -82,8 +104,6 @@ Pass the following annotations to the StorageCluster spec manually and set the v
 
      limit_drives_per_pool: "4"
 
-     max_pool_size_tb: "60"
-
 ```
 
 After updating the StorageCluster spec, apply it to the cluster to configure Portworx storage pool. In the above examples, the value for `limit_pools_count` is set as 12. Restart the Portworx service after changes are made through STC to allow the new settings to take effect.
@@ -98,9 +118,7 @@ pxctl cluster options update --runtime-options "limit_drives_per_pool=4"
 
 pxctl cluster options update --runtime-options "limit_pools_count=10"
 
-pxctl cluster options update --runtime-options "max_pool_size_tb=60"
-
-pxctl cluster options update --runtime-options "limit_drives_per_pool=4,limit_pools_count=10,max_pool_size_tb=60"
+pxctl cluster options update --runtime-options "limit_drives_per_pool=4,limit_pools_count=10"
 
 ```
 

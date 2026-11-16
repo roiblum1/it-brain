@@ -688,19 +688,6 @@ proxy to be used by cloudsnap (setting not required if using PX_HTTP_PROXY/PX_HT
 
 network interface name used by cloudsnaps(data, mgmt, eth0, etc)
 
-`--disabled-temporary-kvdb-loss-support`
-
-(`str`)
-
-Enable or disable temporary kvdb loss support
-Valid values:
-
-- `on`
-
-- `off`
-
-Default value: `off`
-
 `--runtime-options`
 
 (`str`)

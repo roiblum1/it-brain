@@ -18,6 +18,8 @@ Some configuration fields and Kubernetes resources use `csi` in their names, suc
 
 - Portworx Enterprise 3.7.1
 
+- Portworx Enterprise 3.7.2
+
 When you enable the FA/FB driver, the following FlashArray and FlashBlade features become available in your Portworx cluster:
 
 - Shared NFS volumes from FlashArray File Services with `ReadWriteMany` (RWX) access, directory quotas, and encrypted NFS transport
@@ -151,6 +153,92 @@ FeatureDescriptionReference
 FlashArray snapshotsCreates, deletes, and restores FlashArray snapshots as Kubernetes `VolumeSnapshot` resources. You can also replicate snapshots to another FlashArray, create cross-array snapshots, and provision volumes from the remote snapshots.Snapshot a FlashArray volume
 
 FlashBlade snapshotsCreates on-demand snapshots of FBDA file systems, optionally by using a FlashBlade snapshot policy, and restores snapshots to new file systems.Snapshot a FlashBlade volume
+
+PVC cloningCreates a new PVC from an existing Direct Access PVC.Clone a PVC
+
+PVC resizeExpands a Direct Access PVC and its corresponding volume on the storage system.Resize a PVC
+
+PVC deletionDeletes Direct Access PVCs and handles storage-specific dependencies, such as existing snapshots, FlashBlade snapshot policies, and FlashArray File managed directories.Delete a PVC
+
+Backup and restoreRebuilds missing `PureVolume` and `PureSnapshot` custom resources from the storage system to support resource-only backup and restore of Direct Access volumes.Backup and restore
+
+Portworx Enterprise continues to manage FADA CloudSnap backup and restore operations.
+
+### Monitor and troubleshoot​
+
+FeatureDescriptionReference
+
+Volume and storage metricsExports volume usage and capacity metrics for FADA and FBDA volumes and node-level health metrics for storage connectivity to Prometheus.Monitor storage
+
+Grafana dashboardsProvides Grafana dashboards for monitoring FlashArray and FlashBlade storage metrics.Grafana dashboards
+
+Pure1 telemetrySends FA/FB driver logs and diagnostic information to Pure1 through Portworx Enterprise telemetry.Telemetry
+
+CLIProvides cluster status, image, diagnostic, backend credential, volume, and snapshot operations through the `kubectl px csi` command.CLI reference
+
+### Configure storage connectivity​
+
+FeatureDescriptionReference
+
+Storage transportsSupports FlashArray volume attachment over iSCSI, Fibre Channel, NVMe/TCP, and NVMe-oF, with transport configuration available per node.Prepare FlashArray
+
+Native NVMe multipathingSupports kernel-native NVMe multipathing with stable device paths as an alternative to device-mapper multipathing.Prepare FlashArray
+
+Volume attachment limitsAdvertises per-node volume attachment limits to the kubelet.Volume attachment limits
+
+GPUDirect StoragePasses remote direct memory access (RDMA) NFS mount options to FBDA mounts to support GPUDirect Storage.StorageClass reference
+
+In addition to the features available in Portworx Enterprise 3.7.1, this release includes the following capabilities:
+
+- You can use an ActiveCluster stretched pod that connects two FlashArray realms, one on each array, to provision FlashArray Direct Access (FADA) volumes over iSCSI or Fibre Channel (FC). Realms provide secure multi-tenancy on FlashArray. For more information, see Use FlashArray ActiveCluster.
+
+- Portworx automatically creates a quota policy based on the size requested in a PVC and applies it to the volume's directory on FlashArray File Services. This limits the volume to the requested size. Previously, the quota policy specified in the `StorageClass` applied to every volume created from it. For more information, see Configure FA File PVC size enforcement.
+
+note
+
+PVC size enforcement requires Purity 6.7.1 or later.
+
+- You can restore a FlashBlade Direct Access (FBDA) snapshot to a new volume without changing the source file system. Portworx creates the new volume from the snapshot. For more information, see Restore from a snapshot.
+
+note
+
+Restoring a FlashBlade snapshot to a new volume requires Purity//FB 4.8.0 or later.
+
+- Support for SUSE Virtualization (Harvester) 1.8.x. For more information, see Compatibility and Interoperability Matrix.
+
+### Provision storage​
+
+FeatureDescriptionReference
+
+FlashArray File ServicesProvisions shared NFS volumes from FlashArray File Services with `ReadWriteMany` (RWX) access. Supports directory quota policies and encrypted NFS transport through `StorageClass` mount options.Dynamic provisioning of FlashArray File Services
+
+FlashArray File Services PVC size enforcementCreates a quota policy that matches the size requested in the PVC and applies it to the volume's directory, which limits the volume to the requested size.Configure FA File PVC size enforcement
+
+FlashArray block volumesProvisions FADA block volumes, including volumes in synchronously replicated ActiveCluster pods.Dynamic provisioning of FlashArray block volumes
+
+FlashBlade file systemsProvisions FBDA NFS file systems, including FlashBlade//EXA file systems associated with a data node group. Supports exports through multi-tenancy servers and Purity realms.Dynamic provisioning of FlashBlade file systems
+
+Static provisioningMakes an existing FlashArray volume, FlashArray File Services directory, or FlashBlade file system available through a Kubernetes PVC without provisioning new storage.Static provisioning
+
+Shared raw block volumes for KubeVirtAllows a FADA volume to be attached as a read-write raw block device to multiple nodes, supporting KubeVirt live migration.Raw block volumes for live migration
+
+FlashArray File for vTPMUses FlashArray File Services volumes to store persistent state for virtual machines that use a virtual Trusted Platform Module (vTPM), supporting VM live migration.FlashArray File for live migration with vTPM
+
+Volume placement by arrayPlaces volumes created from a `StorageClass` on a specific FlashArray by using its array ID.Control volume placement using array ID
+
+CSI topologyRestricts volume provisioning and attachment based on the nodes and zones that can access a storage backend.Enable CSI topology
+
+ActiveClusterProvisions FADA volumes in an ActiveCluster pod and provides paths to the volumes through both member FlashArrays. Supports stretched pods that connect two FlashArray realms, one on each array, over iSCSI and FC.Use FlashArray ActiveCluster
+
+Subnet-aware iSCSIRestricts iSCSI sessions to subnets accessible from each node.Configure subnet-aware iSCSI
+
+### Manage provisioned storage​
+
+FeatureDescriptionReference
+
+FlashArray snapshotsCreates, deletes, and restores FlashArray snapshots as Kubernetes `VolumeSnapshot` resources. You can also replicate snapshots to another FlashArray, create cross-array snapshots, and provision volumes from the remote snapshots.Snapshot a FlashArray volume
+
+FlashBlade snapshotsCreates on-demand snapshots of FBDA file systems, optionally by using a FlashBlade snapshot policy, and restores a snapshot to a new volume without changing the source file system.Snapshot a FlashBlade volume
 
 PVC cloningCreates a new PVC from an existing Direct Access PVC.Clone a PVC
 

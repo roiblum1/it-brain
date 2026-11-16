@@ -12,20 +12,6 @@ note
 
 The following commands support a set of global flags that can be used across all `storkctl` commands. For details, see the Global Flags section.
 
-## storkctl suspend applicationbackupschedules​
-
-Suspend applicationBackup schedules
-
-Aliases: `applicationbackupschedule`
-
-Example: `storkctl suspend applicationbackupschedule <name> <flags>`
-
-###  Flags
-
-FlagInput typeDescriptionDefaultRequired
-
-`--backupLocation`, `-b``string`Name of the BackupLocation for which to suspend ALL applicationBackup schedules-Optional
-
 ## storkctl suspend migrationschedules​
 
 Suspend migration schedules

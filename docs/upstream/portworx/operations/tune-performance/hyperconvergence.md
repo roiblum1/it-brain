@@ -98,9 +98,16 @@ spec:
 
 note
 
-- To enforce strict pod hyperconvergence with respect to all its PVC replicas, include `stork.libopenstorage.org/preferLocalNodeOnly: "true"` in the `spec.template.metadata.annotations` section of your StatefulSet object. This filters out nodes without a replica before scoring runs.
+-
+To enforce strict pod hyperconvergence with respect to all its PVC replicas, include `stork.libopenstorage.org/preferLocalNodeOnly: "true"` in the `spec.template.metadata.annotations` section of your StatefulSet object. This filters out nodes without a replica before scoring runs.
 
-- Use volume placement strategy to place volumes on specific nodes.
+-
+Use volume placement strategy to place volumes on specific nodes.
+
+-
+Portworx Enterprise limits each node to 1024 local volume attaches under its license. When Stork schedules a pod, the Stork scheduler extender filters out any node that would exceed this limit. Stork calculates the projected attach count for a node by adding the pod's new volume attaches to the node's existing attaches, and then subtracting the volumes that are already attached to that node. Stork also lowers the hyperconvergence score of nodes that are approaching the limit, so that pods are scheduled on less loaded nodes before any node reaches the limit. For the Stork parameters that control this behavior, see Stork Configuration.
+
+-
 
 ### Enable Stork normalization and tune hyperconvergence scoring​
 

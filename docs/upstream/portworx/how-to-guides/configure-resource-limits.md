@@ -4,7 +4,7 @@ Source: https://docs.portworx.com/portworx-enterprise/how-to-guides/configure-re
 
 Configure Portworx Pods and Containers | Portworx Enterprise Documentation
 
-Use the `ComponentK8sConfig` custom resource (CR) to configure CPU and memory limits, tolerations, node affinity, labels, annotations, and priority class across Portworx components. This CR simplifies configuration management and improves consistency in large environments.
+Use the `ComponentK8sConfig` custom resource (CR) to configure CPU and memory limits, tolerations, node affinity, labels, annotations, priority class, and container arguments across Portworx components. This CR simplifies configuration management and improves consistency in large environments.
 
 With `ComponentK8sConfig`, you can:
 
@@ -13,6 +13,8 @@ With `ComponentK8sConfig`, you can:
 - Improve consistency and manageability at scale
 
 - Apply fine-grained controls per component, workload, or container
+
+- Configure per-container arguments for CSI sidecar containers
 
 If you are already using the `StorageCluster` to configure these settings, you can migrate them to `ComponentK8sConfig`. For details, see Migrate from StorageCluster to ComponentK8sConfig.
 
@@ -95,10 +97,10 @@ After a successful migration, configure resource limits, tolerations, and affini
 note
 
 -
-After migration, clean up the configurations in the `StorageCluster` object that were migrated to `ComponentK8sConfig`; Portworx Operator gives precedence to the `ComponentK8sConfig` CR and ignores the equivalent settings in the StorageCluster CR.
+After migration, clean up the configurations in the `StorageCluster` object that were migrated to `ComponentK8sConfig`; Portworx Operator gives precedence to the `ComponentK8sConfig` CR and ignores the equivalent settings in the `StorageCluster` CR.
 
 -
-If you use GitOps to manage Kubernetes objects, update the Git Repo with the new `ComponentK8sConfig` custom resource (CR) created as part of the migration.
+If you use GitOps to manage Kubernetes objects, update the Git repository with the new `ComponentK8sConfig` custom resource (CR) created as part of the migration.
 
 It is not mandatory to use the migration feature by using the annotation; you can also perform the migration manually by creating a new `ComponentK8sConfig` CR in your Git repository and applying it to the cluster. Confirm that the configuration is applied successfully. If the new configuration is working as expected, remove the duplicate settings from the `StorageCluster` custom resource.
 
@@ -114,7 +116,7 @@ kubectl describe componentk8sconfig <componentk8sconfig-name>
 
 ```
 
-Check the value of the `status.phase` field. A value of `ACCEPTED` indicates that the configuration has been successfully processed. For more information, review the `status.reason` field.
+Check the value of the `status.phase` field. A value of `ACCEPTED` indicates that the operator successfully processed your configuration. For more information, review the `status.reason` field.
 
 ## Mapping of components to workloads, pods, and containers​
 
@@ -210,6 +212,8 @@ Based on the components mapping, the following examples demonstrate how to confi
 - Add labels and annotations
 
 - Configure priority class
+
+- Configure CSI sidecar container arguments
 
 ### Set resource limits​
 
@@ -363,7 +367,7 @@ spec:
 
 ```
 
-These labels and annotations are automatically applied to all pods and workloads in the `prometheus` component.
+The operator automatically applies these labels and annotations to all pods and workloads in the `prometheus` component.
 
 ### Configure priority class​
 
@@ -489,6 +493,96 @@ note
 
 You can also use custom PriorityClass resources with Portworx components. For information on creating custom PriorityClass resources, see the Kubernetes documentation on Pod Priority and Preemption.
 
+### Configure CSI sidecar container arguments​
+
+You can configure command-line arguments for individual CSI sidecar containers to tune throughput and concurrency. This is useful at scale where the default settings may not provide sufficient throughput for high-volume snapshot or provisioning operations.
+
+note
+
+This feature requires Portworx Operator 26.5.0 or later.
+
+The operator merges each argument into the container's existing args by matching the flag name (the substring before `=`). Matching args are replaced in place; new args are appended.
+
+Each argument must use a POSIX-style flag format:
+
+- Long form: `--name` or `--name=value` (name has two or more characters)
+
+- Short form: `-x` or `-x=value` (single character)
+
+Single-dash multi-character flags such as `-kube-api-qps=50` are not supported. CSI sidecar containers use pflag-based argument parsing and interpret single-dash multi-character flags as combined short flags, causing the container to fail to start.
+
+The Kubernetes API server rejects the `ComponentK8sConfig` if an argument does not match this format, for example when a flag and its value are separated by a space instead of `=`.
+
+The following CSI sidecar containers support argument overrides, and accept any valid POSIX-style flag. There is no predefined allowlist restricting which flags you can pass. You must pass flags that are valid for the sidecar image version running in your cluster.
+
+- `csi-external-provisioner`
+
+- `csi-attacher`
+
+- `csi-snapshotter`
+
+- `csi-resizer`
+
+- `csi-snapshot-controller`
+
+- `csi-health-monitor-controller`
+
+This example sets Kubernetes API QoS arguments on the `csi-external-provisioner` and `csi-attacher` containers:
+
+```
+
+apiVersion: core.libopenstorage.org/v1
+
+kind: ComponentK8sConfig
+
+metadata:
+
+  name: csi-args-config
+
+  namespace: <portworx>
+
+spec:
+
+  components:
+
+    - componentNames:
+
+        - CSI
+
+      workloadConfigs:
+
+        - workloadNames:
+
+            - px-csi-ext
+
+          containerConfigs:
+
+            - containerNames:
+
+                - csi-external-provisioner
+
+              args:
+
+                - "--kube-api-qps=50"
+
+                - "--kube-api-burst=100"
+
+                - "--worker-threads=20"
+
+            - containerNames:
+
+                - csi-attacher
+
+              args:
+
+                - "--kube-api-qps=50"
+
+                - "--kube-api-burst=100"
+
+                - "--worker-threads=20"
+
+```
+
 ## Advanced usage examples​
 
 Based on the components mapping, the following scenarios illustrate how configurations are applied and merged.
@@ -499,7 +593,7 @@ Based on the components mapping, the following scenarios illustrate how configur
 
 ### Different configurations for specific components​
 
-This configuration defines common resource limits for Stork and Autopilot and defines different resource configurations for telemetry. This flexibility allows you to handle each component's unique resource requirements.
+This configuration defines common resource limits for Stork and Autopilot and different resource configurations for telemetry. This flexibility allows you to handle each component's unique resource requirements.
 
 ```
 
@@ -677,7 +771,7 @@ spec:
 
 #### Appending and merging configurations​
 
-When you define resource requests and limits specifically for the `csi-attacher` and `csi-external-provisioner` containers within the CSI component, you can also specify pod-level placement configurations, including node affinity and tolerations. As a result, the operator creates CSI pods using the defined placement rules and adds resource limits for the `csi-installer` and `csi-attacher` containers.
+When you define resource requests and limits specifically for the `csi-attacher` and `csi-external-provisioner` containers within the CSI component, you can also specify pod-level placement configurations, including node affinity and tolerations. As a result, the operator creates CSI pods using the defined placement rules and adds resource limits for the `csi-external-provisioner` and `csi-attacher` containers.
 
 ```
 

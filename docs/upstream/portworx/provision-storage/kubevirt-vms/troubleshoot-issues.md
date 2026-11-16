@@ -129,6 +129,132 @@ Provision the next batch of VMs, and then repeat these steps until you create al
 
 For more information about changing where a volume's replicas are placed, see Evacuating a Portworx node.
 
+### Host LVM autoactivates guest volume groups on KubeVirt VM disks​
+
+On vanilla Kubernetes clusters that run KubeVirt VMs on FlashArray Direct Access volumes, Portworx attaches each VM disk to the node as a multipath device (`/dev/dm-N`), and KubeVirt passes that device to the guest. If the guest uses LVM, the host kernel also sees the guest's volume group. This behavior is standard in Linux distributions and isn't specific to Portworx or KubeVirt. It affects worker nodes that have LVM2 installed, which is the default on Ubuntu and RHEL-family images.
+
+The default LVM udev rules autoactivate any volume group that they find on a block device, including a volume group that belongs to a VM. This autoactivation has the following consequences:
+
+- The host holds an active device-mapper stack on top of the multipath device.
+
+- When the VM stops or is deleted, the Portworx `NodeUnstageVolume` call fails with the error `multipath flush failed because the device is still in use`.
+
+- The `virt-launcher` pod stays in the `Completed` state, the `VolumeAttachment` is never released, and the namespace is stuck in the `Terminating` state.
+
+- The host can read and write the guest's metadata, which is a data-safety risk.
+
+Portworx reports the failure, but the cause is on the host.
+
+Any Linux host that exposes raw block devices to VMs can hit this issue, regardless of the storage backend. OpenShift avoids it through its node image and configuration, so you don't need the udev rule on OpenShift. On vanilla Kubernetes worker nodes that have LVM2 installed, you must apply the rule yourself.
+
+To prevent this issue, do the following:
+
+- Install the udev rule
+
+- Deactivate active guest volume groups
+
+- Verify the rule
+
+#### Install the udev rule​
+
+The rule matches multipath devices by their kernel device-mapper UUID (`DM_UUID`), not by device path, so device aliases can't bypass it. It tells udev to skip the remaining rules for those devices, including LVM autoactivation. The rule works the same way for any multipath-backed raw block VM disk, not only for FlashArray Direct Access volumes. It doesn't affect the Portworx storage pool, which Portworx assembles through `/dev/md127`, or the host's root LVM, which isn't a multipath device.
+
+warning
+
+Validate this rule on hosts that have root disks on SAN volumes and a multipath (`mpath`) setup. Confirm that a node reboot after you apply the rule doesn't prevent the node from coming back online.
+
+On every worker node, before you run VM workloads, do the following:
+
+-
+Create the `/etc/udev/rules.d/60-lvm-filter-guard.rules` file with the following content:
+
+```
+
+SUBSYSTEM!="block", GOTO="lvm_filter_guard_end"
+
+KERNEL!="dm-[0-9]*", GOTO="lvm_filter_guard_end"
+
+ENV{DM_UUID}!="mpath-*", GOTO="lvm_filter_guard_end"
+
+ENV{DM_UDEV_DISABLE_OTHER_RULES_FLAG}="1"
+
+LABEL="lvm_filter_guard_end"
+
+```
+
+-
+Reload the udev rules:
+
+```
+
+udevadm control --reload-rules
+
+```
+
+You don't need to restart the node or rebuild the initramfs.
+
+important
+
+Install the rule on every worker node, including nodes that you add later. Add the rule to your node provisioning process, and verify it on each new node.
+
+#### Deactivate active guest volume groups​
+
+The udev rule prevents new activations only. It doesn't deactivate guest volume groups that the host activated before you installed the rule.
+
+On each node, do the following:
+
+-
+List the volume groups:
+
+```
+
+vgs --noheadings -o vg_name
+
+```
+
+-
+Identify the guest volume groups. Ignore the host's own volume groups, such as the root volume group and the `pwx*` volume groups.
+
+-
+For each guest volume group whose VM no longer exists, deactivate the volume group:
+
+```
+
+DM_DISABLE_UDEV=1 vgchange -an <guest-vg>
+
+```
+
+Replace `<guest-vg>` with the name of the guest volume group.
+
+note
+
+Always set `DM_DISABLE_UDEV=1`. Without it, `vgchange` can hang when you run it from a container, because the container's IPC namespace can't share the udev synchronization cookie.
+
+-
+If a `VolumeAttachment` is still stuck, delete the `VolumeAttachment` object so that Kubernetes runs the unpublish operation. Don't remove the `VolumeAttachment` finalizers.
+
+#### Verify the rule​
+
+On each node, run the following commands:
+
+```
+
+test -f /etc/udev/rules.d/60-lvm-filter-guard.rules && echo present
+
+vgs --noheadings -o vg_name
+
+journalctl -k | grep -c "multipath flush failed"
+
+```
+
+The configuration is correct when:
+
+- The first command prints `present`.
+
+- The `vgs` output lists no guest volume groups.
+
+- The `journalctl` command returns `0` for the period after you applied the rule.
+
 ### OpenShift-specific known issues​
 
 -

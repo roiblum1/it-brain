@@ -12,17 +12,15 @@ If your Kubernetes distribution supports multiple Linux distributions and kernel
 
 Portworx Enterprise version:
 
-3.7.1▼
+3.7.2▼
 
-Portworx Operator version: 26.4.0 or later
+Portworx Operator version: 26.5.0 or later
 
-Showing 22 supported Kubernetes distributions for Portworx Enterprise 3.7.1
+Showing 22 supported Kubernetes distributions for Portworx Enterprise 3.7.2
 
 Kubernetes distributionSupported versions
 
 Vanilla Kubernetes
-
-- 1.32 (starting from 1.32.2)
 
 - 1.33
 
@@ -32,6 +30,8 @@ Vanilla Kubernetes
 
 - 1.36
 
+- 1.37
+
 Google Kubernetes Engine (GKE)
 
 - 1.34.11
@@ -39,6 +39,8 @@ Google Kubernetes Engine (GKE)
 - 1.35.8
 
 - 1.36.4
+
+- 1.37.1
 
 Azure Kubernetes Service (AKS)
 
@@ -48,6 +50,8 @@ Azure Kubernetes Service (AKS)
 
 - 1.36.4
 
+- 1.37.0
+
 Amazon Elastic Kubernetes Service (EKS)
 
 - 1.34.11
@@ -56,13 +60,15 @@ Amazon Elastic Kubernetes Service (EKS)
 
 - 1.36.4
 
+- 1.37.0
+
 IBM Cloud Kubernetes Service (IKS)
 
-- 1.34.10
+- 1.34.12
 
-- 1.35.7
+- 1.35.9
 
-- 1.36.3
+- 1.36.5
 
 OCI Kubernetes Engine (OKE)
 
@@ -71,6 +77,8 @@ OCI Kubernetes Engine (OKE)
 - 1.35.2
 
 - 1.36.1
+
+- 1.37.0
 
 KOPS
 
@@ -88,7 +96,7 @@ SUSE Rancher Kubernetes Engine (RKE2)
 
 - 1.34.11
 
-- 1.35.8
+- 1.35.10
 
 - 1.36.4
 
@@ -131,14 +139,17 @@ Red Hat OpenShift
 - OpenShift version: 4.19 (verified up to 4.19.51)
  Kubernetes version: 1.32.13
 
-- OpenShift version: 4.20 (verified up to 4.20.42)
+- OpenShift version: 4.20 (verified up to 4.20.46)
  Kubernetes version: 1.33.13
 
-- OpenShift version: 4.21 (verified up to 4.21.37)
+- OpenShift version: 4.21 (verified up to 4.21.42)
  Kubernetes version: 1.34.9
 
-- OpenShift version: 4.22 (verified up to 4.22.18)
- Kubernetes version: 1.35.8
+- OpenShift version: 4.22 (verified up to 4.22.22)
+ Kubernetes version: 1.35.9
+
+- OpenShift version: 5.0 (verified up to 5.0.1)
+ Kubernetes version: 1.36.5
 
 Note: Supports both bare metal and VM
 
@@ -161,16 +172,16 @@ Red Hat OpenShift on IBM Cloud
 
 Red Hat OpenShift Service on AWS
 
-- ROSA version: 4.19 (verified up to 4.19.45)
+- ROSA version: 4.19 (verified up to 4.19.51)
  Kubernetes version: 1.32
 
-- ROSA version: 4.20 (verified up to 4.20.38)
+- ROSA version: 4.20 (verified up to 4.20.42)
  Kubernetes version: 1.33
 
-- ROSA version: 4.21 (verified up to 4.21.32)
+- ROSA version: 4.21 (verified up to 4.21.37)
  Kubernetes version: 1.34
 
-- ROSA version: 4.22 (verified up to 4.22.13)
+- ROSA version: 4.22 (verified up to 4.22.18)
  Kubernetes version: 1.35
 
 Azure Red Hat OpenShift
@@ -178,13 +189,13 @@ Azure Red Hat OpenShift
 - ARO version: 4.18 (verified up to 4.18.35)
  Kubernetes version: 1.31
 
-- ARO version: 4.19 (verified up to 4.19.45)
+- ARO version: 4.19 (verified up to 4.19.51)
  Kubernetes version: 1.32
 
-- ARO version: 4.20 (verified up to 4.20.38)
+- ARO version: 4.20 (verified up to 4.20.42)
  Kubernetes version: 1.33
 
-- ARO version: 4.21 (verified up to 4.21.33)
+- ARO version: 4.21 (verified up to 4.21.37)
  Kubernetes version: 1.34
 
 VMware vSphere Kubernetes Service (VKS)
@@ -224,8 +235,8 @@ Kubernetes version: v1.34.7-gke.200
 - Anthos version: 1.35.500-gke.142
 Kubernetes version: v1.35.8-gke.100
 
-- Anthos version: 1.36.0-gke.532
-Kubernetes version: v1.36.0-gke.2800
+- Anthos version: 1.36.100-gke.144
+Kubernetes version: v1.36.4-gke.100
 
 Google Anthos on VMware
 
@@ -245,9 +256,9 @@ Google Anthos on VMware
  vSphere version: 7.0.3 & 8.0.3
  Kubernetes version: v1.35.8-gke.100
 
-- Anthos version: 1.36.0-gke.532
+- Anthos version: 1.36.100-gke.144
  vSphere version: 7.0.3 & 8.0.3
- Kubernetes version: v1.36.0-gke.2800
+ Kubernetes version: v1.36.4-gke.100
 
 Gardener on Azure
 
@@ -257,6 +268,8 @@ Gardener on Azure
 
 - 1.35.3
 
+- 1.36.5
+
 Gardener on Google Cloud Platform
 
 - 1.33.9
@@ -265,6 +278,8 @@ Gardener on Google Cloud Platform
 
 - 1.35.2
 
+- 1.36.6
+
 Gardener on AWS
 
 - 1.33.10
@@ -272,3 +287,5 @@ Gardener on AWS
 - 1.34.6
 
 - 1.35.3
+
+- 1.36.5

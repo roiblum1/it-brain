@@ -4,79 +4,106 @@ Source: https://docs.portworx.com/portworx-enterprise/operations/migration/migra
 
 Migration with Stork | Portworx Enterprise Documentation
 
-This guide shows you how to migrate your Portworx volumes one time between clusters using Stork. If you wish to set up disaster recovery, refer to the Disaster Recovery section.
+This topic describes how to migrate your Portworx volumes and your Kubernetes/OpenShift resources one time between clusters using Stork. If you want to set up disaster recovery instead, see Set up Disaster Recovery.
+
+note
+
+Migration from a cluster with PX-Security enabled to a cluster without PX-Security is not supported.
+
+Starting with Stork 26.5.0, you can migrate applications and volumes from an unsecured cluster to a PX-Security enabled destination cluster. This is supported on both Kubernetes and OpenShift clusters. During migration, Stork detects whether PX-Security is enabled on the destination cluster and automatically retrieves the authentication information required to access the migrated volumes. No additional authentication configuration is required in the ClusterPair or the Migration specification.
+
+The following collection of tasks describes how to migrate your applications and volumes using Stork:
+
+- Create a ClusterPair object
+
+- Start your migration
+
+- Monitoring a migration
+
+Ensure that all the prerequisites are met and then proceed to complete all the tasks to migrate your applications and volumes.
 
 ## Prerequisites​
 
-- Kubernetes
+Before you migrate with Stork, ensure that the following requirements are met on both the source and destination clusters:
 
-- OpenShift
+- Secret store: A secret store is configured on both clusters. The secret store holds the credentials for the objectstore.
 
-- Secret Store: A secret store is configured on both clusters. This will store the credentials for the objectstore.
+- Objectstore: An AWS S3-compatible objectstore, AWS S3, GCP Object Storage, or Azure Blob Storage is available.
 
-- Objectstore: An AWS S3 compatible, AWS S3, GCP Object Storage, or Azure Blob Storage.
+- NFS storage: If you use NFS to migrate volume data, ensure Stork 24.4.0 or later is installed. The supported NFS version is limited to NFSv4.
 
-- Network Connectivity:
+- Network connectivity:
 
-- Kubernetes: All worker nodes are able to reach Kubernetes API endpoints on both Kubernetes clusters, for example, port 6443, 443 and so on.
+- Cluster API access: All worker nodes can reach the API endpoints on both clusters, for example, on port 6443 or 443. On Kubernetes, these are the Kubernetes API endpoints. On OpenShift 4 and later, these are the OpenShift API endpoints.
 
-- Portworx: Open port in the range of 9001-9020 for Portworx worker nodes to communicate with each other. To know more about the specific ports for your environment, see the Network table on the Prerequisites page.
+- Portworx ports: On Kubernetes, ports 9001-9020 are open so that Portworx worker nodes can communicate with each other. On OpenShift, ports 17001-17020 are open so that you can reach the Portworx API endpoints. For the ports specific to your environment, see the Network table on the Prerequisites page.
 
-- Default StorageClass: At most one StorageClass object is configured as the default. Having multiple default StorageClasses will cause PVC migrations to fail.
+- Default StorageClass: At most one StorageClass object is configured as the default. Having multiple default StorageClasses causes PVC migrations to fail.
 
-- Cloud Environment: Depending on your cloud provider (EKS, GKE, AAD enabled AKS, or OKE) ensure that you have successfully applied the instructions provided on the respective page for setting up your destination cluster.
+- Cloud environment: If you use a cloud provider, you have completed the destination cluster setup, for more information refer to cloud provider specific guides: EKS, GKE, AAD-enabled AKS, or OKE.
 
-- `storkctl` is installed on both clusters. Always use the latest `storkctl` binary tool by downloading it from the current running Stork container.
+- Custom container images: On OpenShift, if you use custom container images, the images are available from a registry that both the source and destination clusters can access.
 
-- Secret Store: A secret store is configured on both clusters. This will store the credentials for the objectstore.
+- `storkctl`: `storkctl` is installed on both clusters. Always use the latest `storkctl` binary by downloading it from the running Stork container.
 
-- Objectstore: An AWS S3 compatible, AWS S3, GCP Object Storage, or Azure Blob Storage.
+### Prerequisites when migrating from an unsecured cluster to a PX-Security enabled cluster​
 
-- Network Connectivity:
+To migrate application and volumes from an unsecured cluster to PX-Security enabled cluster, ensure that the following additional requirements are met:
 
-- OpenShift4+: All worker nodes are able to reach API endpoints on both clusters, for example, port 6443, 443 and so on.
+-
+Stork version: Stork 26.5.0 or later is installed on the source cluster.
 
-- Portworx: You must open ports in the range of 17001-17020 to reach Portworx API endpoints. To know more about the specific ports for your environment, see the Network table on the Prerequisites page.
+-
+Kubernetes version: If you use in-tree Portworx volumes and the destination cluster runs Kubernetes 1.31 or later, the destination cluster must run at least Kubernetes 1.31.6, 1.32.2, or 1.33.0.
 
-- Default StorageClass: At most one StorageClass object is configured as the default. Having multiple default StorageClasses will cause PVC migrations to fail.
+-
+Guest access (recommended): Guest access is disabled on the destination cluster so that PX-Security enforces authentication for access to migrated volumes.
 
-- Cloud Environment: Depending on your cloud provider (EKS, GKE, AAD enabled AKS, or OKE) ensure that you have successfully applied the instructions provided on the respective page for setting up your destination cluster.
+-
+Destination cluster: Verify that the `px-user-token` secret exists on the PX-Security enabled destination cluster, by using the following command:
 
-- Custom container images: If you use any custom container images, make sure the custom images are available from a registry that is accessible to both the source and destination clusters.
+```
 
-- `storkctl` is installed on both clusters. Always use the latest `storkctl` binary tool by downloading it from the current running Stork container.
+kubectl get secrets --all-namespaces --field-selector metadata.name=px-user-token
+
+```
+
+Verify that the output lists the `px-user-token` Secret. If the Secret is missing, Stork treats the destination cluster as unsecured and does not add the authentication information during migration. For more information, see Enable authorization in Portworx.
+
+-
+Kubeconfig access: The destination kubeconfig used to create the ClusterPair has permission to list Secrets across all namespaces.
 
 note
 
-- The default admin namespace is `kube-system`. In all examples, `<migrationnamespace>` is considered the admin namespace responsible for migrating all namespaces from your source cluster to the destination cluster. Alternatively, you can specify a non-admin namespace, in such a case, only that specific namespace will be migrated. To learn how to set up an admin namespace, refer to the Set up a Cluster Admin namespace for Migration page.
+-
+The default admin namespace is `kube-system`. In all examples, `<migrationnamespace>` is the admin namespace that migrates all namespaces from your source cluster to the destination cluster. Alternatively, you can specify a non-admin namespace. In that case, Portworx migrates only that namespace. To learn how to set up an admin namespace, see Set up a Cluster Admin namespace for Migration.
 
-- Migration is not supported for FlashArray Direct Access and FlashBlade Direct Access volumes. Avoid configuring migration schedules for any namespaces containing these volumes.
+-
+Migration is not supported for FlashArray Direct Access and FlashBlade Direct Access volumes. Avoid configuring migration schedules for namespaces that contain these volumes.
 
 ## Create a ClusterPair object​
 
-For migration with Stork, it is essential to pair two clusters to enable the migration of data and resources. To facilitate this process, you need to create a trust object, known as a ClusterPair object, on the source cluster. Portworx requires this object to establish a communication channel between the two clusters.
-
-The ClusterPair object pairs the two clusters, allowing migration of resources and volumes.
+To migrate with Stork, you must first pair the two clusters so that Portworx can migrate data and resources between them. To do this, you create a trust object, called a ClusterPair object, on the source cluster. Portworx uses this object to establish a communication channel between the two clusters.
 
 ### Pair your clusters​
 
-Use the `storkctl create clusterpair` command to create your unidirectional ClusterPair using the command options specific to your environment, as explained in the following sections. The unidirectional ClusterPair will establish authentication from the source cluster to the destination cluster so resources and data can be migrated in one direction.
+Use the `storkctl create clusterpair` command to create a unidirectional ClusterPair, with the command options for your environment as described in the following sections. A unidirectional ClusterPair establishes authentication from the source cluster to the destination cluster, so you can migrate resources and data in one direction.
 
-This command creates Clusterpair object on the source cluster using the source config file (`<source-kubeconfig-cluster>`) and the destination kubeconfig file (`<destination-kubeconfig-cluster>`) in the specified namespace (`<migrationnamespace>`). This object establishes and authenticates the connection between the two clusters for migrating resources and volumes within the specified namespace.
+The command creates the ClusterPair object on the source cluster, using the source kubeconfig file (`<source-kubeconfig-file>`) and the destination kubeconfig file (`<destination-kubeconfig-file>`) in the specified namespace (`<migrationnamespace>`). This object establishes and authenticates the connection between the two clusters for migrating resources and volumes within that namespace.
 
 note
 
-If you configured the `portworx-api` service to be accessible externally through ingresses or routes, specify the following two additional command options while creating the ClusterPair:
+If you configured the `portworx-api` service to be accessible externally through ingresses or routes, add the following command options when you create the ClusterPair:
 
 - `--dest-ep string`: Endpoint of the `portworx-api` service in the destination cluster.
 
 - `--src-ep string`: Endpoint of the `portworx-api` service in the source cluster.
 
-If the above endpoints are not specified, the storage status of the ClusterPair shows as `failed`.
+If you do not specify these endpoints, the storage status of the ClusterPair shows as `failed`.
 
 #### Create a unidirectional ClusterPair​
 
-Depending upon your ObjectStore, click the appropriate tab to run the command to create a unidirectional ClusterPair named `migration-cluster-pair` for cluster migration:
+Select the tab for your objectstore, and then run the command to create a unidirectional ClusterPair named `migration-cluster-pair`:
 
 - Amazon S3 or S3 compatible
 
@@ -86,7 +113,7 @@ Depending upon your ObjectStore, click the appropriate tab to run the command to
 
 - NFS
 
-Run the following command to create a unidirectional ClusterPair named `migration-cluster-pair` for cluster migration:
+Run the following command:
 
 ```
 
@@ -114,9 +141,9 @@ storkctl create clusterpair migration-cluster-pair \
 
 ```
 
-Portworx uses AWS S3 or S3 compatible blob storage for migrating volume data between the two clusters. The credentials specified in the above command authenticate you with your cloud platform. The S3 bucket information is provided with the specified access key, secret key, and region (`<s3-bucket-location>`) to facilitate the data transfer between the two clusters.
+Portworx uses AWS S3 or S3-compatible object storage to migrate volume data between the two clusters. The credentials in the command authenticate you with your cloud platform. The access key, secret key, and region identify the S3 bucket that Portworx uses for the data transfer.
 
-Run the following command to create a unidirectional ClusterPair named `migration-cluster-pair` for cluster migration:
+Run the following command:
 
 ```
 
@@ -140,9 +167,9 @@ storkctl create clusterpair migration-cluster-pair \
 
 ```
 
-Portworx uses Azure blob storage for migrating volume data between the two clusters. The Azure credentials specified in the above command authenticate you with Azure.
+Portworx uses Azure Blob Storage to migrate volume data between the two clusters. The Azure credentials in the command authenticate you with Azure.
 
-Run the following command to create a unidirectional ClusterPair named `migration-cluster-pair` for cluster migration:
+Run the following command:
 
 ```
 
@@ -166,15 +193,9 @@ storkctl create clusterpair migration-cluster-pair \
 
 ```
 
-Portworx uses Google Cloud storage for migrating volume data between the two clusters. The Google Cloud credentials specified in the above command authenticate you with Google Cloud.
+Portworx uses Google Cloud Storage to migrate volume data between the two clusters. The Google Cloud credentials in the command authenticate you with Google Cloud.
 
-Prerequisites
-
-- The minimum required version of Stork for NFS support is 24.4.0.
-
-- The supported NFS version is limited to NFSv4.
-
-Run the following command to create a unidirectional ClusterPair named `migration-cluster-pair` for cluster migration:
+Run the following command:
 
 ```
 
@@ -200,7 +221,7 @@ storkctl create clusterpair migration-cluster-pair \
 
 ```
 
-Parameters:
+The command uses the following parameters:
 
 - `--provider nfs`: Specifies the provider as NFS.
 
@@ -210,15 +231,15 @@ Parameters:
 
 - `--nfs-sub-path`: Specifies the subpath within the export path to use. If you do not specify a subpath, Portworx creates one automatically.
 
-- `--nfs-mount-opts`: (Optional) Specifies NFS mount options, for example, vers=4.0.
+- `--nfs-mount-opts`: (Optional) Specifies NFS mount options, for example, `vers=4.0`.
 
 - `--nfs-timeout-seconds`: (Optional) Specifies the NFS IO timeout in seconds (default is 5, valid range is 1-30).
 
-Portworx uses the specified NFS storage for migrating volume data between the two clusters.
+Portworx uses the specified NFS storage to migrate volume data between the two clusters.
 
 #### Verify the status of your unidirectional ClusterPair​
 
-The following command uses `storkctl` to retrieve information about the cluster pairs in the Kubernetes namespace `<migrationnamespace>`:
+To check the status of the ClusterPair, run the following `storkctl` command, which lists the ClusterPairs in the namespace `<migrationnamespace>`:
 
 ```
 
@@ -226,9 +247,7 @@ storkctl get clusterpair -n <migrationnamespace>
 
 ```
 
-This command displays details such as the name and status of the existing cluster pairs within that specific namespace.
-
-Source cluster details:
+The command displays the name and status of each ClusterPair in that namespace. For example, the output on the source cluster looks like this:
 
 ```
 
@@ -238,40 +257,42 @@ migration-cluster-pair   Ready           Ready             10 Mar 23 17:16 PST
 
 ```
 
-On a successful pairing, you should see the `STORAGE-STATUS` and `SCHEDULER-STATUS` as `Ready`.
+After a successful pairing, both `STORAGE-STATUS` and `SCHEDULER-STATUS` show `Ready`.
  Encountered an error?
 
-If you see an error, you can get more information by running the following command:
+If you see an error, run the following command to get more information:
 
 `kubectl describe clusterpair <your-clusterpair-name> -n <migrationnamespace>`
 
 ### Use Rancher Projects with ClusterPair​
 
-If you are using Rancher projects, follow the instructions on the Use Rancher Projects with ClusterPair page, otherwise skip to the next section.
+If you use Rancher projects, follow the instructions in Use Rancher Projects with ClusterPair. Otherwise, skip to the next section.
 
 ## Start your migration​
 
-Once the pairing is configured, applications can be migrated repeatedly to the destination cluster.
+After you configure the pairing, you can migrate applications to the destination cluster as many times as you need.
 
-You can either use the `storkctl create migration` command or create a migration object and apply it manually to start the migration.
+To start a migration, use the `storkctl create migration` command, or create a migration object and apply it manually.
 
-You can also use `pre-exec` and `post-exec` rules to run custom actions before or after each migration. For more information see Configure pre-exec and post-exec rules for Stork migrations
+You can also use `pre-exec` and `post-exec` rules to run custom actions before or after each migration. For more information, see Configure pre-exec and post-exec rules for Stork migrations.
+
+If you migrate from an unsecured cluster to a destination cluster with PX-Security enabled, you do not need to add authentication annotations to the Migration specification or the MigrationSchedule specification. Stork checks whether PX-Security is enabled on the destination cluster, including during each scheduled migration, and handles the required authentication information automatically. For more information about scheduled migrations, see Schedule migrations.
 
 note
 
-Starting from Stork 25.5.0, you can use the admin ClusterPair to create migration schedules in any namespace instead of creating a local ClusterPair and referencing it in the migration schedule. For more information, see Use the admin ClusterPair for migrations in any namespace.
+Starting with Stork 25.5.0, you can use the admin ClusterPair to create migration schedules in any namespace instead of creating a local ClusterPair and referencing it in the migration schedule. For more information, see Use the admin ClusterPair for migrations in any namespace.
 
 - Using storkctl
 
 - Using CRD
 
-Use the `storkctl create migration` command with the required flags. For more information, refer to `storkctl create migration`.
+To start the migration, run the `storkctl create migration` command with the required flags. For more information, see `storkctl create migration`.
 
 note
 
-If you have created an admin ClusterPair, you can use it instead of creating a local ClusterPair. Use the `--admin-cluster-pair` flag instead of `--clusterPair`.
+If you created an admin ClusterPair, you can use it instead of a local ClusterPair. Use the `--admin-cluster-pair` flag instead of `--clusterPair`.
 
-Example:
+The following example creates a migration:
 
 ```
 
@@ -291,23 +312,23 @@ storkctl create migration <your-migration-object-name> \
 
 ### Preview resources before starting migration​
 
-To validate which resources will be included in a migration before creating it, use the `--preview` or `--previewFile` flags with the `storkctl create migration` command:
+To check which resources a migration includes before you create it, use the `--preview` or `--previewFile` flag with the `storkctl create migration` command:
 
-- Use `--preview` to display the resources that will be included in the migration without initiating it.
+- Use `--preview` to display the resources that the migration includes, without starting it.
 
 - Use `--previewFile <filename>` to save the preview output to a file.
 
-This helps confirm which resources will be migrated before execution, including non-namespaced resources such as `ClusterRole` and `ClusterRoleBinding`.
+The preview confirms which resources Portworx migrates, including non-namespaced resources such as `ClusterRole` and `ClusterRoleBinding`.
 
-Follow these steps to migrate your cluster resources and volumes.
+To migrate your cluster resources and volumes using a custom resource definition, complete the following steps.
 
 ### Define your migration object​
 
-Paste the following spec into the `migration.yaml` file to define your migration object:
+To define your migration object, paste the following Migration specification into a `migration.yaml` file:
 
 note
 
-If you have created an admin ClusterPair, you can use it instead of creating a local ClusterPair. Use the `spec.adminClusterPair` field instead of `spec.clusterPair`.
+If you created an admin ClusterPair, you can use it instead of a local ClusterPair. Use the `spec.adminClusterPair` field instead of `spec.clusterPair`.
 
 ```
 
@@ -339,33 +360,33 @@ spec:
 
 ```
 
-Where:
+In the specification:
 
-- apiVersion: is set as `stork.libopenstorage.org/v1alpha1`
+- `apiVersion`: Set to `stork.libopenstorage.org/v1alpha1`.
 
-- kind: is set as `Migration`
+- `kind`: Set to `Migration`.
 
-- metadata.name: is the name of the object that performs the migration
+- `metadata.name`: The name of the object that performs the migration.
 
-- metadata.namespace: is the name of the namespace in which you want to create the object
+- `metadata.namespace`: The namespace in which you want to create the object.
 
-- spec.clusterPair: is the name of the `ClusterPair` object created in the Pair your clusters section
+- `spec.clusterPair`: The name of the ClusterPair object that you created in Pair your clusters.
 
-- spec.includeResources: is a boolean value specifying if the migration should include PVCs and other application specs. If you set this field to `false`, Portworx will only migrate your volumes.
+- `spec.includeResources`: A boolean value that specifies whether the migration includes PVCs and other application specifications. If you set this field to `false`, Portworx migrates only your volumes.
 
-- spec.startApplications: with a boolean value specifying if Portworx should automatically start applications on the destination cluster. If you set this field to `false`, then the `Deployment` and `StatefulSet` objects on the destination cluster will be set to zero. Note that, on the destination cluster, Portworx uses the `stork.openstorage.org/migrationReplicas` annotation to store the number of replicas from the source cluster.
+- `spec.startApplications`: A boolean value that specifies whether Portworx automatically starts applications on the destination cluster. If you set this field to `false`, Portworx sets the replicas of the `Deployment` and `StatefulSet` objects on the destination cluster to zero. On the destination cluster, Portworx stores the number of replicas from the source cluster in the `stork.openstorage.org/migrationReplicas` annotation.
 
-- spec.namespaces: is the list of namespaces you want to migrate
+- `spec.namespaces`: The list of namespaces that you want to migrate.
 
-- spec.purgeDeletedResources: with a boolean value specifying if Stork should automatically purge a resource from the destination cluster when you delete it from the source cluster. The default value is `false`.
+- `spec.purgeDeletedResources`: A boolean value that specifies whether Stork automatically purges a resource from the destination cluster when you delete it from the source cluster. The default value is `false`.
 
 ### (Optional) Customize your migration​
 
-You can define pre and post executable rules for your migration and specify them in your migration object spec to customize your migration. The pre-executable rule will run before the migration is triggered, and the post-executable rule will run after the migration has been triggered.
+You can customize your migration by specifying pre-exec and post-exec rules in your Migration specification. The pre-exec rule runs before the migration is triggered, and the post-exec rule runs after the migration is triggered.
 
-When you are using an admin namespace to migrate multiple namespaces and want to customize your migration using the pre or post executable rules, create these rules in the admin namespace.
+If you use an admin namespace to migrate multiple namespaces and want to customize the migration with pre-exec or post-exec rules, create the rules in the admin namespace.
 
-The following example shows how you can specify the pre and post rules in your migration object:
+The following example shows how to specify the rules in your migration object:
 
 ```
 
@@ -401,29 +422,27 @@ spec:
 
 ```
 
-If the rules do not exist, you will see an event and the migration will stop.
+If the rules do not exist, you see an event and the migration stops.
 
--
-If the PreExec rule fails for any reason, it will log an event against the object and retry. The Migration will not be marked as failed.
+The following behavior applies when a rule fails:
 
--
-If the PostExec rule fails for any reason, it will log an event and mark the Migration as failed. It will also try to cancel the migration that was started from the underlying storage driver.
+- PreExec rule failure: If the PreExec rule fails for any reason, Stork logs an event against the object and retries. Stork does not mark the migration as failed.
 
-### Apply the spec​
+- PostExec rule failure: If the PostExec rule fails for any reason, Stork logs an event and marks the migration as failed. Stork also tries to cancel the migration that the underlying storage driver started.
+
+### Apply the specification​
+
+To start the migration, apply the Migration specification:
 
 - Kubernetes
 
 - OpenShift
-
-Apply the spec to start the migration process:
 
 ```
 
 kubectl apply -f migration.yaml
 
 ```
-
-Apply the spec to start the migration process:
 
 ```
 
@@ -433,7 +452,7 @@ oc apply -f migration.yaml
 
 ## Monitoring a migration​
 
-Once the migration has been started using the previous commands, you can check the status using `storkctl`:
+After you start the migration, check its status using `storkctl`:
 
 ```
 
@@ -441,7 +460,7 @@ storkctl get migration -n <migrationnamespace>
 
 ```
 
-Here is an example output that you see initially when the migration is triggered:
+The following example shows the output when the migration is first triggered:
 
 ```
 
@@ -451,9 +470,9 @@ NAME                                            CLUSTERPAIR              STAGE  
 
 ```
 
-If the migration is successful, the `STAGE` will change from `Volumes` to `Application` to `Final`.
+If the migration succeeds, the `STAGE` changes from `Volumes` to `Application` to `Final`.
 
-Here is an example output of a successful migration:
+The following example shows the output of a successful migration:
 
 ```
 
@@ -465,8 +484,70 @@ NAME                                             CLUSTERPAIR            STAGE   
 
  Need to see more details?
 
-If you see an error, or you want to see more details of your migration, run the following command:
+If you see an error, or you want more details about your migration, run the following command:
 
 `kubectl describe clusterpair <your-clusterpair-name> -n <migrationnamespace>`
+
+If you migrated applications and volumes from an unsecured cluster to a destination cluster with PX-Security enabled, a migration status of `Successful` indicates that Stork created the objects on the destination. However, this status does not confirm that the migrated applications can successfully mount their volumes.
+
+To verify that Stork added the authentication information to the migrated objects, run the following commands on the destination cluster. The `kubectl get pvc -n <application-namespace>` command shows the name of the PersistentVolume behind each claim.
+
+For a CSI volume, verify that the secret reference is set:
+
+```
+
+kubectl get pv <pv-name> -o jsonpath='{.spec.csi.nodePublishSecretRef}'
+
+```
+
+For an in-tree volume, verify that the annotation is set:
+
+```
+
+kubectl get pv <pv-name> -o jsonpath='{.metadata.annotations.openstorage\.io/auth-secret-name}'
+
+```
+
+For a StorageClass that the migration created, verify that the authentication parameters are set:
+
+```
+
+kubectl get storageclass <storageclass-name> -o jsonpath='{.parameters}'
+
+```
+
+If you set `startApplications` to `true` in the Migration specification, also confirm that the application pods reach the `Running` state:
+
+```
+
+kubectl get pods -n <application-namespace>
+
+```
+
+If a pod stays in `ContainerCreating`, check the pod events for volume mount or authentication errors. For troubleshooting guidance, see Troubleshooting.
+
+## Limitations​
+
+Migration from a cluster with PX-Security enabled to a cluster without PX-Security is not supported. In addition, the following limitations apply when you migrate applications and volumes from an unsecured cluster to a cluster with PX-Security enabled:
+
+-
+Existing StorageClasses: Stork adds the required authentication parameters only to StorageClasses created during migration. If a StorageClass with the same name already exists on the destination cluster, Stork does not update it.
+
+Kubernetes does not allow you to change the parameters of an existing StorageClass. To use the authentication parameters, recreate the StorageClass with the parameters, or create a new StorageClass that includes them. Otherwise, new PVCs that use the StorageClass might fail to authenticate. For more information, see PVCs and Stork with authorization.
+
+-
+Volumes migrated before enabling PX-Security: Volumes migrated to the destination cluster before PX-Security was enabled might fail to mount, even if the migration status is `Successful`. Contact Portworx Support (support@everpuredata.com) for assistance in this case.
+
+## Troubleshooting​
+
+If you migrate applications and volumes from an unsecured cluster to a cluster with PX-Security enabled and encounter issues, use the following table to identify the symptom and the action to take:
+
+SymptomWhat to do
+
+A pod stays in `ContainerCreating` with the error `Access denied without authentication token`Confirm that the source cluster runs Stork 26.5.0 or later and that the `px-user-token` Secret exists on the destination cluster. After you fix either, run the migration again and delete the pod so that Kubernetes recreates it. Running the migration again fixes in-tree volumes only. If the pod uses a CSI volume that already exists on the destination cluster, contact Portworx Support (support@everpuredata.com) for assistance.
+
+A new PVC on the destination fails with `ProvisioningFailed` and `Access denied without authentication token`The StorageClass does not have the authentication parameters. This happens with StorageClasses that already existed on the destination cluster before the migration. For more information, see Existing StorageClasses limitation.
+
+The Migration shows a `SecuredDestinationDetectionFailed` warningStork could not read Secrets on the destination. Check connectivity and that the destination kubeconfig can list Secrets in all namespaces, and then run the migration again.
 
 In this topic:

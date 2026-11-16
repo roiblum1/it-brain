@@ -38,6 +38,8 @@ Consider the following limitations before you enable readahead in your volumes:
 
 - Readahead does not improve performance of all read workloads. It benefits sequential read workloads only.
 
+- Readahead does not activate for sequential read workloads with a queue depth of 1, where the application has only one outstanding read request at a time. For example, a `fio` workload configured with `iodepth=1` does not activate readahead because Portworx cannot detect the sequential access pattern from a single outstanding read request. Readahead can activate when the workload has multiple outstanding read requests.
+
 ## Enable Readahead​
 
 Readahead is a per-volume setting and is disabled by default. You must enable it manually on each volume.

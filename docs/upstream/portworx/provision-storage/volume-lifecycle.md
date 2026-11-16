@@ -260,7 +260,7 @@ You cannot migrate or convert PVCs created using the native Kubernetes driver to
 
 ## Data Protection and Snapshots​
 
-To use VolumeSnapshots with the Portworx CSI Driver, Snapshot Controller must be enabled in your StorageCluster. By default, both CSI and `installSnapshotController` are enabled in Portworx.
+To use VolumeSnapshots with the Portworx CSI Driver, Snapshot Controller must be enabled in your StorageCluster. By default, both CSI and `installSnapshotController` are enabled in Portworx. If another component manages the snapshot CRDs, such as the GKE add-on manager or OpenShift CSI controller, set `installSnapshotController` to `false`. Starting with Operator 26.5.0, the Operator then also stops reconciling the snapshot CRDs.
 
 If Snapshot Controller is not enabled, run the following command to edit the `StorageCluster` and update the configuration:
 
