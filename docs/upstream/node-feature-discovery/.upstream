@@ -1,7 +1,7 @@
 repo: kubernetes-sigs/node-feature-discovery
 ref: master
-commit: ef6672a33ad9f9b7361f5ee9be9da0424efeb23a
+commit: ffb1ec020fa388dd432fa825540856d3b40232b2
 latest_tag: v0.20.1
 paths: docs
 files: 40
-synced: 2026-11-06T11:05:28Z
+synced: 2026-11-17T12:02:43Z
