@@ -120,8 +120,6 @@ Known Issues
   These defaults prevent a disruptive driver upgrade.
   However, the following deployments need NVIDIA Driver Manager for Kubernetes v0.13.0:
 
-  - Red Hat OpenShift Container Platform in an air-gapped environment, to obtain the fix for uncompressed image layers that can prevent mirroring to Red Hat Quay with ``oc-mirror``.
-    Refer to `Issue #3166 <https://github.com/NVIDIA/gpu-operator/issues/3166>`__.
   - Clusters that use the DRA Driver for NVIDIA GPUs.
   - Nodes configured for GPU passthrough with ``vfio-pci``.
 
@@ -141,6 +139,9 @@ Known Issues
   To work around this issue, use NVIDIA Driver Manager for Kubernetes v0.13.0.
   Refer to the :ref:`Driver Manager image override instructions <v26.7.3-driver-manager-override>` for the settings and the driver-upgrade consequence.
 
+* On OpenShift in an air-gapped environment, some containers prevent mirroring to Red Hat Quay with ``oc-mirror``.
+  Refer to :ref:`openshift-known-issues-oc-mirror-quay`.
+
 * Clusters that use the DRA Driver for NVIDIA GPUs have the following known issues:
 
   - The DRA driver needs NVIDIA Driver Manager for Kubernetes v0.13.0.
@@ -148,6 +149,12 @@ Known Issues
   - On NVIDIA Ampere GPUs, such as A100 and A30, with MIG mode and the ``DynamicMIG`` feature gate enabled, the DRA validator and DCGM Exporter pods remain pending.
     Ampere GPUs cannot change MIG mode without a GPU reset, so the DRA driver does not publish the full GPU that these pods request.
     Refer to `Issue #1580 <https://github.com/kubernetes-sigs/dra-driver-nvidia-gpu/issues/1580>`__.
+
+Post-Release Documentation Updates
+----------------------------------
+
+* Added 620.70.06 to the supported driver versions in the :ref:`operator-component-matrix`.
+* Added containerd 2.4 to the :ref:`supported-container-runtimes`.
 
 ----
 
