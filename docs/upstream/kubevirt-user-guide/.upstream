@@ -1,7 +1,7 @@
 repo: kubevirt/user-guide
 ref: main
-commit: 40f51c6d45926c732a74adf1282c6cf230e065b2
+commit: ebbaef465b4ee28b29b4363b4911b7aa4ac6c98e
 latest_tag: 
 paths: docs
 files: 99
-synced: 2026-11-20T11:52:33Z
+synced: 2026-11-21T11:20:59Z

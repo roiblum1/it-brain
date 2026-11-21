@@ -1,7 +1,7 @@
 repo: temporalio/temporal-mcp
 ref: main
-commit: 1582aa4dcf605d0ec55c1658b58da8acc55633ee
+commit: 07a3cd297658721864af4421127b6a8bdcba0d9b
 latest_tag: v0.0.6
 paths: README.md, REQUEST_FOR_COMMENT.md, docs
 files: 5
-synced: 2026-11-20T11:52:42Z
+synced: 2026-11-21T11:21:08Z

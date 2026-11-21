@@ -1,7 +1,7 @@
 repo: llm-d/llm-d
 ref: main
-commit: fbc9d5c78bb25d9410f9587bc7e55ddc3db5ad03
+commit: 6423758a235d95886277fcc2f4a943b981ac3d6d
 latest_tag: v1.0.0
 paths: docs, guides, README.md
 files: 192
-synced: 2026-11-18T11:54:14Z
+synced: 2026-11-21T11:20:46Z
