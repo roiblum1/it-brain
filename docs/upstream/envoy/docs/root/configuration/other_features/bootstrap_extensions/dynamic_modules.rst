@@ -10,7 +10,7 @@ This can be used to implement:
 
 * Server initialization logic when Envoy starts.
 * Code that runs on every worker thread.
-* Clusters and listeners that the module adds, updates and removes.
+* Clusters, listeners and filter chains that the module adds, updates and removes.
 * Reactions to runtime value changes.
 * Singleton patterns for configuration loading from external services.
 * Global state management across filters.
@@ -62,9 +62,9 @@ A module calls ``envoy_dynamic_module_callback_bootstrap_extension_run_on_all_wo
 main thread to run its ``envoy_dynamic_module_on_bootstrap_extension_worker_event`` hook on every
 worker thread. Once every worker ran the event,
 ``envoy_dynamic_module_on_bootstrap_extension_run_on_all_workers_done`` runs on the main thread. A
-worker runs the event after it applied the cluster, host and listener changes that Envoy posted to
-it before the call, so the done hook tells the module that every worker can use them. Host health,
-weight and metadata changes that a cluster merges over its :ref:`update_merge_window
+worker runs the event after it applied the cluster, host, listener and filter chain changes that
+Envoy posted to it before the call, so the done hook tells the module that the workers can use them.
+Host health, weight and metadata changes that a cluster merges over its :ref:`update_merge_window
 <envoy_v3_api_field_config.cluster.v3.Cluster.CommonLbConfig.update_merge_window>` can reach the
 workers later.
 
@@ -215,6 +215,54 @@ prefix, tagged with ``config_name`` set to the extension name, or ``default`` if
   listeners_owned, Gauge, Listeners that the module owns
   updates_pending, Gauge, Writes that are queued or warming or that wait for the workers to start
 
+.. _config_bootstrap_extensions_dynamic_modules_filter_chain_config_writer:
+
+Filter Chain Config Writer
+--------------------------
+
+Once the module calls
+``envoy_dynamic_module_callback_bootstrap_extension_enable_filter_chain_config_writer``, it can add,
+update and remove the filter chains that the listeners with ``fcds_config`` find by name, as the
+Filter Chain Discovery Service (FCDS) would deliver them. It passes a serialized :ref:`FilterChain
+<envoy_v3_api_msg_config.listener.v3.FilterChain>` to
+``envoy_dynamic_module_callback_bootstrap_extension_filter_chain_config_writer_add_or_update``, and
+Envoy reports the outcome of each write through
+``envoy_dynamic_module_on_bootstrap_extension_filter_chain_config_writer_update_done``. A write is
+active once the filter chain finished warming and Envoy posted it to the workers. A listener whose
+``fcds_config`` has no ``config_source`` waits, without a timeout, until the filter chains that it
+finds by name are written and finished warming, so the module can write a listener before its filter
+chains. Such a listener that Envoy creates before it starts its workers holds back the
+initialization of Envoy until then. A name is either discovered through FCDS or written by an
+extension. Envoy rejects a listener that requests a name of the other kind, and a write of a name
+that a listener requests through FCDS completes as ``Failed``. A listener keeps its names until it
+is removed and has finished draining. Envoy does not notice when another extension writes or removes
+the same filter chain, so the module must only write filter chains that no other extension writes.
+
+A written filter chain has the same authority as a filter chain delivered by FCDS, so build filter
+chains from a schema that the module owns. A write that changes a filter chain drains the
+connections of its previous version on the listeners that use it, and a removal drains all its
+connections and ends the wait of the listeners that wait for it. The config dump does not list
+written filter chains. Envoy does not time out a write that never finishes warming, or a listener
+that waits for a filter chain that is never written, so a module that waits for either should bound
+that wait itself.
+
+The filter chain config writer emits the following statistics with the
+``dynamic_modules.filter_chain_config_writer.`` prefix, tagged with ``config_name`` set to the
+extension name, or ``default`` if it is empty.
+
+.. csv-table::
+  :header: Name, Type, Description
+  :widths: 1, 1, 2
+
+  update_submitted, Counter, Writes that Envoy accepted
+  update_rejected, Counter, Writes that Envoy refused before the server was initialized or after shutdown began
+  update_active, Counter, Writes that became active
+  update_superseded, Counter, Writes that a later write replaced before they became active
+  update_removed, Counter, Writes that a removal ended before they became active
+  update_failed, Counter, Writes that failed when Envoy applied them
+  filter_chains_owned, Gauge, Filter chains that the module owns
+  updates_pending, Gauge, Writes that are queued or warming
+
 .. _config_bootstrap_extensions_dynamic_modules_ecds:
 
 ECDS Configuration
@@ -276,6 +324,36 @@ configuration.
   version, Gauge, Hash of the last successful subscription version
   version_text, TextReadout, Last successful subscription version
 
+.. _config_bootstrap_extensions_dynamic_modules_xds_notifications:
+
+xDS Notifications
+-----------------
+
+After server initialization, enable gRPC xDS notifications with
+``envoy_dynamic_module_callback_bootstrap_extension_set_xds_notifications``. The optional
+``envoy_dynamic_module_on_bootstrap_extension_xds_update`` hook receives the resource type URL
+and outcome. Accepted and rejected responses include their version and nonce; unsubscriptions
+include the resource name. Enabling fails in ``--mode init_only``.
+
+Accepted follows successful processing, before ACK; resources may still be warming.
+Rejected precedes NACK and may follow partial application. Its error details are the NACK
+message and may quote rejected configuration. They are empty for other outcomes.
+
+The hook runs on the main thread and must not block. Unsubscribed is posted to the dispatcher once
+no watch on the stream still names the resource, avoiding a call during cluster destruction. It
+can arrive after later outcomes, such as the CDS Accepted that removed a cluster.
+
+:ref:`Configuration snapshot <config_bootstrap_extensions_dynamic_modules_config_snapshots>`
+collection returns ``NotAllowed`` during Accepted and Rejected. Defer collection with the bootstrap
+config scheduler. Collection can succeed during the posted Unsubscribed callback.
+
+Disabling notifications discards queued unsubscriptions. Re-enabling does not replay them.
+Delivery stops when shutdown begins.
+
+The version is ``version_info`` for SotW and ``system_version_info`` for Delta. A Delta system
+version is not a per-resource version, and nonces are scoped to an xDS stream and resource type.
+Resource payloads are not included. Strings are valid only during the callback.
+
 .. _config_bootstrap_extensions_dynamic_modules_config_snapshots:
 
 Configuration Snapshots
@@ -289,8 +367,13 @@ Provider keys include ``bootstrap``, ``clusters``, ``listeners``,
 ``routes``, ``route_scopes``, ``secrets`` and the registered ``ecds_filter_*`` providers. Missing keys
 are omitted, duplicates are collected once, and an empty selection collects nothing. Providers
 appear in key order, as in :ref:`/config_dump <operations_admin_interface_config_dump>`.
-Endpoint dumps are not included. An optional full-match RE2 regular expression filters resource names
-for providers that support it. A missing or empty expression disables filtering.
+Selecting ``endpoint`` includes endpoint assignments for active clusters, as with
+``/config_dump?include_eds``. An optional full-match RE2 regular expression filters resource names
+for providers that support it. A missing or empty expression disables filtering. For endpoints,
+the filter matches the EDS service name, or the cluster name if no service name is set.
+
+Cluster lifecycle hooks do not fire when only a cluster's hosts or their health change, so a
+snapshot shows endpoint changes only when the module collects again.
 
 Collection and sensitive-field redaction run synchronously on the main thread after server
 initialization and before shutdown begins. Their cost grows with the selected resources. Combine
