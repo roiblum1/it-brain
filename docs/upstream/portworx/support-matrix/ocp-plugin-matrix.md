@@ -18,6 +18,8 @@ Deployments outside the supported combinations may install successfully but are 
 
 Dynamic PluginPortworx EnterpriseOperatorOpenShift Container PlatformSupport Status
 
+2.4.03.5 or later26.3.2 or later4.18 or laterSupported
+
 2.3.03.5 or later26.2.0 or later4.18 or laterSupported
 
 2.2.03.4 or later25.6.0 or later4.16 or laterSupported
@@ -33,6 +35,8 @@ Cache-based UI functionality enables the OpenShift Dynamic Plugin to retrieve da
 The following table lists the supported version combinations for the Cache-based UI functionality. Deployments outside these combinations are not supported for production use.
 
 Cache AgentDynamic PluginPortworx EnterpriseOperatorOpenShift Container PlatformSupport Status
+
+1.2.02.4.03.5 or later26.3.2 or later4.18 or laterSupported
 
 1.1.02.3.03.5 or later26.2.0 or later4.18 or laterSupported
 

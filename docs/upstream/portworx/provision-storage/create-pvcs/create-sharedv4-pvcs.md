@@ -24,7 +24,15 @@ Portworx provides two types of sharedv4 features:
 
 Sharedv4 volumes are useful when you want multiple PODs to access the same PVC (volume) at the same time. They can use the same volume even if they are running on different hosts. They provide a global namespace and the semantics are POSIX compliant.
 
-To increase fault tolerance, you can enable sharedv4 service volumes by setting a value for `sharedv4_svc_type`. With this feature enabled, every sharedv4 volume has a Kubernetes service associated with it. Sharedv4 service volumes expose the volume via a Kubernetes service IP. If the sharedv4 (NFS) server goes offline for a sharedv4 service volume and the volume requires a failover, only application pods that were running on the 2 nodes involved in failover need to be restarted.
+To increase fault tolerance, Portworx Enterprise creates Sharedv4 service volumes by default. Each Sharedv4 service volume has an associated Kubernetes service, and pods mount the volume through the service IP rather than through a specific node IP address. If the Sharedv4 (NFS) server goes offline and the volume requires a failover, only the application pods running on the two nodes involved in the failover need to be restarted.
+
+important
+
+-
+If you do not specify `sharedv4_svc_type` in the `StorageClass`, Portworx uses the default value `ClusterIP` and creates a Sharedv4 service volume.
+
+-
+If the Portworx data network uses a private, non-routable network segment, such as a segment without a Layer 3 gateway, set `sharedv4_svc_type: ""` in the `StorageClass`. Otherwise, pods cannot reach the service IP and cannot access the volume through the service.
 
 note
 
@@ -61,7 +69,7 @@ Create the following `portworx-sharedv4-sc.yaml` StorageClass, specifying your o
 `sharedv4`: Set the value to `true`.
 
 -
-(Optional) `sharedv4_svc_type`: Set the value to `"ClusterIP"` if you want to enable the sharedv4 service feature
+(Optional) `sharedv4_svc_type`: Set to `"ClusterIP"` to create a Sharedv4 service volume, or to an empty string (`""`) to create a Sharedv4 volume. If you omit this parameter, Portworx uses `"ClusterIP"` by default.
 
 -
 (Optional) `stork.libopenstorage.org/preferRemoteNodeOnly`: Set the value to `"true"` if you want to strictly enforce pod anti-hyperconvergence with respect to volume replica.
@@ -157,7 +165,7 @@ Create the following `portworx-sharedv4-sc.yaml` StorageClass, specifying your o
 `sharedv4`: Set the value to `true`.
 
 -
-(Optional) `sharedv4_svc_type`: Set the value to `"ClusterIP"` if you want to enable the sharedv4 service feature
+(Optional) `sharedv4_svc_type`: Set to `"ClusterIP"` to create a Sharedv4 service volume, or to an empty string (`""`) to create a Sharedv4 volume. If you omit this parameter, Portworx uses `"ClusterIP"` by default.
 
 -
 (Optional) `stork.libopenstorage.org/preferRemoteNodeOnly`: Set the value to `"true"` if you want to strictly enforce pod anti-hyperconvergence with respect to volume replica.

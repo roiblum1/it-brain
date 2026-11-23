@@ -96,7 +96,7 @@ Migrate all eligible pools from a node`pxctl service pool migrate --node <node-i
 
 Migrate specific pools`pxctl service pool migrate --node <node-id> --pools <uuid1,uuid2>`
 
-Migrate pools to a selected node`pxctl service pool migrate --pools <uuid1,uuid2> --dest-node <target-node-id>`
+Migrate pools to a selected node`pxctl service pool migrate --pools <uuid1,uuid2> --destination-node <target-node-id>`
 
 View pool migration plans and intents`pxctl service pool migrate list`
 

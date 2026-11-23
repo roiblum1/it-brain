@@ -70,6 +70,8 @@ IBM Cloud Kubernetes Service (IKS)
 
 - 1.36.5
 
+- 1.37.1
+
 OCI Kubernetes Engine (OKE)
 
 - 1.34.2
@@ -155,19 +157,19 @@ Note: Supports both bare metal and VM
 
 Red Hat OpenShift on IBM Cloud
 
-- ROKS version: 4.18 (verified up to 4.18.54)
+- ROKS version: 4.18 (verified up to 4.18.59)
  Kubernetes version: 1.31
 
-- ROKS version: 4.19 (verified up to 4.19.45)
+- ROKS version: 4.19 (verified up to 4.19.53)
  Kubernetes version: 1.32
 
-- ROKS version: 4.20 (verified up to 4.20.36)
+- ROKS version: 4.20 (verified up to 4.20.44)
  Kubernetes version: 1.33
 
-- ROKS version: 4.21 (verified up to 4.21.31)
+- ROKS version: 4.21 (verified up to 4.21.40)
  Kubernetes version: 1.34
 
-- ROKS version: 4.22 (verified up to 4.22.13)
+- ROKS version: 4.22 (verified up to 4.22.20)
  Kubernetes version: 1.35
 
 Red Hat OpenShift Service on AWS

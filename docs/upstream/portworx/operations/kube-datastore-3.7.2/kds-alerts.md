@@ -72,7 +72,7 @@ ParameterDescriptionDefault value
 
 `pause-vm-hyperconvergence-requests`Pauses VM live migration requests while allowing pool rebalance to continue.`false`
 
-`dynamic-pool-rebalance-max-moves-per-cycle`Sets the maximum number of pools that Portworx can move during one rebalance cycle. The maximum supported value is `5`.`1`
+`dynamic-pool-rebalance-max-moves-per-cycle`Sets the maximum number of pools that Portworx can move during one rebalance cycle. This value ranges from 1 to 16. The maximum supported value is `16`.`16`
 
 `pool-rebalance-interval-seconds`Sets the interval, in seconds, between rebalance cycles.`120`
 

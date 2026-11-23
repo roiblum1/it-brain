@@ -6,7 +6,7 @@ Kube Datastore for Portworx Enterprise 3.7.0 | Portworx Enterprise Documentation
 
 important
 
-Kube Datastore (KDS) was available under Directed Availability (DA) in Portworx Enterprise 3.7.0 and is now generally available (GA) in version 3.7.2. For more information, see Kube Datastore for Portworx Enterprise 3.7.2.
+Kube Datastore (KDS) was available under Directed Availability (DA) in Portworx Enterprise 3.7.0 and is now generally available (GA) in version 3.7.2. Upgrade to Portworx Enterprise 3.7.2 to access additional capabilities, including higher scale limits, compute-aware placement and hyperconvergence, and fastpath support on KDS dynamic pools. For more information, see Kube Datastore for Portworx Enterprise 3.7.2 and Dynamic Pool Failover.
 
 Kube Datastore (KDS) is a logical grouping of Portworx storage pools backed by the same FlashArray. KDS consists of one or more static or dynamic pools attached to different Kubernetes worker nodes. In a FlashArray Cloud Drive (FACD) deployment, Portworx creates one KDS for each FlashArray used by the cluster.
 For example, if a cluster uses two FlashArrays, Portworx creates two Kube Datastores and each KDS contains the storage pools backed by its corresponding FlashArray.

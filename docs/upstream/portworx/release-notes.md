@@ -4,6 +4,22 @@ Source: https://docs.portworx.com/portworx-enterprise/release-notes (Portworx En
 
 Portworx Enterprise Release Notes | Portworx Enterprise Documentation
 
+## 3.7.2.1​
+
+November 17, 2026
+
+To install or upgrade Portworx Enterprise to version 3.7.2.1, ensure that your cluster meets all system requirements and is running Operator 26.5.0 or later, Stork 26.5.0 or later, and one of the supported kernels.
+
+### Fixes​
+
+Issue NumberDescriptionSeverity
+
+PWX-57110Issue: Portworx could restart unexpectedly when a data-plane storage connection timed out because of network connectivity issues. An unhandled socket read timeout (ETIMEDOUT) triggered an assertion failure in the storage process.
+User Impact: Affected nodes could experience repeated Portworx restarts, potentially disrupting storage operations and application availability.
+Resolution: Portworx Enterprise now handles socket read timeouts as connection errors instead of triggering an assertion failure. This prevents unnecessary Portworx restarts while allowing existing connection recovery and node health mechanisms to handle network failures.
+Components: Storage
+Affected Versions: 3.7.2 or earlierCritical
+
 ## 3.7.2​
 
 November 12, 2026
@@ -704,6 +720,12 @@ User Impact: Stale host-side storage entries could remain after Portworx was uni
 Resolution: Portworx Enterprise now cleans up the associated multipath maps and SCSI devices from the host when the `UninstallAndDelete` strategy is used with iSCSI or Fibre Channel connectivity.
 Components: Install & Uninstall
 Affected Versions: 3.6.2Major
+
+PWX-57275Issue: During incremental CloudSnap backups of FlashArray Direct Access (FADA) volumes, Portworx could generate an incomplete snapshot ID that omitted the `-incr` suffix. Although the snapshot was marked as ready, subsequent restore operations could fail with an error because the snapshot ID did not match the backup stored in cloud storage.
+User Impact: Affected incremental CloudSnap backups could not be restored through the Kubernetes CSI workflow. Restore requests repeatedly failed, leaving the associated PVCs pending and preventing restore operations from completing.
+Resolution: Portworx Enterprise now ensures that incremental CloudSnap snapshot IDs include the required -incr suffix and match the corresponding backup identifiers in cloud storage. This prevents restore failures caused by mismatched snapshot IDs.
+Components: Cloudsnaps
+Affected Versions: 3.6.2 or earlierMajor
 
 PWX-36048Issue: During an AKS upgrade, Azure could copy the `topology.portworx.io/zone` label from one node to another, so a buffer node could inherit a zone label that did not match its actual zone.
 User Impact: Nodes could report an incorrect zone, which could affect volume provisioning and placement decisions.

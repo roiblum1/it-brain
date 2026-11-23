@@ -150,7 +150,7 @@ Consider the following limitations before enabling dynamic pools:
 
 - Upgrading multiple nodes simultaneously when dynamic pools are enabled can disrupt pool relocation and cause application downtime. To reduce this risk, upgrade only one node at a time.
 
-- Pool failover during Rapid VM Migration with `XCOPY` can cause the data copy to fail. Pause pool failover before starting the migration. For more information, see Pause pool failover.
+- Pool failover or dynamic pool rebalance during Rapid VM Migration with `XCOPY` can cause the data copy to fail. Pause both pool failover and dynamic pool rebalance before starting the migration, and resume them after the migration completes. For more information, see Step 6: Pause pool failover and rebalance.
 
 - In clusters with multiple FlashArrays, `XCOPY` fails if the source and destination volumes reside on different FlashArrays. Set `kube_datastore_affinity` in the destination `StorageClass` (`PXD_STORAGE_CLASS`) to ensure that volumes are provisioned on the correct KDS. For VMs with disks on different datastores, create a separate storage secret and `StorageClass` for each datastore. For more information, see Rapid Migration of VMs from VMware to OpenShift Virtualization using XCOPY.
 

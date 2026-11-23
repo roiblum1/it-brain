@@ -70,7 +70,11 @@ replSpecifies the replication factor for the volume: 1|2|3repl: "3"
 
 sharedv4Creates a globally shared namespace volume which can be used by multiple pods over NFS with POSIX compliant semanticssharedv4: "true"
 
-sharedv4_svc_typeIndicates the mechanism Kubernetes will use for locating your `sharedv4` volume. If you use this flag and there's a failover of the nodes running your `sharedv4` volume, you no longer need to restart your pods. Possible values are: "ClusterIP" or "".sharedv4_svc_type: "ClusterIP"
+sharedv4_svc_typeSpecifies whether Portworx creates a Sharedv4 service volume or a Sharedv4 volume.
+
+Set to `"ClusterIP"` to create a Sharedv4 service volume. With this setting, pods access the volume through a Kubernetes service IP rather than through a specific node IP address. This is the default behavior.
+
+Set to an empty string (`""`) to create a Sharedv4 volume. Use this value if the Portworx data network uses a private, non-routable network segment. For more information, see Create Sharedv4 PVCs.`sharedv4_svc_type: "ClusterIP"`
 
 sharedv4_failover_strategySpecifies how aggressively to fail over to a new server for a Sharedv4 or Sharedv4 Service volume (Valid Values: aggressive, normal).
 

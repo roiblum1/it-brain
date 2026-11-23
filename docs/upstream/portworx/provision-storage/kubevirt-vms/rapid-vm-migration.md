@@ -84,7 +84,7 @@ Consider the following limitations before you begin the migration process:
 
 - Only Fibre Channel (FC) and iSCSI storage protocols are supported. NVMe/TCP is not supported.
 
-- If the cluster uses Kube Datastore dynamic pools, pause pool failover before you migrate VMs. A pool move during the `XCOPY` copy causes the copy to fail. For more information, see Rapid VM Migration limitations on Kube Datastore.
+- If the cluster uses Kube Datastore dynamic pools, pause both pool failover and dynamic pool rebalance before you migrate VMs. A pool move during the `XCOPY` copy causes the copy to fail. For more information, see Step 6: Pause pool failover and rebalance and Rapid VM Migration limitations on Kube Datastore.
 
 - If the cluster has more than one FlashArray, set `kube_datastore_affinity` in the `StorageClass` that you use as `PXD_STORAGE_CLASS`, so that Portworx creates the volumes on the same FlashArray as the source datastore. For more information, see Rapid VM Migration limitations on Kube Datastore.
 
@@ -194,7 +194,8 @@ POKE_CONCURRENCYSpecifies the maximum number of poke jobs that run at the same t
 
 STATS_INTERVALSpecifies the interval, in seconds, at which the hook reports progress statistics.No60
 
-VERIFY_AFTER_COPYSpecifies whether to compare the FADA and Portworx volumes before rebinding the PVCs. Set to `true` to enable verification.Nofalse
+VERIFY_AFTER_COPYSpecifies whether to compare the FADA and Portworx volumes before rebinding the PVCs. Set to `true` to enable verification.
+Verification performs a host-side byte comparison for each disk and adds verification time per disk, which can be significant for multi-TB disks.Nofalse
 
 CONVERTER_POD_MAX_RETRIESSpecifies the `backoffLimit` of the conversion job, which is the number of times the job retries when a converter pod fails, is OOMKilled, or loses its node.No2
 
@@ -382,7 +383,23 @@ important
 
 Ensure that the conversion image that you specified in the `CONVERTER_IMAGE` key in Step 2 is accessible from your OpenShift cluster, and that the image pull secrets are configured, if required.
 
-### Step 6: Run and monitor the migration​
+### Step 6: Pause pool failover and rebalance (if using dynamic pools)​
+
+If the cluster uses Kube Datastore dynamic pools, pause both pool failover and dynamic pool rebalance before you start the migration. A pool move during the `XCOPY` copy causes the copy to fail. If the cluster does not use dynamic pools, skip this step.
+
+Run the following commands on a node where `pxctl` is available:
+
+```
+
+pxctl cluster options update --pause-pool-failovers=true
+
+pxctl cluster options update --pause-dynamic-pool-rebalance=true
+
+```
+
+For more information, see Pause pool failover and Dynamic pool rebalance.
+
+### Step 7: Run and monitor the migration​
 
 Start the migration from MTV and monitor its progress until the hook workflow completes.
 
@@ -392,7 +409,21 @@ The post-migration hook converts the FADA volumes, rebinds the VM PVCs, and rest
 
 If you set the VM target power state to Retain source VM power state, Portworx Enterprise preserves the source VM power state.
 
-### Step 7: Verify the migration​
+### Step 8: Resume pool failover and rebalance (if using dynamic pools)​
+
+If you paused pool failover and rebalance in Step 6, resume them after the migration completes by running the following commands:
+
+```
+
+pxctl cluster options update --pause-pool-failovers=false
+
+pxctl cluster options update --pause-dynamic-pool-rebalance=false
+
+```
+
+While failover is paused, Portworx does not automatically relocate pools when a node becomes unavailable, which can affect workload availability.
+
+### Step 9: Verify the migration​
 
 After the migration completes, verify that the resources are correctly created and configured:
 

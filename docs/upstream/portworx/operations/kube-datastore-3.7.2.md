@@ -126,7 +126,7 @@ Find cluster options, runtime options, alerts, and metricsCluster Options, Alert
 
 ## Related topics​
 
-- Manage Dynamic Pool Failover
+- Dynamic Pool Failover
 
 - Portworx Datastores
 

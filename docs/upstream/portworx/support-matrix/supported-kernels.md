@@ -86,21 +86,23 @@ Photon 5.0Up to 6.12.114-1.ph5
 
 Photon 4.0Up to 5.10.260-4.ph4
 
-RHEL 9.8Up to 5.14.0-687.61.1.el9_8
+RHEL 9.9Up to 5.14.0-741.22.1.el9_9
+
+RHEL 9.8Up to 5.14.0-687.67.1.el9_8
 
 RHEL 9.7Up to 5.14.0-611.55.1.el9_7
 
-RHEL 9.6Up to 5.14.0-570.152.1.el9_6
+RHEL 9.6Up to 5.14.0-570.158.1.el9_6
 
 RHEL 9.5Up to 5.14.0-503.40.1.el9_5
 
-RHEL 9.4Up to 5.14.0-427.158.1.el9_4
+RHEL 9.4Up to 5.14.0-427.163.1.el9_4
 
 RHEL 9.3Up to 5.14.0-362.24.1.el9_3
 
-RHEL 9.2Up to 5.14.0-284.200.1.el9_2
+RHEL 9.2Up to 5.14.0-284.202.1.el9_2
 
-RHEL 8.10Up to 4.18.0-553.180.1.el8_10
+RHEL 8.10Up to 4.18.0-553.187.1.el8_10
 
 RHEL 8.9Up to 4.18.0-513.24.1.el8_9
 
@@ -134,15 +136,15 @@ SUSE Linux Micro 6.1Up to 6.4.0-52.1
 
 SUSE Linux Micro 6.0Up to 6.4.0-159998.54.1
 
-Ubuntu 24.04Up to 6.8.0-147-generic, Up to 6.14.0-37-generic, Up to 6.17.0-42-generic, Up to 7.0.0-42-generic
+Ubuntu 24.04Up to 6.8.0-151-generic, Up to 6.14.0-37-generic, Up to 6.17.0-42-generic, Up to 7.0.0-43-generic
 
-Ubuntu 22.04Up to 5.15.0-194-generic, Up to 6.8.0-138-generic
+Ubuntu 22.04Up to 5.15.0-204-generic, Up to 6.8.0-149-generic
 
 Ubuntu 20.04Up to 5.15.0-139-generic
 
 Cloud DistroKernel Version
 
-Amazon Linux 2023Up to 6.12.111-136.204.amzn2023.x86_64
+Amazon Linux 2023Up to 6.18.62-127.179.amzn2023.x86_64
 
 Flatcar StableUp to 6.12.113-flatcar
 
@@ -158,13 +160,15 @@ Debian 12Up to 6.12.113+deb12-amd64
 
 Debian 11Up to 6.1.0-0.deb11.52-amd64
 
-RHEL 10.2Up to 6.12.0-211.69.1.el10_2
+RHEL 10.2Up to 6.12.0-211.74.1.el10_2
 
 RHEL 10.1Up to 6.12.0-124.56.1.el10_1
 
-RHEL 10.0Up to 6.12.0-55.115.1.el10_0
+RHEL 10.0Up to 6.12.0-55.117.1.el10_0
 
-RHEL 9.8Up to 5.14.0-687.61.1.el9_8
+RHEL 9.9Up to 5.14.0-741.22.1.el9_9
+
+RHEL 9.8Up to 5.14.0-687.67.1.el9_8
 
 RHEL 10.0Up to 6.12.0-55.109.1.el10_0
 
@@ -172,17 +176,17 @@ RHEL 9.8Up to 5.14.0-687.59.1.el9_8
 
 RHEL 9.7Up to 5.14.0-611.55.1.el9_7
 
-RHEL 9.6Up to 5.14.0-570.152.1.el9_6
+RHEL 9.6Up to 5.14.0-570.158.1.el9_6
 
 RHEL 9.5Up to 5.14.0-503.40.1.el9_5
 
-RHEL 9.4Up to 5.14.0-427.158.1.el9_4
+RHEL 9.4Up to 5.14.0-427.163.1.el9_4
 
 RHEL 9.3Up to 5.14.0-362.24.1.el9_3
 
-RHEL 9.2Up to 5.14.0-284.200.1.el9_2
+RHEL 9.2Up to 5.14.0-284.202.1.el9_2
 
-RHEL 8.10Up to 4.18.0-553.180.1.el8_10
+RHEL 8.10Up to 4.18.0-553.187.1.el8_10
 
 Rocky 9.5Up to 5.14.0-503.14.1.el9_5
 
@@ -208,23 +212,101 @@ SUSE Linux Micro 6.1Up to 6.4.0-52.1
 
 SUSE Linux Micro 6.0Up to 6.4.0-159998.54.1
 
-Ubuntu 24.04Up to 6.8.0-147-generic, Up to 6.14.0-37-generic, Up to 6.17.0-42-generic, Up to 7.0.0-42-generic
+Ubuntu 24.04Up to 6.8.0-151-generic, Up to 6.14.0-37-generic, Up to 6.17.0-42-generic, Up to 7.0.0-43-generic
 
-Ubuntu 22.04Up to 5.15.0-194-generic, Up to 6.8.0-138-generic
+Ubuntu 22.04Up to 5.15.0-204-generic, Up to 6.8.0-149-generic
 
 Ubuntu 20.04Up to 5.15.0-139-generic
 
 Cloud DistroKernel Version
 
-Amazon Linux 2023Up to 6.12.111-136.204.amzn2023.x86_64
+Amazon Linux 2023Up to 6.18.62-127.179.amzn2023.x86_64
 
 Flatcar Stable6.12.113-flatcar
 
-Gardener on AzureUp to 6.12.60-cloud-amd64 (OS Image: Garden Linux 1877.9), Up to 6.18.35-cloud-amd64 (OS Image: Garden Linux 2150.5.0)
+Gardener on AzureUp to 6.12.114-cloud-amd64 (OS Image: Garden Linux 1877.28), Up to 6.18.59-cloud-amd64 (OS Image: Garden Linux 2150.14.0)
 
-Gardener on GCPUp to 6.12.60-cloud-amd64 (OS Image: Garden Linux 1877.9), Up to 6.18.35-cloud-amd64 (OS Image: Garden Linux 2150.5.0)
+Gardener on GCPUp to 6.12.114-cloud-amd64 (OS Image: Garden Linux 1877.28), Up to 6.18.59-cloud-amd64 (OS Image: Garden Linux 2150.14.0)
 
-Gardener on AWSUp to 6.12.74-cloud-amd64 (OS Image: Garden Linux 1877.14), Up to 6.18.35-cloud-amd64 (OS Image: Garden Linux 2150.5.0)
+Gardener on AWSUp to 6.12.114-cloud-amd64 (OS Image: Garden Linux 1877.28), Up to 6.18.59-cloud-amd64 (OS Image: Garden Linux 2150.14.0)
+
+#### Supported Distros and Kernel versions for Pure FlashArray and FlashBlade​
+
+- PX-StoreV1
+
+- PX-StoreV2
+
+Linux DistroKernel Version
+
+Ubuntu 20.04 with Multipath v0.8.3Up to 5.15.0-139-generic
+
+Ubuntu 22.04 with Multipath v0.8.8Up to 5.15.0-203-generic
+
+Ubuntu 22.04 with Multipath v0.8.8Up to 6.8.0-149-generic
+
+Ubuntu 24.04 with Multipath v0.9.4Up to 6.8.0-149-generic
+
+Ubuntu 24.04 with Multipath v0.9.4Up to 6.17.0-42-generic
+
+RHEL 8.6 with Multipath v0.8.4Up to 4.18.0-372.211.1.el8_6
+
+RHEL 8.9 with Multipath v0.8.4Up to 4.18.0-513.24.1.el8_9
+
+RHEL 8.10 with Multipath v0.8.4Up to 4.18.0-553.186.1.el8_10
+
+RHEL 9.2 with Multipath v0.8.7Up to 5.14.0-284.202.1.el9_2
+
+RHEL 9.3 with Multipath v0.8.7Up to 5.14.0-362.24.1.el9_3
+
+RHEL 9.4 with Multipath v0.8.7Up to 5.14.0-427.162.1.el9_4
+
+RHEL 9.6 with Multipath v0.8.7Up to 5.14.0-570.155.1.el9_6
+
+RHEL 9.7 with Multipath v0.8.7Up to 5.14.0-611.55.1.el9_7
+
+RHEL 9.8 with Multipath v0.8.7Up to 5.14.0-687.67.1.el9_8
+
+RHEL 10.0 with Multipath v0.9.9Up to 6.12.0-55.117.1.el10_0
+
+RHEL 10.1 with Multipath v0.9.9Up to 6.12.0-124.56.1.el10_1
+
+RHEL 10.2 with Multipath v0.9.9Up to 6.12.0-211.75.1.el10_2
+
+Linux DistroKernel Version
+
+Ubuntu 20.04 with Multipath v0.8.3Up to 5.15.0-139-generic
+
+Ubuntu 22.04 with Multipath v0.8.8Up to 5.15.0-203-generic
+
+Ubuntu 22.04 with Multipath v0.8.8Up to 6.8.0-149-generic
+
+Ubuntu 24.04 with Multipath v0.9.4Up to 6.8.0-149-generic
+
+Ubuntu 24.04 with Multipath v0.9.4Up to 6.17.0-42-generic
+
+RHEL 8.6 with Multipath v0.8.4Up to 4.18.0-372.211.1.el8_6
+
+RHEL 8.9 with Multipath v0.8.4Up to 4.18.0-513.24.1.el8_9
+
+RHEL 8.10 with Multipath v0.8.4Up to 4.18.0-553.186.1.el8_10
+
+RHEL 9.2 with Multipath v0.8.7Up to 5.14.0-284.202.1.el9_2
+
+RHEL 9.3 with Multipath v0.8.7Up to 5.14.0-362.24.1.el9_3
+
+RHEL 9.4 with Multipath v0.8.7Up to 5.14.0-427.162.1.el9_4
+
+RHEL 9.6 with Multipath v0.8.7Up to 5.14.0-570.155.1.el9_6
+
+RHEL 9.7 with Multipath v0.8.7Up to 5.14.0-611.55.1.el9_7
+
+RHEL 9.8 with Multipath v0.8.7Up to 5.14.0-687.67.1.el9_8
+
+RHEL 10.0 with Multipath v0.9.9Up to 6.12.0-55.117.1.el10_0
+
+RHEL 10.1 with Multipath v0.9.9Up to 6.12.0-124.56.1.el10_1
+
+RHEL 10.2 with Multipath v0.9.9Up to 6.12.0-211.75.1.el10_2
 
 ### 3.7.1.1​
 
@@ -298,7 +380,7 @@ SUSE Linux Micro 6.1Up to 6.4.0-50.1
 
 SUSE Linux Micro 6.0Up to 6.4.0-50.1
 
-Ubuntu 24.04Up to 6.8.0-149-generic, Up to 6.14.0-37-generic, Up to 6.17.0-42-generic, Up to 7.0.0-38-generic
+Ubuntu 24.04Up to 6.8.0-149-generic, Up to 6.14.0-37-generic, Up to 6.17.0-42-generic, Up to 7.0.0-43-generic
 
 Ubuntu 22.04Up to 5.15.0-203-generic, Up to 6.8.0-149-generic
 
@@ -370,7 +452,7 @@ SUSE Linux Micro 6.1Up to 6.4.0-50.1
 
 SUSE Linux Micro 6.0Up to 6.4.0-50.1
 
-Ubuntu 24.04Up to 6.8.0-149-generic, Up to 6.14.0-37-generic, Up to 6.17.0-42-generic, Up to 7.0.0-38-generic
+Ubuntu 24.04Up to 6.8.0-149-generic, Up to 6.14.0-37-generic, Up to 6.17.0-42-generic, Up to 7.0.0-43-generic
 
 Ubuntu 22.04Up to 5.15.0-203-generic, Up to 6.8.0-149-generic
 
@@ -972,21 +1054,23 @@ Photon 5.0Up to 6.1.159-9.ph5
 
 Photon 4.0Up to 5.10.255-1.ph4
 
+RHEL 9.9Up to 5.14.0-741.22.1.el9_9
+
 RHEL 9.8Up to 5.14.0-687.66.1.el9_8
 
 RHEL 9.7Up to 5.14.0-611.55.1.el9_7
 
-RHEL 9.6Up to 5.14.0-570.156.1.el9_6
+RHEL 9.6Up to 5.14.0-570.158.1.el9_6
 
 RHEL 9.5Up to 5.14.0-503.40.1.el9_5
 
-RHEL 9.4Up to 5.14.0-427.162.1.el9_4
+RHEL 9.4Up to 5.14.0-427.163.1.el9_4
 
 RHEL 9.3Up to 5.14.0-362.24.1.el9_3
 
 RHEL 9.2Up to 5.14.0-284.202.1.el9_2
 
-RHEL 8.10Up to 4.18.0-553.186.1.el8_10
+RHEL 8.10Up to 4.18.0-553.187.1.el8_10
 
 RHEL 8.9Up to 4.18.0-513.24.1.el8_9
 
@@ -1016,9 +1100,9 @@ SUSE Linux Micro 6.1Up to 6.4.0-48.1
 
 SUSE Linux Micro 6.0Up to 6.4.0-48.1
 
-Ubuntu 24.04Up to 6.8.0-147-generic, Up to 6.11.0-29-generic, Up to 6.14.0-37-generic, Up to 6.17.0-42-generic, Up to 7.0.0-43-generic
+Ubuntu 24.04Up to 6.8.0-151-generic, Up to 6.11.0-29-generic, Up to 6.14.0-37-generic, Up to 6.17.0-42-generic, Up to 7.0.0-43-generic
 
-Ubuntu 22.04Up to 5.15.0-203-generic, Up to 6.8.0-149-generic
+Ubuntu 22.04Up to 5.15.0-204-generic, Up to 6.8.0-149-generic
 
 Ubuntu 20.04Up to 5.4.0-216-generic, Up to 5.15.0-139-generic
 
@@ -1052,21 +1136,23 @@ RHEL 10.1Up to 6.12.0-124.56.1.el10_1
 
 RHEL 10.0Up to 6.12.0-55.117.1.el10_0
 
+RHEL 9.9Up to 5.14.0-741.22.1.el9_9
+
 RHEL 9.8Up to 5.14.0-687.66.1.el9_8
 
 RHEL 9.7Up to 5.14.0-611.55.1.el9_7
 
-RHEL 9.6Up to 5.14.0-570.156.1.el9_6
+RHEL 9.6Up to 5.14.0-570.158.1.el9_6
 
 RHEL 9.5Up to 5.14.0-503.40.1.el9_5
 
-RHEL 9.4Up to 5.14.0-427.162.1.el9_4
+RHEL 9.4Up to 5.14.0-427.163.1.el9_4
 
 RHEL 9.3Up to 5.14.0-362.24.1.el9_3
 
 RHEL 9.2Up to 5.14.0-284.202.1.el9_2
 
-RHEL 8.10Up to 4.18.0-553.186.1.el8_10
+RHEL 8.10Up to 4.18.0-553.187.1.el8_10
 
 Rocky 9.5Up to 5.14.0-503.14.1.el9_5
 
@@ -1086,9 +1172,9 @@ SUSE Linux Micro 6.1Up to 6.4.0-48.1
 
 SUSE Linux Micro 6.0Up to 6.4.0-48.1
 
-Ubuntu 24.04Up to 6.8.0-147-generic, Up to 6.11.0-29-generic, Up to 6.14.0-37-generic, Up to 6.17.0-42-generic, Up to 7.0.0-43-generic
+Ubuntu 24.04Up to 6.8.0-151-generic, Up to 6.11.0-29-generic, Up to 6.14.0-37-generic, Up to 6.17.0-42-generic, Up to 7.0.0-43-generic
 
-Ubuntu 22.04Up to 5.15.0-203-generic, Up to 6.8.0-149-generic, Up to 6.8.0-124-generic
+Ubuntu 22.04Up to 5.15.0-204-generic, Up to 6.8.0-149-generic, Up to 6.8.0-124-generic
 
 Ubuntu 20.04Up to 5.4.0-216-generic, Up to 5.15.0-139-generic
 
@@ -1100,11 +1186,11 @@ Amazon Linux 2023Up to 6.12.68-92.122.amzn2023.x86_64
 
 Flatcar StableUp to 6.12.93-flatcar
 
-Gardener on AzureUp to 6.12.60-cloud-amd64 (OS Image: Garden Linux 1877.9)
+Gardener on AzureUp to 6.12.114-cloud-amd64 (OS Image: Garden Linux 1877.28), Up to 6.18.59-cloud-amd64 (OS Image: Garden Linux 2150.14.0)
 
-Gardener on GCPUp to 6.12.60-cloud-amd64 (OS Image: Garden Linux 1877.9)
+Gardener on GCPUp to 6.12.114-cloud-amd64 (OS Image: Garden Linux 1877.28), Up to 6.18.59-cloud-amd64 (OS Image: Garden Linux 2150.14.0)
 
-Gardener on AWSUp to 6.12.74-cloud-amd64 (OS Image: Garden Linux 1877.14)
+Gardener on AWSUp to 6.12.114-cloud-amd64 (OS Image: Garden Linux 1877.28), Up to 6.18.59-cloud-amd64 (OS Image: Garden Linux 2150.14.0)
 
 #### Supported Distros and Kernel versions for Pure FlashArray and FlashBlade​
 

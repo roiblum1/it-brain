@@ -155,7 +155,7 @@ System metadata device: The StorageCluster is configured with a system metadata 
 Kernel support: All nodes must use kernel modules that PX-StoreV2 supports. For more information, see Supported kernels.
 
 -
-Required packages for local storage: For nodes using local drives, install `lvm2`, `dmsetup`, `mdadm`, and `augeas` (provides `augtool`) before starting migration. PX-StoreV2 uses device-mapper thin provisioning (dm-thin), which depends on these packages. For more information, see Software requirements.
+Required packages for local storage: For nodes using local drives, install `lvm2`, `dmsetup`, `mdadm`, and `augeas` (provides `augtool`) before starting migration. PX-StoreV2 uses device-mapper thin provisioning (dm-thin), which depends on these packages. For more information, see Software requirements. On OpenShift (Red Hat Enterprise Linux CoreOS) nodes, you can't install `augeas`, and migration can fail the preflight check. For more information, see the known issue.
 
 -
 Resources: Each node must meet minimum CPU and memory requirements. For more information, see System requirements.
@@ -700,5 +700,16 @@ Symptoms:
 - A volume with `ha_level: 3` and a replica on the source node exists, but isn't tracked in the NodeDrain CR's `Status.Repl3VolumeIDs`.
 
 Workaround: Avoid creating new volumes during migration. If migration on a three-storage-node cluster appears stalled, check for repl=3 volumes on the source node created after migration started, and manually reduce their replication factor to 2. If your cluster runs KubeVirt with `DataImportCron` scheduled imports, pause them for the duration of the migration.
+
+-
+OpenShift clusters using local drives: Migration fails during preflight checks with the error `package augtool not found`. Red Hat Enterprise Linux CoreOS (RHCOS) is immutable, doesn't include `augtool`, and doesn't support installing additional packages. Portworx doesn't require `augtool` on these nodes, so the preflight failure doesn't reflect a problem with the node. Clusters that use cloud drives and fresh PX-StoreV2 installations aren't affected.
+
+Symptoms:
+
+- The `PXStoreMigration` condition on the StorageCluster shows `Failed` with the message `PX store migration failed due to preflight checks failure`.
+
+- The preflight result on each node reports `package augtool not found`.
+
+Workaround: Contact the Everpure support for assistance.
 
 In this topic:

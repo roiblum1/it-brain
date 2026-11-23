@@ -18,10 +18,10 @@ You must have a user role with cluster-admin access to perform failover, failbac
 A highly available network connection between the source and destination clusters.
 
 -
-The network latency between the source and destination clusters must not exceed 10 ms.
+The network latency between the source and destination clusters (Site 1 ↔ Site 2) must not exceed 10 ms.
 
 -
-Deploy a witness node in a third site to maintain cluster quorum during a site failure.
+Deploy a witness node in a third site to maintain cluster quorum during a site failure. The round-trip time (RTT) between the witness site and each primary site must not exceed 100 ms.
 
 -
 Your environment must meet the following network requirements:
@@ -38,14 +38,14 @@ For more information on the list of required ports for your environment, see Net
 KubeVirt VMs with PX ReadWriteMany (RWX) block volumes must run OpenShift Virtualization 4.18.5 or later with OpenShift Container Platform 4.18.x to enable synchronous disaster recovery. Running earlier OCP versions, such as 4.16.x, can cause I/O errors that may pause virtual machines.
 
 -
-An external etcd-based KVDB is installed outside of the deployed Kubernetes clusters.
+An external etcd-based KVDB must be installed outside of the deployed Kubernetes clusters.
  For more information, see External KVDB for Portworx on Kubernetes.
 
 -
 If you use any custom container images, make sure the custom images are available from a registry that is accessible to both the source and destination clusters.
 
 -
-GitOps tools such as ArgoCD, FluxCD, or Rancher Fleet does not overwrite the Kubernetes custom resources (CRs) migrated by Portworx disaster recovery (DR) `MigrationSchedules` on the destination cluster.
+GitOps tools such as ArgoCD, FluxCD, or Rancher Fleet do not overwrite the Kubernetes custom resources (CRs) migrated by Portworx disaster recovery (DR) `MigrationSchedules` on the destination cluster.
 
 important
 

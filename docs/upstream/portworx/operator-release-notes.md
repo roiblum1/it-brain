@@ -53,6 +53,38 @@ Default KubeVirt StorageClass is now replication factor 1 for new Dynamic Pools 
 
 Issue NumberIssue DescriptionSeverity
 
+PWX-60670Issue: On clusters running KubeVirt virtual machines with the `OnDelete` update strategy, Operator 26.4.0 added the `operator.libopenstorage.org/unschedulable` annotation to every node running an outdated Portworx Pod as soon as the StorageCluster spec changed, instead of only when that Pod was deleted. Any spec change triggered this, including switching `spec.updateStrategy.type` to `OnDelete`.
+
+User Impact: Stork filtered out all annotated nodes, so virt-launcher Pods could not be scheduled anywhere in the cluster. New virtual machines failed to start, and live migrations, including node-drain evacuations, stayed pending with `No node found with storage driver`. Running virtual machines were not affected. The condition persisted until the Portworx Pod on each node was replaced or the spec change was reverted.
+
+Resolution: The Operator now annotates a node only while its outdated Portworx Pod is terminating. On upgrade to 26.5.0, it also removes annotations that Operator 26.4.0 left on nodes whose Pods were not yet deleted.
+
+Affected versions: 26.4.0Critical
+
+PWX-59525Issue: The `px-integration-operator` ClusterRole, which the Portworx Operator deploys when you enable Fusion or the OpenShift console plugin, granted wildcard (`*`) permissions on all API groups, resources, and verbs, including `escalate`, `bind`, and `impersonate`.
+
+User Impact: The `px-integration-operator` ClusterRole granted broader cluster permissions than the integration operator requires.
+
+Resolution: The ClusterRole no longer uses wildcard permissions. It always grants a fixed list of specific permissions, which matches the role in 26.2.1 plus `get`, `list`, and `watch` on PersistentVolumes. The role still grants cluster-wide access to Secrets, because the integration operator manages them. After you upgrade, the Operator updates the existing ClusterRole automatically.
+
+Affected versions: 26.3.0 to 26.4.0Major
+
+PWX-61246Issue: On Two-Node Arbiter (TNA) clusters, the Portworx Operator detected the TNA topology once and cached the node list for the lifetime of the Operator process. After you replaced a control-plane node and updated `spec.nodes` in the StorageCluster with the new node name, the Operator kept looking for the old node name and repeatedly logged `Failed to create TNA NodeSpecs: NodeSpec for master node <old-node-name> not found, please add it to the storage cluster spec`.
+
+User Impact: The Operator never created a Portworx Pod on the replacement node, so the node replacement could not complete.
+
+Resolution: The Operator now re-detects the TNA topology every 5 minutes, so it picks up a replaced node without a restart. If a refresh runs while you replace a node and finds a node count that is not a valid TNA topology, the Operator keeps the last known TNA node list until the topology is restored.
+
+Affected versions: 26.4.0 and earlierMajor
+
+PWX-61706Issue: On clusters where `spec.stork.restrictDataProtectionRBAC` is `true`, the `px-cache-agent-manager-role` ClusterRole did not grant the Cache Agent read access to the disaster recovery (DR) resources that its controllers watch, and the Operator did not tell the Cache Agent that data protection RBAC is restricted.
+
+User Impact: The Cache Agent 1.1.0 and 1.2.0 Pods crashed and restarted because their informers could not sync. Cache Agent 1.0.0 was not affected.
+
+Resolution: The ClusterRole now grants `get`, `list`, and `watch` on the DR resources in the `agent.multicluster.portworx.com` and `stork.libopenstorage.org` API groups, and on ServiceAccounts. The Operator also sets `RESTRICT_DATA_PROTECTION_RBAC=true` on the Cache Agent `manager` container, so the Cache Agent keeps its DR controllers disabled.
+
+Affected versions: 26.3.1 to 26.4.0Major
+
 PWX-61399Issue: On OpenShift clusters using the PX-Pure CSI controller (`px-pure-csi-controller`), the Portworx Operator deployed its own CSI snapshot controller even when OpenShift's `openshift-cluster-storage-operator` had already installed one. The snapshot controller detection logic used before installation did not extend to the `px-pure-csi-controller` component, so the Operator did not detect OpenShift's rebranded snapshot controller image.
 
 User Impact: Two snapshot controllers attempted to process the same `VolumeSnapshot` resources simultaneously, causing unpredictable snapshot behavior on OpenShift clusters that use PX-Pure CSI.
@@ -175,6 +207,18 @@ User Impact: Applying a StorageCluster spec with a different cluster name than t
 Resolution: The Portworx Operator now validates that the cluster name in any StorageCluster spec matches the name recorded at initial installation. If the names differ, the operator rejects the operation with an error.
 
 Affected versions: 26.3.1 and earlierMajor
+
+### Known issues (Errata)​
+
+Issue numberDescription
+
+PWX-63543On OpenShift clusters that use local drives, PX-StoreV1 to PX-StoreV2 migration doesn't start. Red Hat Enterprise Linux CoreOS (RHCOS) is immutable, doesn't include `augtool`, and doesn't support installing additional packages. Portworx doesn't require `augtool` on these nodes.
+
+User impact: The `PXStoreMigration` condition on the StorageCluster changes to `Failed` with the message `PX store migration failed due to preflight checks failure`, and the preflight result on each node reports `package augtool not found`. Clusters that use cloud drives and fresh PX-StoreV2 installations aren't affected.
+
+Workaround: Contact the Everpure support for assistance.
+
+Affected versions: 26.4.0
 
 ## 26.3.2​
 

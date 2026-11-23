@@ -8,8 +8,8 @@ Portworx supports Pure FlashArray//C, FlashArray//X, and FlashBlade models. The 
 
 ModelMinimum supported versionMaximum supported version
 
-FlashArray//C, FlashArray//X6.36.12.1
+FlashArray//C, FlashArray//X6.36.12.4
 
-FlashArray//X using NVMe/RoCE6.36.12.3
+FlashArray//X using NVMe/RoCE6.36.12.4
 
 FlashBlade4.34.8.8

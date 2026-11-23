@@ -30,6 +30,9 @@ If you use cloud-based storage, size the drive according to your cloud provider�
 -
 The recommended hardware requirements.
 
+-
+Round-trip time (RTT) between etcd members must not exceed 125 ms. Portworx recommends an RTT of 100 ms or less for optimal performance.
+
 ## Best practices for maintaining an etcd cluster​
 
 Follow these best practices to keep your etcd cluster healthy and performant when used with Portworx.
@@ -40,7 +43,7 @@ etcd stores a complete history of its keyspace, and regular compaction is necess
 
 You can configure the compaction period using the `etcd` tool with the `--auto-compaction-retention` option.
 
-Portworx recommends that you retain the history for the last 3 hours. To achieve this, set the `--auto-compaction-retention value` to `3`. For information on how to set the compaction period, see the etcd documentation.
+Portworx recommends that you retain the history for the last 3 hours. To achieve this, set `--auto-compaction-retention` to `3`. For information on how to set the compaction period, see the etcd documentation.
 
 #### Configure Space Quota​
 
