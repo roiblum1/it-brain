@@ -49,7 +49,8 @@ When deploying behind an ingress or reverse proxy that forwards the original `Ho
 
 The SSE and streamable-http transports can authenticate the **caller** (the MCP client connecting to `mcp-grafana`). This is separate from the credentials the server uses to reach Grafana: it controls _who may invoke the server_, so an unauthenticated client can't borrow the server's Grafana identity or run tools. Stdio is a local pipe and is never affected.
 
-- `--server-auth-token`: Bearer token that callers must present in the `Authorization: Bearer <token>` header. Falls back to the `MCP_GRAFANA_SERVER_TOKEN` environment variable. When set, requests without a valid token are rejected with `401` before any tool runs. Prefer the environment variable over the flag so the secret doesn't appear in the process argument list.
+- `--server-auth-token`: Bearer token that callers must present in the `Authorization: Bearer <token>` header (or in the header set with `--server-auth-header`). Falls back to the `MCP_GRAFANA_SERVER_TOKEN` environment variable. When set, requests without a valid token are rejected with `401` before any tool runs. Prefer the environment variable over the flag so the secret doesn't appear in the process argument list.
+- `--server-auth-header`: Header the caller token is read from. Falls back to the `MCP_GRAFANA_SERVER_AUTH_HEADER` environment variable, then to `Authorization`. `Authorization` takes `Bearer <token>` only. Any other header takes the raw token or `Bearer <token>`. Use it when a proxy needs `Authorization` for the user's own credential. A request that sends a custom header more than once is rejected with `401`; `Authorization` behaves as before.
 
 ### Bind policy
 
@@ -68,6 +69,34 @@ The permissive default preserves backward compatibility for existing deployments
 Bearer authentication only protects the token in transit if the connection is encrypted. Terminate TLS in front of the server, or use [server TLS for streamable-http](../server-tls-streamable-http/), whenever you set `--server-auth-token` on a non-loopback address.
 
 When caller authentication is enabled, the `Authorization` header is reserved for the caller token and is stripped after validation, so it is never forwarded to Grafana. Setting `--server-auth-token` together with `GRAFANA_FORWARD_HEADERS=Authorization` is contradictory and the server refuses to start; remove `Authorization` from `GRAFANA_FORWARD_HEADERS`, or unset the caller token to run in proxy-forwarding mode.
+
+With `--server-auth-header`, that header is reserved and stripped instead, `Authorization` is left alone, and the server refuses to start if the header is in `GRAFANA_FORWARD_HEADERS`. The header is not added to the CORS allowed headers, so browser clients cannot send it cross-origin.
+
+## Run in per-user mode
+
+When `mcp-grafana` sits behind an authenticating proxy that forwards each user's credential, `--require-user-credentials` makes sure no call falls back to a shared service account. It falls back to the `GRAFANA_REQUIRE_USER_CREDENTIALS` environment variable and works with the streamable-http transport only.
+
+- The server refuses to start if `GRAFANA_SERVICE_ACCOUNT_TOKEN`, `GRAFANA_SERVICE_ACCOUNT_TOKEN_FILE`, `GRAFANA_API_KEY`, `GRAFANA_USERNAME` or `GRAFANA_PASSWORD` is set, or if `GRAFANA_EXTRA_HEADERS` sets `Authorization`, `Cookie`, `X-Grafana-Service-Account-Token`, `X-Grafana-API-Key` one of `--user-identity-headers` or any header listed in `GRAFANA_FORWARD_HEADERS`. It also refuses a `GRAFANA_URL` with `user:password@`, because the HTTP client sends the userinfo as basic auth, and `--tls-cert-file` or `--tls-key-file`, because a client certificate is one shared identity for every call. The error names the variable or header, never the value.
+- A request is rejected with `401` before any tool runs unless it carries its own credential: `X-Grafana-Service-Account-Token`, basic auth, or a forwarded `Authorization`, `Cookie` or `--user-identity-headers` header. A forwarded header is one listed in `GRAFANA_FORWARD_HEADERS`. Other forwarded headers, such as `traceparent`, `tracestate` or `baggage`, do not count. When caller authentication is also on, the header it reads the token from (`Authorization`, or the `--server-auth-header` header) is removed first and does not count. The `401` carries no `WWW-Authenticate` challenge, so clients do not start OAuth discovery.
+
+If Grafana identifies users through auth proxy, name that header with `--user-identity-headers` (or `GRAFANA_USER_IDENTITY_HEADERS`), for example `X-WEBAUTH-USER`. Each listed header must also be in `GRAFANA_FORWARD_HEADERS`, or the server refuses to start.
+
+The MCP port must be reachable only through the proxy that sets and overwrites the identity header. If Grafana's `auth_proxy.whitelist` includes the MCP server's address, anyone who can reach the port directly can send `X-WEBAUTH-USER: admin` and act as admin. Setting `--server-auth-token` helps, because callers then need the token as well.
+
+## Log tool calls
+
+`--log-tool-calls` (or `GRAFANA_LOG_TOOL_CALLS`) logs one line at the `info` level per tool call, including failed calls:
+
+```text
+level=INFO msg="Tool call" tool=query_prometheus grafana_user=jane user_id=42 org_id=1 result=ok identity_status=200 duration=84ms datasource_uid=prom-main
+```
+
+- `grafana_user` and `user_id` come from Grafana's `/api/user` for the caller's credential. The result is cached for 5 minutes on the cached Grafana client, which is keyed by credential and forwarded headers, so callers that differ only by a forwarded header get their own identity. Failed lookups are not cached.
+- `identity_status` is the HTTP status of that lookup: `401` with an empty `grafana_user` when Grafana rejects the caller, `0` when Grafana could not be reached.
+- `result` is `ok` or `error` for the tool call itself.
+- `override=true` is added when the caller chose the target with `X-Grafana-URL`. `grafana_user` then comes from that target, so do not use it for audit.
+- `datasource_uid` is added when the tool takes a `datasourceUid` argument. No other argument is logged, and neither are credentials or error messages.
+- `session` is added when the transport has a session ID.
 
 ## Select a Grafana URL per request
 

@@ -302,6 +302,39 @@ spec:
 
 **Graduation Status**: Alpha
 
+### hostDevicesWithDRA Feature Gate
+Add the `hostDevicesWithDRA` feature gate to enable VMIs to attach host devices
+provisioned through DRA (Dynamic Resource Allocation). A DRA driver must already
+be installed and configured on the cluster to provision the devices.
+
+Add this entry to the existing `spec.featureGates` list, preserving other entries:
+
+```yaml
+apiVersion: hco.kubevirt.io/v1
+kind: HyperConverged
+metadata:
+  name: kubevirt-hyperconverged
+spec:
+  featureGates:
+  - name: hostDevicesWithDRA
+```
+
+For each device in `spec.domain.devices.hostDevices`, set `claimName` to the name
+of a matching VMI `spec.resourceClaims` entry that references a `resourceClaimName`
+or `resourceClaimTemplateName`. Set `requestName` to the request name in that
+claim or template's `spec.devices.requests` list.
+
+This gate enables only KubeVirt's `HostDevicesWithDRA` feature gate. CPU, GPU and
+network DRA remain independently controlled by `cpusWithDRA`, `gpusWithDRA` and
+`networkDevicesWithDRA`; testing DRA GPUs or host devices does not require enabling
+`cpusWithDRA`. Remove the entry or set its `state` to `Disabled` to disable it.
+
+**Note**: this feature is in Developer Preview.
+
+**Default**: `Disabled`
+
+**Graduation Status**: Alpha
+
 ### cpusWithDRA Feature Gate
 Add the `cpusWithDRA` feature gate in order to have the VM's vCPUs allocated
 through DRA (Dynamic Resource Allocation), coordinated with the DRA claims
@@ -482,11 +515,11 @@ spec:
       - +vmi-memory
 ```
 
-`kubevirt_vmi_guest_device_driver_timestamp_seconds`, one of the series
-published by default, carries the release date of each guest device driver.
-Compare it with `kubevirt_guest_device_driver_latest_version_info`, which lists
-the driver versions shipped for this cluster, to find guests running outdated
-VirtIO drivers.
+`kubevirt_vmi_guest_device_driver_build_number`, one of the series
+published by default, carries the build number of each guest device driver.
+Compare it with `kubevirt_guest_device_driver_minimum_build_number`, which
+carries the minimum driver version shipped for this cluster, to find guests
+running outdated VirtIO drivers.
 
 Alerts and recording rules are not narrowed the same way. While this feature
 gate is enabled, every group is published, because virt-operator stops

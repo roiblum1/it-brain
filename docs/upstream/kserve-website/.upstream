@@ -1,7 +1,7 @@
 repo: kserve/website
 ref: main
-commit: 6c8bfde27f92ff7f7c44c5dee6ff19e1b1312780
+commit: 13394b2f2a071b31899ada33532cba5395738164
 latest_tag: 
 paths: docs
 files: 175
-synced: 2026-11-20T11:51:53Z
+synced: 2026-11-24T13:55:02Z

@@ -1,7 +1,7 @@
 repo: NVIDIA/cloud-native-docs
 ref: main
-commit: ff70888d1b92600ff05970bece33d42fb972598f
+commit: 3de332fb0fd01ed349c3bcc5201f9ae6eb19d777
 latest_tag: 
 paths: gpu-operator, openshift, mig, gpu-telemetry, container-toolkit, driver-containers, kubernetes
 files: 87
-synced: 2026-11-20T11:52:49Z
+synced: 2026-11-24T13:56:46Z
