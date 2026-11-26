@@ -1,7 +1,7 @@
 repo: metal3-io/metal3-docs
 ref: main
-commit: c6226ccb59038c607c79f1bab2bd24e8531ffda6
+commit: 310a354c11f17d2085671b3d6d95a4a061e7a9c4
 latest_tag: 
 paths: docs, design
 files: 147
-synced: 2026-11-25T13:09:08Z
+synced: 2026-11-26T12:48:25Z

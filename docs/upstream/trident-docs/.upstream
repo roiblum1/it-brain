@@ -1,7 +1,7 @@
 repo: NetAppDocs/trident
 ref: main
-commit: 4643065ef1a16bc293c91533d38ae556a6fd5d43
+commit: 6f765aa61cb167734591cec79569359c76af949e
 latest_tag: 
 paths: trident-concepts, trident-get-started, trident-install, trident-managing-k8s, trident-protect, trident-reco, trident-reference, trident-use, troubleshooting.adoc, known-issues.adoc, trident-rn.adoc, faq.adoc
 files: 122
-synced: 2026-11-23T13:06:56Z
+synced: 2026-11-26T12:48:55Z
